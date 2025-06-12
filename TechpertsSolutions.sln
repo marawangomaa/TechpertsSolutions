@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TechpertsSolutions", "TechpertsSolutions\TechpertsSolutions.csproj", "{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repository", "Repository", "{943D54E1-BF86-44C7-9EB7-AB271E90A123}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B827C73D-5D53-4C6A-A856-2E197E4AEEC8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F2BF6601-88E9-42CA-86B3-54B0DA686746}
+	EndGlobalSection
+EndGlobal
