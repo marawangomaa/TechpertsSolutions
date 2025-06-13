@@ -12,6 +12,7 @@ namespace TechpertsSolutions.Core.Entities
         public int Id { get; set; }
 
         public string? Notes { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; }
     }
     
