@@ -14,5 +14,7 @@ namespace Core.Entities
         public Customer Customer { get; set; }
         public DateTime CreatedAt { get; set; }
         public ICollection<CartItem>? CartItems { get; set; }
+        public ICollection<WishListItem>? WishListItems { get; set; }
+        public ICollection<PCAssemblyItem>? PCAssemblyItems { get; set; }
     }
 }

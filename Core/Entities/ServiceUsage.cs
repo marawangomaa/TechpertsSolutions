@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace Core.Entities
 {
-    class Service
+    public class ServiceUsage
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int CallCount { get; set; }
     }
 }
