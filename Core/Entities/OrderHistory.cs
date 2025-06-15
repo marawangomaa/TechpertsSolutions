@@ -9,6 +9,7 @@ namespace Core.Entities
 {
     public class OrderHistory
     {
+        public int Id { get; set; }
         public ICollection<Order>? Orders { get; set; }
     }
 }

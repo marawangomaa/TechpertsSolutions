@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,5 +16,7 @@ namespace TechpertsSolutions.Core.Entities
 
         public int ProductId { get; set; }
         public Product? Product { get; set; }
+
+        public Maintenance? Maintenance { get; set; }
     }
 }

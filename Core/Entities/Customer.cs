@@ -21,6 +21,8 @@ namespace TechpertsSolutions.Core.Entities
         public WishList? WishList { get; set; }
         public ICollection<PCAssembly>? PCAssembly { get; set; }
         public ICollection<Order>? Orders { get; set; }
+        public ICollection<Maintenance>? Maintenances { get; set; }
+        public Delivery? Delivery { get; set; }
     }
     
 }

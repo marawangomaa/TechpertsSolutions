@@ -22,5 +22,6 @@ namespace TechpertsSolutions.Core.Entities
         public ICollection<OrderItem>? orderItems { get; set; }
         public OrderHistory? OrderHistory { get; set; }
         public ServiceUsage? ServiceUsage { get; set; }
+        public Delivery? Delivery { get; set; }
     }
 }
