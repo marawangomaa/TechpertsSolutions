@@ -13,7 +13,8 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<OrderHistory> builder)
         {
-            throw new NotImplementedException();
+            builder.HasMany(oh => oh.Orders)
+                   .WithOne(o => o.OrderHistory);
         }
     }
 }

@@ -14,8 +14,12 @@ namespace Repository.Data.Configurtaions
         public void Configure(EntityTypeBuilder<Cart> builder)
         {
             builder.HasOne(c => c.Customer)
-                .WithOne(ct => ct.Cart)
-                .HasForeignKey<Cart>(c => c.CustomerId);
+                   .WithOne(ct => ct.Cart)
+                   .HasForeignKey<Cart>(c => c.CustomerId)
+                   .IsRequired();
+
+            builder.HasMany(c => c.PCAssemblyItems)
+                   .WithOne(pai => pai.Cart);
         }
     }
 }

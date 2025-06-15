@@ -29,5 +29,8 @@ namespace TechpertsSolutions.Core.Entities
         public int StockControlManagerId { get; set; }
         public StockControlManager? StockControlManager { get; set; }
         public CartItem? CartItem { get; set; }
+        public WishListItem? WishListItem { get; set; }
+        public PCAssemblyItem? PCAssemblyItem { get; set; }
+        public OrderItem? OrderItem { get; set; }
     }
 }

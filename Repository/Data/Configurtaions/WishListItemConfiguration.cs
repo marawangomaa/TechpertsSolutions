@@ -13,7 +13,22 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(wi => new { wi.ProductId, wi.WishListId, wi.CartId });
+
+            builder.HasOne(wi => wi.WishList)
+                   .WithMany(w => w.WishListItems)
+                   .HasForeignKey(wi => wi.WishListId)
+                   .IsRequired();
+
+            builder.HasOne(wi => wi.Product)
+                   .WithOne(p => p.WishListItem)
+                   .HasForeignKey<WishListItem>(wi => wi.ProductId)
+                   .IsRequired();
+
+            builder.HasOne(wi => wi.Cart)
+                   .WithMany(c => c.WishListItems)
+                   .HasForeignKey(wi => wi.CartId)
+                   .IsRequired();
         }
     }
 }

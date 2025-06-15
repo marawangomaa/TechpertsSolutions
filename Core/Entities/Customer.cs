@@ -18,6 +18,8 @@ namespace TechpertsSolutions.Core.Entities
         public int UserId { get; set; }
         public User? User { get; set; }
         public Cart? Cart { get; set; }
+        public WishList? WishList { get; set; }
+        public ICollection<PCAssembly>? PCAssembly { get; set; }
         public ICollection<Order>? Orders { get; set; }
     }
     

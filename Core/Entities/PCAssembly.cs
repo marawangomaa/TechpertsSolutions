@@ -14,6 +14,8 @@ namespace Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int CustomerId { get; set; }
         public Customer? Customer { get; set; }
+        public int ServiceUsageId { get; set; }
+        public ServiceUsage? ServiceUsage { get; set; }
         public ICollection<PCAssemblyItem>? PCAssemblyItems { get; set; }
     }
 }

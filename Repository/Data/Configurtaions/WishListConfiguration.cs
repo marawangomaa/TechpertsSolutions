@@ -13,7 +13,9 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<WishList> builder)
         {
-            throw new NotImplementedException();
+            builder.HasOne(wi => wi.Customer)
+                   .WithOne(c => c.WishList)
+                   .HasForeignKey<WishList>(wi => wi.CustomerId);
         }
     }
 }

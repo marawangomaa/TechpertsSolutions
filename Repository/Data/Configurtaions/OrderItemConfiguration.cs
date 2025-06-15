@@ -16,6 +16,11 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(oi => oi.Order)
             .WithMany(o => o.orderItems)
             .HasForeignKey(oi => oi.OrderId);
+
+            builder.HasOne(oi => oi.Product)
+                   .WithOne(p => p.OrderItem)
+                   .HasForeignKey<OrderItem>(oi => oi.ProductId)
+                   .IsRequired();
         }
     }
 }

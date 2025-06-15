@@ -13,7 +13,15 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<PCAssembly> builder)
         {
-            throw new NotImplementedException();
+            builder.HasOne(pc => pc.Customer)
+                   .WithMany(c => c.PCAssembly)
+                   .HasForeignKey(pc => pc.CustomerId)
+                   .IsRequired();
+
+            builder.HasOne(pc => pc.ServiceUsage)
+                   .WithMany(su => su.PCAssemblies)
+                   .HasForeignKey(pc => pc.ServiceUsageId)
+                   .IsRequired();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Core.Entities
         public int CartId { get; set; }
         public Cart? Cart { get; set; }
         public int PCAssemblyId { get; set; }
-        public PCAssembly? WishList { get; set; }
+        public PCAssembly? PCAssembly { get; set; }
         public bool IsAssemblied { get; set; } = true;
     }
 }
