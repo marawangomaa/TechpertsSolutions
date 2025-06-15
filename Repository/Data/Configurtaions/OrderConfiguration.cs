@@ -19,7 +19,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(o => o.SalesManager)
-                   .WithMany(s => s.ManagedOrders)
+                   .WithMany(s => s.Orders)
                    .HasForeignKey(o => o.SalesManagerId)
                    .OnDelete(DeleteBehavior.Cascade);
         }
