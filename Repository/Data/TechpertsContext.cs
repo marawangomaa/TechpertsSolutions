@@ -40,7 +40,8 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<Warranty> Warranties { get; set; }
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }
-
-
+        public DbSet<Maintenance> Maintenances { get; set; }
+        public DbSet<Delivery> Deliveries { get; set; }
+        public DbSet<OrderHistory> OrderHistories { get; set; }
     }
 }
