@@ -13,7 +13,16 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<CartItem> builder)
         {
-            throw new NotImplementedException();
+            builder.HasKey(ci => new { ci.ProductId, ci.CartId });
+
+            builder.HasOne(ci => ci.Product)
+            .WithOne(p => p.CartItem)
+            .HasForeignKey<CartItem>(ci => ci.ProductId);
+
+            builder.HasOne(ci => ci.Cart)
+            .WithMany(c => c.CartItems)
+            .HasForeignKey(ci => ci.CartId);
+
         }
     }
 }

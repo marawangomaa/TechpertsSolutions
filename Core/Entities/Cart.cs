@@ -16,5 +16,6 @@ namespace Core.Entities
         public ICollection<CartItem>? CartItems { get; set; }
         public ICollection<WishListItem>? WishListItems { get; set; }
         public ICollection<PCAssemblyItem>? PCAssemblyItems { get; set; }
+        public Order? Order { get; set; }
     }
 }

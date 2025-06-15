@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,5 +28,6 @@ namespace TechpertsSolutions.Core.Entities
 
         public int StockControlManagerId { get; set; }
         public StockControlManager? StockControlManager { get; set; }
+        public CartItem? CartItem { get; set; }
     }
 }

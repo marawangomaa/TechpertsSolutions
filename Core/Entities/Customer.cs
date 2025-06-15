@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace TechpertsSolutions.Core.Entities
         public string Country { get; set; }
         public int UserId { get; set; }
         public User? User { get; set; }
-
+        public Cart? Cart { get; set; }
         public ICollection<Order>? Orders { get; set; }
     }
     

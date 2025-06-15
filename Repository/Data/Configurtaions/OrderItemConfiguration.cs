@@ -13,7 +13,9 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
-            throw new NotImplementedException();
+            builder.HasOne(oi => oi.Order)
+            .WithMany(o => o.orderItems)
+            .HasForeignKey(oi => oi.OrderId);
         }
     }
 }

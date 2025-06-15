@@ -13,7 +13,9 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<Cart> builder)
         {
-            throw new NotImplementedException();
+            builder.HasOne(c => c.Customer)
+                .WithOne(ct => ct.Cart)
+                .HasForeignKey<Cart>(c => c.CustomerId);
         }
     }
 }

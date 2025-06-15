@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Core.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,18 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                    .WithMany(s => s.Orders)
                    .HasForeignKey(o => o.SalesManagerId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(o => o.orderItems)
+            .WithOne(oi => oi.Order);
+
+            builder.HasOne(o => o.OrderHistory)
+            .WithMany(oh => oh.Orders);
+
+            builder.HasOne(o => o.ServiceUsage)
+            .WithMany(su => su.Orders);
+
+            builder.HasOne(o => o._Cart)
+            .WithOne(c => c.Order);
         }
     }
 
