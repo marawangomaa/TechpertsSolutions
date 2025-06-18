@@ -6,18 +6,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
-namespace Repository.Data.Configurtaions
+namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
     public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
     {
         public void Configure(EntityTypeBuilder<CartItem> builder)
         {
-            builder.HasKey(ci => new { ci.ProductId, ci.CartId });
 
             builder.HasOne(ci => ci.Product)
-            .WithOne(p => p.CartItem)
-            .HasForeignKey<CartItem>(ci => ci.ProductId);
+            .WithMany(p => p.CartItems)
+            .HasForeignKey(ci => ci.ProductId);
 
             builder.HasOne(ci => ci.Cart)
             .WithMany(c => c.CartItems)

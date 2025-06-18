@@ -17,7 +17,7 @@ namespace TechpertsSolutions.Core.Entities
         public int CategoryId { get; set; }
         public Category? Category { get; set; }
 
-        public int SubCategoryId { get; set; }
+        public int? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
 
         public ICollection<Specification>? Specifications { get; set; }
@@ -28,9 +28,9 @@ namespace TechpertsSolutions.Core.Entities
 
         public int StockControlManagerId { get; set; }
         public StockControlManager? StockControlManager { get; set; }
-        public CartItem? CartItem { get; set; }
-        public WishListItem? WishListItem { get; set; }
-        public PCAssemblyItem? PCAssemblyItem { get; set; }
-        public OrderItem? OrderItem { get; set; }
+        public List<CartItem>? CartItems { get; set; }
+        public List<WishListItem>? WishListItems { get; set; }
+        public List<PCAssemblyItem>? PCAssemblyItems { get; set; }
+        public List<OrderItem>? OrderItems { get; set; }
     }
 }

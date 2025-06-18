@@ -22,6 +22,7 @@ namespace TechpertsSolutions.Core.Entities
         public ICollection<PCAssembly>? PCAssembly { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Maintenance>? Maintenances { get; set; }
+        public int DeliveryId { get; set; }
         public Delivery? Delivery { get; set; }
     }
     

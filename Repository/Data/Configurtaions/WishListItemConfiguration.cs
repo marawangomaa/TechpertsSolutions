@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Repository.Data.Configurtaions
 {
@@ -13,7 +14,6 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
-            builder.HasKey(wi => new { wi.ProductId, wi.WishListId, wi.CartId });
 
             builder.HasOne(wi => wi.WishList)
                    .WithMany(w => w.WishListItems)
@@ -21,8 +21,8 @@ namespace Repository.Data.Configurtaions
                    .IsRequired();
 
             builder.HasOne(wi => wi.Product)
-                   .WithOne(p => p.WishListItem)
-                   .HasForeignKey<WishListItem>(wi => wi.ProductId)
+                   .WithMany(p => p.WishListItems)
+                   .HasForeignKey(wi => wi.ProductId)
                    .IsRequired();
 
             builder.HasOne(wi => wi.Cart)

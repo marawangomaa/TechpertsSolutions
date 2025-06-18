@@ -18,14 +18,19 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                   .WithMany(c => c.Orders)
                   .HasForeignKey(o => o.CustomerId)
                   .IsRequired()
-                  .OnDelete(DeleteBehavior.Restrict);
+                  .OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(o => o.Delivery)
+                   .WithMany(d => d.Orders)
+                   .HasForeignKey(o => o.DeliveryId)
+                   .IsRequired()  // optional if Order can exist without Delivery
+                   .OnDelete(DeleteBehavior.NoAction);  // or Cascade/SetNull if needed
 
             builder.HasOne(o => o.SalesManager)
                    .WithMany(s => s.Orders)
                    .HasForeignKey(o => o.SalesManagerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasMany(o => o.orderItems)
+            builder.HasMany(o => o.OrderItems)
             .WithOne(oi => oi.Order);
 
             builder.HasOne(o => o.OrderHistory)

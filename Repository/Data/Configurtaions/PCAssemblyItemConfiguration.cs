@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Repository.Data.Configurtaions
 {
@@ -13,7 +14,6 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<PCAssemblyItem> builder)
         {
-            builder.HasKey(pai => new { pai.PCAssemblyId, pai.ProductId });
 
             builder.HasOne(pi => pi.PCAssembly)
                    .WithMany(pc => pc.PCAssemblyItems)
@@ -26,8 +26,8 @@ namespace Repository.Data.Configurtaions
                    .IsRequired();
 
             builder.HasOne(pi => pi.Product)
-                   .WithOne(p => p.PCAssemblyItem)
-                   .HasForeignKey<PCAssemblyItem>(pai => pai.ProductId)
+                   .WithMany(p => p.PCAssemblyItems)
+                   .HasForeignKey(pai => pai.ProductId)
                    .IsRequired();
         }
     }

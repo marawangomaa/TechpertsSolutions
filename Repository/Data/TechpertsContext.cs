@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
@@ -15,8 +16,7 @@ namespace TechpertsSolutions.Repository.Data
         public TechpertsContext(DbContextOptions<TechpertsContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
         }
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Cart> Carts { get; set; }

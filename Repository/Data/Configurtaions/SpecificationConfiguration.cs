@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
@@ -14,9 +12,9 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public void Configure(EntityTypeBuilder<Specification> builder)
         {
             builder.HasOne(s => s.Product)
-                 .WithMany(p => p.Specifications)
-                 .HasForeignKey(s => s.ProductId)
-                 .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(p => p.Specifications)
+                   .HasForeignKey(s => s.ProductId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

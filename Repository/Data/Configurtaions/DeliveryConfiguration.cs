@@ -15,9 +15,6 @@ namespace Repository.Data.Configurtaions
         {
             builder.HasMany(d => d.TechCompanies)
                     .WithMany(t => t.Deliveries);
-
-            builder.HasMany(d => d.Customers)
-                    .WithOne(c => c.Delivery);
         }
     }
 }

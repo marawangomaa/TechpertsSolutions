@@ -6,21 +6,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
-namespace Repository.Data.Configurtaions
+namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
     public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
     {
         public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
+
             builder.HasOne(oi => oi.Order)
-            .WithMany(o => o.orderItems)
-            .HasForeignKey(oi => oi.OrderId);
+                   .WithMany(o => o.OrderItems)
+                   .HasForeignKey(oi => oi.OrderId);
 
             builder.HasOne(oi => oi.Product)
-                   .WithOne(p => p.OrderItem)
-                   .HasForeignKey<OrderItem>(oi => oi.ProductId)
-                   .IsRequired();
+                   .WithMany(p => p.OrderItems)
+                   .HasForeignKey(oi => oi.ProductId);
+
         }
     }
 }

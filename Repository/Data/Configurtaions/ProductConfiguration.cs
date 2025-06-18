@@ -21,17 +21,17 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(p => p.SubCategory)
                    .WithMany(sc => sc.Products)
                    .HasForeignKey(p => p.SubCategoryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(p => p.Specifications)
                    .WithOne(s => s.Product)
                    .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(p => p.Warranties)
                    .WithOne(w => w.Product)
                    .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
