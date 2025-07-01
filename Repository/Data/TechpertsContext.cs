@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {
-    public class TechpertsContext : DbContext
+    public class TechpertsContext : IdentityDbContext<User>
     {
         public TechpertsContext(DbContextOptions<TechpertsContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

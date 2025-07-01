@@ -15,8 +15,8 @@ namespace TechpertsSolutions.Core.Entities
         public string Address { get; set; }
         public string City { get; set; }
         public string Country { get; set; }
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public string UserId { get; set; }
+        public AppUser? User { get; set; }
         public Cart? Cart { get; set; }
         public WishList? WishList { get; set; }
         public ICollection<PCAssembly>? PCAssembly { get; set; }

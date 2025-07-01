@@ -11,8 +11,8 @@ namespace TechpertsSolutions.Core.Entities
         public int Id { get; set; }
         public string Specialization { get; set; }
 
-        public int UserId { get; set; }
-        public User? User { get; set; }
+        public string UserId { get; set; }
+        public AppUser? User { get; set; }
 
         public ICollection<Product>? ManagedProducts { get; set; }
     }
