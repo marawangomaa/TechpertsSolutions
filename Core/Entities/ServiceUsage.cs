@@ -10,7 +10,8 @@ namespace Core.Entities
     public class ServiceUsage
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string ServiceType { get; set; }
+        public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<PCAssembly>? PCAssemblies { get; set; }

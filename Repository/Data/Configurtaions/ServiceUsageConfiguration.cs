@@ -13,7 +13,7 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<ServiceUsage> builder)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

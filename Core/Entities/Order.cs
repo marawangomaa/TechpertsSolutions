@@ -18,6 +18,7 @@ namespace TechpertsSolutions.Core.Entities
         public int CartId { get; set; }
         public Cart? _Cart { get; set; }
         public int SalesManagerId { get; set; }
+        public int ServiceUsageId { get; set; }
         public SalesManager SalesManager { get; set; }
         public ICollection<OrderItem>? OrderItems { get; set; }
         public OrderHistory? OrderHistory { get; set; }
