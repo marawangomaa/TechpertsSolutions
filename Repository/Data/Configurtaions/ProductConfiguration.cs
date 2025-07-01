@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(p => p.SubCategory)
                    .WithMany(sc => sc.Products)

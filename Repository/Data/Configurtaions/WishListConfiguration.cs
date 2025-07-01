@@ -15,7 +15,8 @@ namespace Repository.Data.Configurtaions
         {
             builder.HasOne(wi => wi.Customer)
                    .WithOne(c => c.WishList)
-                   .HasForeignKey<WishList>(wi => wi.CustomerId);
+                   .HasForeignKey<WishList>(wi => wi.CustomerId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

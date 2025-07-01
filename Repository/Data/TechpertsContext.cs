@@ -12,11 +12,12 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {
-    public class TechpertsContext : IdentityDbContext<User>
+    public class TechpertsContext : IdentityDbContext<AppUser,AppRole,string>
     {
         public TechpertsContext(DbContextOptions<TechpertsContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
         }
         public DbSet<Admin> Admins { get; set; }
@@ -29,7 +30,6 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<PCAssembly> PCAssemblies { get; set; }
         public DbSet<PCAssemblyItem> PCAssemblyItems { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<Role> Roles { get; set; }
         public DbSet<SalesManager> SalesManagers { get; set; }
         public DbSet<ServiceUsage> ServiceUsages { get; set; }
         public DbSet<Specification> Specifications { get; set; }
@@ -37,7 +37,6 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<SubCategory> SubCategories { get; set; }
         public DbSet<TechCompany> TechCompanies { get; set; }
         public DbSet<TechManager> TechManagers { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Warranty> Warranties { get; set; }
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }

@@ -15,7 +15,8 @@ namespace Repository.Data.Configurtaions
         {
             builder.HasOne(t => t.User)
                     .WithOne(u => u.TechCompany)
-                        .HasForeignKey<TechCompany>(u => u.UserId).IsRequired();
+                        .HasForeignKey<TechCompany>(u => u.UserId).IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

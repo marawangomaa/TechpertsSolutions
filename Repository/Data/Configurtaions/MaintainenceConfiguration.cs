@@ -16,15 +16,18 @@ namespace Repository.Data.Configurtaions
         {
             builder.HasOne(n => n.Customer)
                    .WithMany(c => c.Maintenances)
-                    .HasForeignKey(m => m.CustomerId).IsRequired();
+                    .HasForeignKey(m => m.CustomerId).IsRequired()
+                    .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(n => n.TechCompany)
                     .WithMany(c => c.Maintenances)
-                        .HasForeignKey(m => m.TechCompanyId).IsRequired();
+                        .HasForeignKey(m => m.TechCompanyId).IsRequired()
+                        .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(m => m.Warranty)
                     .WithOne(w => w.Maintenance)
-                        .HasForeignKey<Maintenance>(n => n.WarrantyId);
+                        .HasForeignKey<Maintenance>(n => n.WarrantyId)
+                        .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

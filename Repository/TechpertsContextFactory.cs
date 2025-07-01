@@ -14,7 +14,7 @@ namespace Repository
         public TechpertsContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<TechpertsContext>();
-            optionsBuilder.UseSqlServer("Server=.;Database=TechpertsSolutions;Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=.;Database=TechpertsSolutionsV2;Trusted_Connection=True;TrustServerCertificate=True;");
 
             return new TechpertsContext(optionsBuilder.Options);
         }

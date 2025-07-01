@@ -12,15 +12,12 @@ namespace TechpertsSolutions.Core.Entities
         
         public string FullName { get; set; }
         public string Address { get; set; }
-
-       
-
-        //public Customer? Customer { get; set; }
-        //public Admin? Admin { get; set; }
-        //public TechManager? TechManager { get; set; }
-        //public SalesManager? SalesManager { get; set; }
-        //public StockControlManager? StockControlManager { get; set; }
-        //public TechCompany? TechCompany { get; set; }
+        public Customer? Customer { get; set; }
+        public Admin? Admin { get; set; }
+        public TechManager? TechManager { get; set; }
+        public SalesManager? SalesManager { get; set; }
+        public StockControlManager? StockControlManager { get; set; }
+        public TechCompany? TechCompany { get; set; }
     }
 }
 

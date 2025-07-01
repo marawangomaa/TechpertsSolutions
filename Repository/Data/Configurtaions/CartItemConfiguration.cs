@@ -17,11 +17,13 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
 
             builder.HasOne(ci => ci.Product)
             .WithMany(p => p.CartItems)
-            .HasForeignKey(ci => ci.ProductId);
+            .HasForeignKey(ci => ci.ProductId)
+            .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(ci => ci.Cart)
             .WithMany(c => c.CartItems)
-            .HasForeignKey(ci => ci.CartId);
+            .HasForeignKey(ci => ci.CartId)
+            .OnDelete(DeleteBehavior.NoAction);
 
         }
     }

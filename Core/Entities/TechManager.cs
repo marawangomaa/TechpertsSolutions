@@ -13,6 +13,8 @@ namespace TechpertsSolutions.Core.Entities
 
         public string UserId { get; set; }
         public AppUser? User { get; set; }
+        public string RoleId { get; set; }
+        public AppRole? Role { get; set; }
 
         public ICollection<Product>? ManagedProducts { get; set; }
     }

@@ -16,12 +16,14 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(pc => pc.Customer)
                    .WithMany(c => c.PCAssembly)
                    .HasForeignKey(pc => pc.CustomerId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(pc => pc.ServiceUsage)
                    .WithMany(su => su.PCAssemblies)
                    .HasForeignKey(pc => pc.ServiceUsageId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

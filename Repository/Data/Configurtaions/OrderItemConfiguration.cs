@@ -17,11 +17,13 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
 
             builder.HasOne(oi => oi.Order)
                    .WithMany(o => o.OrderItems)
-                   .HasForeignKey(oi => oi.OrderId);
+                   .HasForeignKey(oi => oi.OrderId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(oi => oi.Product)
                    .WithMany(p => p.OrderItems)
-                   .HasForeignKey(oi => oi.ProductId);
+                   .HasForeignKey(oi => oi.ProductId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
         }
     }

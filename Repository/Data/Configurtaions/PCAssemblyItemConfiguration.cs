@@ -18,17 +18,20 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(pi => pi.PCAssembly)
                    .WithMany(pc => pc.PCAssemblyItems)
                    .HasForeignKey(pai => pai.PCAssemblyId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(pi => pi.Cart)
                    .WithMany(c => c.PCAssemblyItems)
                    .HasForeignKey(pai => pai.CartId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(pi => pi.Product)
                    .WithMany(p => p.PCAssemblyItems)
                    .HasForeignKey(pai => pai.ProductId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

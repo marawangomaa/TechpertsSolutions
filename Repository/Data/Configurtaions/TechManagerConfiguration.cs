@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(t => t.User)
                   .WithOne(u => u.TechManager)
                   .HasForeignKey<TechManager>(t => t.Id)
-                  .OnDelete(DeleteBehavior.Cascade);
+                  .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

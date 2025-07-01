@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(s => s.User)
                  .WithOne(u => u.StockControlManager)
                  .HasForeignKey<StockControlManager>(s => s.Id)
-                 .OnDelete(DeleteBehavior.Cascade);
+                 .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

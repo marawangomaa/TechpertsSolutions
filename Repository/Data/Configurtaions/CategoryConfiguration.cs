@@ -16,12 +16,12 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasMany(c => c.SubCategories)
              .WithOne(sc => sc.Category)
              .HasForeignKey(sc => sc.CategoryId)
-             .OnDelete(DeleteBehavior.Cascade);
+             .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(c => c.Products)
                    .WithOne(p => p.Category)
                    .HasForeignKey(p => p.CategoryId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

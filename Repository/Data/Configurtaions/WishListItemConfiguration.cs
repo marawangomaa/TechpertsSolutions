@@ -18,17 +18,20 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(wi => wi.WishList)
                    .WithMany(w => w.WishListItems)
                    .HasForeignKey(wi => wi.WishListId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(wi => wi.Product)
                    .WithMany(p => p.WishListItems)
                    .HasForeignKey(wi => wi.ProductId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(wi => wi.Cart)
                    .WithMany(c => c.WishListItems)
                    .HasForeignKey(wi => wi.CartId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

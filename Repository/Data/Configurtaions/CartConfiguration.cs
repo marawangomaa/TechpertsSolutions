@@ -17,10 +17,12 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(c => c.Customer)
                    .WithOne(ct => ct.Cart)
                    .HasForeignKey<Cart>(c => c.CustomerId)
-                   .IsRequired();
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(c => c.PCAssemblyItems)
-                   .WithOne(pai => pai.Cart);
+                   .WithOne(pai => pai.Cart)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
