@@ -82,9 +82,64 @@ namespace TechpertsSolutions.Controllers
             {
                 Success = false,
                 Message = "Invalid login attempt.",
-                Data = null
+                Data = $"Login email {login.Email} is invalid or password incorrect."
             });
         }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPassword) 
+        {
+            var user = await userManager.FindByEmailAsync(forgotPassword.Email);
+            if (user == null) 
+            {
+                return NotFound(new GeneralResponse<string> 
+                {
+                    Success = false,
+                    Message = "User not found",
+                    Data = $"user email {forgotPassword.Email.ToString()} not registered"
+                });
+            }
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            // ⚠️ In real apps: send this token as a secure email link
+            return Ok(new GeneralResponse<string> 
+            {
+                Success = true,
+                Message = "Password reset token generated successfully.",
+                Data = token //In real apps, send this token via email : return URL instead for production
+            });
+        }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPassword) 
+        {
+            var user = await userManager.FindByEmailAsync(resetPassword.Email);
+            if (user == null) 
+            {
+                return NotFound(new GeneralResponse<string> 
+                {
+                    Success = false,
+                    Message = "User not found",
+                    Data = $"user email {resetPassword.Email.ToString()} not registered"
+                });
+            }
+            var result = await userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.NewPassword);
+            if (!result.Succeeded) 
+            {
+                return BadRequest(new GeneralResponse<string> 
+                {
+                    Success = false,
+                    Message = "Password reset failed.",
+                    Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                });
+
+            }
+            return Ok(new GeneralResponse<string> 
+            {
+                Success = true,
+                Message = "Password reset successfully.",
+                Data = user.Id
+            });
+        }
+        // var resetUrl = $"https://yourfrontend.com/reset-password?email={user.Email}&token={HttpUtility.UrlE
+
         private string GenerateJwtToken(AppUser user)
         {
             var claims = new[]
