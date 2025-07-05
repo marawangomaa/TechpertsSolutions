@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.DTOs;
@@ -6,6 +7,7 @@ using TechpertsSolutions.Repository.Data;
 
 namespace TechpertsSolutions.Controllers
 {
+    
     [Route("api/[controller]")]
     [ApiController]
     public class RolesController : ControllerBase
@@ -150,6 +152,7 @@ namespace TechpertsSolutions.Controllers
                 Data = $"Role '{roleName}' assigned to user '{userEmail}' successfully."
             });
         }
+
         [HttpPost("unassign")]
         public async Task<IActionResult> UnassignRole(string userEmail, string roleName)
         {
