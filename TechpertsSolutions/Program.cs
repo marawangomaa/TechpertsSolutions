@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TechpertsSolutions.Utilities;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
@@ -12,7 +13,7 @@ namespace TechpertsSolutions
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,7 @@ namespace TechpertsSolutions
 
             builder.Services.AddIdentity<AppUser,AppRole>().AddEntityFrameworkStores<TechpertsContext>()
                             .AddDefaultTokenProviders();
+            
             builder.Services.Configure<IdentityOptions>(options =>
             {
                 // Password settings
@@ -62,12 +64,18 @@ namespace TechpertsSolutions
                 });
             var app = builder.Build();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                await SeedRoles.SeedRolesAsync(services);
+            }
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
 
             app.UseHttpsRedirection();
 
