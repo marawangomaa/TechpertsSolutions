@@ -71,6 +71,16 @@ namespace TechpertsSolutions
                 options.User.RequireUniqueEmail = true;
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
+            });
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -89,6 +99,7 @@ namespace TechpertsSolutions
                 });
             
             var app = builder.Build();
+            app.UseCors("AllowAll");
 
             using (var scope = app.Services.CreateScope())
             {
