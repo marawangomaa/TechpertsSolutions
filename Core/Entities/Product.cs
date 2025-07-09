@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace TechpertsSolutions.Core.Entities
 
         public int? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
-
+        public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;
         public ICollection<Specification>? Specifications { get; set; }
         public ICollection<Warranty>? Warranties { get; set; }
 
