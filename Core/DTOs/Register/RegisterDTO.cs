@@ -1,4 +1,4 @@
-﻿namespace TechpertsSolutions.DTOs
+﻿namespace TechpertsSolutions.Core.DTOs.Register 
 {
     public class RegisterDTO
     {
@@ -10,4 +10,8 @@
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
     }
+
 }
+
+
+

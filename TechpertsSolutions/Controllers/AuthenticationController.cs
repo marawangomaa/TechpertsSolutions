@@ -6,7 +6,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.DTOs;
+using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs.Login;
+using TechpertsSolutions.Core.DTOs.Register;
 
 namespace TechpertsSolutions.Controllers
 {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.DTOs;
+using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Repository.Data;
 
 namespace TechpertsSolutions.Controllers

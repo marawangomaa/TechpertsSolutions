@@ -1,13 +1,16 @@
 
+using Core.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Repository;
+using Service;
 using System.Text;
-using TechpertsSolutions.Utilities;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
+using TechpertsSolutions.Utilities;
 
 namespace TechpertsSolutions
 {
@@ -48,6 +51,8 @@ namespace TechpertsSolutions
                     }
                 });
             });
+            builder.Services.AddScoped<CustomerService>();
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddDbContext<TechpertsContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));

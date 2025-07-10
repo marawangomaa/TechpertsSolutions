@@ -1,4 +1,4 @@
-﻿namespace TechpertsSolutions.DTOs
+﻿namespace TechpertsSolutions.Core.DTOs.Login
 {
     public class ResetPasswordDTO
     {
@@ -7,3 +7,5 @@
         public string NewPassword { get; set; }
     }
 }
+
+

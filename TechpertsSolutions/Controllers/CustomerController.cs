@@ -1,0 +1,42 @@
+﻿using Service;
+using Microsoft.AspNetCore.Mvc;
+using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs.Customer;
+
+
+namespace TechpertsSolutions.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CustomerController : ControllerBase
+    {
+        private readonly CustomerService customerService;
+        public CustomerController(CustomerService _customerService) 
+        {
+            customerService = _customerService;
+        }
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAll() 
+        {
+            var customers = await customerService.GetAllCustomersAsync();
+            return Ok(new GeneralResponse<List<CustomerDTO>> 
+            {
+                Success = true,
+                Message = "All Customers retrieved successfully",
+                Data = customers
+            });
+        }
+        [HttpGet("get/{id}")]
+        public async Task<IActionResult> GetById(int id) 
+        {
+            var customer = await customerService.GetCustomerByIdAsync(id);
+            return Ok(new GeneralResponse<CustomerDTO>
+            {
+                Success = true,
+                Message = "Customer retrieved successfully",
+                Data = customer
+            });
+        }
+
+    }
+}
