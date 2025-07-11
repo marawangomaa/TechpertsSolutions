@@ -1,19 +1,16 @@
 ﻿using Core.DTOs.Login;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;       
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Service;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.Login;
 using TechpertsSolutions.Core.DTOs.Register;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
+using TechpertsSolutions.Utilities;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -23,12 +20,12 @@ namespace TechpertsSolutions.Controllers
     {
         private readonly TechpertsContext context;
         private readonly UserManager<AppUser> userManager;
-        private readonly IConfiguration configuration;
+        private readonly ITokenService tokenService;
 
-        public AuthenticationController(UserManager<AppUser> _userManager, IConfiguration _configuration, RoleManager<AppRole> _roleManager, TechpertsContext _context)
+        public AuthenticationController(UserManager<AppUser> _userManager,RoleManager<AppRole> _roleManager, TechpertsContext _context,ITokenService _tokenService)
         {
             userManager = _userManager;
-            configuration = _configuration;
+            tokenService = _tokenService;
             context = _context;
         }
 
@@ -73,7 +70,7 @@ namespace TechpertsSolutions.Controllers
                 var result = await userManager.CheckPasswordAsync(user, login.Password);
                 if (result)
                 {
-                    var token = GenerateJwtToken(user);
+                    var token = tokenService.GenerateJwtToken(user);
                     return Ok(new GeneralResponse<LoginResultDTO>
                     {
                         Success = true,
@@ -238,37 +235,6 @@ namespace TechpertsSolutions.Controllers
                 Message = "Your account has been deleted successfully.",
                 Data = user.Email
             });
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-        private string GenerateJwtToken(AppUser user)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
-            };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(
-                issuer: configuration["Jwt:Issuer"],
-                audience: configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: creds);
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

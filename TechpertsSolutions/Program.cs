@@ -54,8 +54,10 @@ namespace TechpertsSolutions
             });
 
             //  App services
-            builder.Services.AddScoped<CustomerService>();
+            builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            builder.Services.AddScoped<ITokenService, TokenService>();
+
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>

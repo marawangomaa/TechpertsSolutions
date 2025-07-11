@@ -1,7 +1,7 @@
-﻿using Service;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.Customer;
+using Core.Interfaces;
 
 
 namespace TechpertsSolutions.Controllers
@@ -10,8 +10,8 @@ namespace TechpertsSolutions.Controllers
     [ApiController]
     public class CustomerController : ControllerBase
     {
-        private readonly CustomerService customerService;
-        public CustomerController(CustomerService _customerService) 
+        private readonly ICustomerService customerService;
+        public CustomerController(ICustomerService _customerService) 
         {
             customerService = _customerService;
         }
