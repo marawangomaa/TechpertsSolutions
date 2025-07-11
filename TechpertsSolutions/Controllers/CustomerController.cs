@@ -37,6 +37,36 @@ namespace TechpertsSolutions.Controllers
                 Data = customer
             });
         }
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] CustomerEditDTO customer)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid data provided",
+                    Data = null
+                });
+            }
+
+            var updatedCustomer = await customerService.UpdateCustomerAsync(id, customer);
+            if (updatedCustomer == null)
+            {
+                return NotFound(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = $"Customer with ID {id} not found",
+                    Data = null
+                });
+            }
+            return Ok(new GeneralResponse<CustomerDTO>
+            {
+                Success = true,
+                Message = "Customer updated successfully",
+                Data = updatedCustomer
+            });
+        }
 
     }
 }
