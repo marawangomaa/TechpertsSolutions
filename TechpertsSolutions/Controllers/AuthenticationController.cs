@@ -22,7 +22,6 @@ namespace TechpertsSolutions.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly TechpertsContext context;
-        private readonly RoleManager<AppRole> roleManager;
         private readonly UserManager<AppUser> userManager;
         private readonly IConfiguration configuration;
 
@@ -31,7 +30,6 @@ namespace TechpertsSolutions.Controllers
             userManager = _userManager;
             configuration = _configuration;
             context = _context;
-            roleManager = _roleManager;
         }
 
         [HttpPost("register")]
@@ -183,8 +181,6 @@ namespace TechpertsSolutions.Controllers
             var roles = await userManager.GetRolesAsync(user);
             foreach (var roleName in roles)
             {
-                await userManager.RemoveFromRoleAsync(user, roleName);
-
                 switch (roleName)
                 {
                     case "SalesManager":
@@ -217,6 +213,10 @@ namespace TechpertsSolutions.Controllers
                         if (techCompany != null) context.TechCompanies.Remove(techCompany);
                         break;
                 }
+
+                // After DB changes are set up
+                await context.SaveChangesAsync();
+                await userManager.RemoveFromRoleAsync(user, roleName);
             }
 
             var deleteResult = await userManager.DeleteAsync(user);
