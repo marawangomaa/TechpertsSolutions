@@ -1,14 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.DTOs.Login;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Service;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.Login;
 using TechpertsSolutions.Core.DTOs.Register;
+using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -16,13 +21,17 @@ namespace TechpertsSolutions.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
+        private readonly TechpertsContext context;
+        private readonly RoleManager<AppRole> roleManager;
         private readonly UserManager<AppUser> userManager;
         private readonly IConfiguration configuration;
 
-        public AuthenticationController(UserManager<AppUser> _userManager, IConfiguration _configuration)
+        public AuthenticationController(UserManager<AppUser> _userManager, IConfiguration _configuration, RoleManager<AppRole> _roleManager, TechpertsContext _context)
         {
             userManager = _userManager;
             configuration = _configuration;
+            context = _context;
+            roleManager = _roleManager;
         }
 
         [HttpPost("register")]
@@ -67,7 +76,7 @@ namespace TechpertsSolutions.Controllers
                 if (result)
                 {
                     var token = GenerateJwtToken(user);
-                    return Ok(new GeneralResponse<string>
+                    return Ok(new GeneralResponse<LoginResultDTO>
                     {
                         Success = true,
                         Message = "User logged in successfully.",
@@ -142,11 +151,112 @@ namespace TechpertsSolutions.Controllers
         }
         // var resetUrl = $"https://yourfrontend.com/reset-password?email={user.Email}&token={HttpUtility.UrlE
 
+
+
+        [HttpDelete("delete-account")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDTO request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); // From JWT
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid token or user context.",
+                    Data = null
+                });
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null || user.Email != request.Email)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Email does not match the authenticated user.",
+                    Data = request.Email
+                });
+            }
+
+            // Unassign roles and remove domain-specific entities
+            var roles = await userManager.GetRolesAsync(user);
+            foreach (var roleName in roles)
+            {
+                await userManager.RemoveFromRoleAsync(user, roleName);
+
+                switch (roleName)
+                {
+                    case "SalesManager":
+                        var salesManager = await context.SalesManagers.FirstOrDefaultAsync(sm => sm.UserId == user.Id);
+                        if (salesManager != null) context.SalesManagers.Remove(salesManager);
+                        break;
+
+                    case "Customer":
+                        var customer = await context.Customers.FirstOrDefaultAsync(c => c.UserId == user.Id);
+                        if (customer != null) context.Customers.Remove(customer);
+                        break;
+
+                    case "TechManager":
+                        var techManager = await context.TechManagers.FirstOrDefaultAsync(tm => tm.UserId == user.Id);
+                        if (techManager != null) context.TechManagers.Remove(techManager);
+                        break;
+
+                    case "StockControlManager":
+                        var stockManager = await context.StockControlManagers.FirstOrDefaultAsync(sc => sc.UserId == user.Id);
+                        if (stockManager != null) context.StockControlManagers.Remove(stockManager);
+                        break;
+
+                    case "Admin":
+                        var admin = await context.Admins.FirstOrDefaultAsync(a => a.UserId == user.Id);
+                        if (admin != null) context.Admins.Remove(admin);
+                        break;
+
+                    case "TechCompany":
+                        var techCompany = await context.TechCompanies.FirstOrDefaultAsync(tc => tc.UserId == user.Id);
+                        if (techCompany != null) context.TechCompanies.Remove(techCompany);
+                        break;
+                }
+            }
+
+            var deleteResult = await userManager.DeleteAsync(user);
+            if (!deleteResult.Succeeded)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to delete user account.",
+                    Data = string.Join(", ", deleteResult.Errors.Select(e => e.Description))
+                });
+            }
+
+            await context.SaveChangesAsync();
+
+            return Ok(new GeneralResponse<string>
+            {
+                Success = true,
+                Message = "Your account has been deleted successfully.",
+                Data = user.Email
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
         private string GenerateJwtToken(AppUser user)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
