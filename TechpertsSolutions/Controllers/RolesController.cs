@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
 namespace TechpertsSolutions.Controllers
@@ -12,15 +13,35 @@ namespace TechpertsSolutions.Controllers
     [ApiController]
     public class RolesController : ControllerBase
     {
-        private readonly TechpertsContext context;
+        private readonly IRepository<Admin> adminRepo;
+        private readonly IRepository<Customer> customerRepo;
+        private readonly IRepository<SalesManager> salesManagerRepo;
+        private readonly IRepository<StockControlManager> stockControlManagerRepo;
+        private readonly IRepository<TechCompany> techCompanyRepo;
+        private readonly IRepository<TechManager> techManagerRepo;
         private readonly RoleManager<AppRole> roleManager;
         private readonly UserManager<AppUser> userManager;
+        private readonly TechpertsContext context;
 
-        public RolesController(RoleManager<AppRole> _roleManager, UserManager<AppUser> _userManager,TechpertsContext _context) 
+        public RolesController(RoleManager<AppRole> _roleManager, 
+            UserManager<AppUser> _userManager,
+            IRepository<Admin> _adminRepo,
+            IRepository<Customer> _customerRepo,
+            IRepository<SalesManager> _salesManagerRepo,
+            IRepository<StockControlManager> _stockControlMangerRepo,
+            IRepository<TechCompany> _techCompanyRepo,
+            IRepository<TechManager> _techMangerRepo,
+            TechpertsContext _context) 
         {
-            context = _context;
             roleManager = _roleManager;
             userManager = _userManager;
+            adminRepo = _adminRepo;
+            customerRepo = _customerRepo;
+            salesManagerRepo = _salesManagerRepo;
+            stockControlManagerRepo = _stockControlMangerRepo;
+            techCompanyRepo = _techCompanyRepo;
+            techManagerRepo = _techMangerRepo;
+            context = _context;
         }
         [HttpPost("check-role")]
         public async Task<IActionResult> CheckRole([FromBody] string roleName)
@@ -68,9 +89,9 @@ namespace TechpertsSolutions.Controllers
             switch (roleName)
             {
                 case "SalesManager":
-                    if (!context.SalesManagers.Any(sm => sm.UserId == user.Id))
+                    if (!await salesManagerRepo.AnyAsync(sm => sm.UserId == user.Id))
                     {
-                        context.SalesManagers.Add(new SalesManager 
+                         await salesManagerRepo.AddAsync(new SalesManager 
                         { 
                             UserId = user.Id,
                             RoleId = role.Id
@@ -79,9 +100,9 @@ namespace TechpertsSolutions.Controllers
                     break;
 
                 case "Customer":
-                    if (!context.Customers.Any(c => c.UserId == user.Id))
+                    if (!await customerRepo.AnyAsync(c => c.UserId == user.Id))
                     {
-                        context.Customers.Add(new Customer 
+                         await customerRepo.AddAsync(new Customer 
                         { 
                             UserId = user.Id,
                             RoleId = role.Id
@@ -90,9 +111,9 @@ namespace TechpertsSolutions.Controllers
                     break;
 
                 case "TechManager":
-                    if (!context.TechManagers.Any(t => t.UserId == user.Id))
+                    if (!await techManagerRepo.AnyAsync(t => t.UserId == user.Id))
                     {
-                        context.TechManagers.Add(new TechManager 
+                        await techManagerRepo.AddAsync(new TechManager 
                         { 
                             UserId = user.Id,
                             RoleId = role.Id
@@ -101,9 +122,9 @@ namespace TechpertsSolutions.Controllers
                     break;
 
                 case "StockControlManager":
-                    if (!context.StockControlManagers.Any(s => s.UserId == user.Id))
+                    if (!await stockControlManagerRepo.AnyAsync(s => s.UserId == user.Id))
                     {
-                        context.StockControlManagers.Add(new StockControlManager 
+                        await stockControlManagerRepo.AddAsync(new StockControlManager 
                         { 
                             UserId = user.Id,
                             RoleId = user.Id
@@ -112,9 +133,9 @@ namespace TechpertsSolutions.Controllers
                     break;
 
                 case "Admin":
-                    if (!context.Admins.Any(a => a.UserId == user.Id))
+                    if (!await adminRepo.AnyAsync(a => a.UserId == user.Id))
                     {
-                        context.Admins.Add(new Admin 
+                        await adminRepo.AddAsync(new Admin 
                         { 
                             UserId = user.Id,
                             RoleId = role.Id
@@ -123,9 +144,9 @@ namespace TechpertsSolutions.Controllers
                     break;
 
                 case "TechCompany":
-                    if (!context.TechCompanies.Any(tc => tc.UserId == user.Id))
+                    if (!await techCompanyRepo.AnyAsync(tc => tc.UserId == user.Id))
                     {
-                        context.TechCompanies.Add(new TechCompany 
+                        await  techCompanyRepo.AddAsync(new TechCompany 
                         { 
                             UserId = user.Id,
                             RoleId = role.Id
@@ -133,9 +154,8 @@ namespace TechpertsSolutions.Controllers
                     }
                     break;
             }
-
-            // 💾 Commit domain updates
             await context.SaveChangesAsync();
+
             return Ok(new GeneralResponse<string> 
             {
                 Success = true,
@@ -183,42 +203,40 @@ namespace TechpertsSolutions.Controllers
             switch (roleName)
             {
                 case "SalesManager":
-                    var salesManager = context.SalesManagers.FirstOrDefault(sm => sm.UserId == user.Id);
+                    var salesManager = (await salesManagerRepo.GetAllAsync()).FirstOrDefault(sm => sm.UserId == user.Id);
                     if (salesManager != null)
-                        context.SalesManagers.Remove(salesManager);
+                        salesManagerRepo.Remove(salesManager);
                     break;
 
                 case "Customer":
-                    var customer = context.Customers.FirstOrDefault(c => c.UserId == user.Id);
+                    var customer = (await customerRepo.GetAllAsync()).FirstOrDefault(c => c.UserId == user.Id);
                     if (customer != null)
-                        context.Customers.Remove(customer);
+                        customerRepo.Remove(customer);
                     break;
 
                 case "TechManager":
-                    var techManager = context.TechManagers.FirstOrDefault(t => t.UserId == user.Id);
+                    var techManager = (await techManagerRepo.GetAllAsync()).FirstOrDefault(t => t.UserId == user.Id);
                     if (techManager != null)
-                        context.TechManagers.Remove(techManager);
+                        techManagerRepo.Remove(techManager);
                     break;
                 case "StockControlManager":
-                    var stockControlManager = context.StockControlManagers.FirstOrDefault(s => s.UserId == user.Id);
+                    var stockControlManager = (await stockControlManagerRepo.GetAllAsync()).FirstOrDefault(s => s.UserId == user.Id);
                     if (stockControlManager != null)
-                        context.StockControlManagers.Remove(stockControlManager);
+                        stockControlManagerRepo.Remove(stockControlManager);
                     break;
                 case "Admin":
-                    var admin = context.Admins.FirstOrDefault(a => a.UserId == user.Id);
+                    var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(a => a.UserId == user.Id);
                     if (admin != null)
-                        context.Admins.Remove(admin);
+                        adminRepo.Remove(admin);
                     break;
                 case "TechCompany":
-                    var techCompany = context.TechCompanies.FirstOrDefault(tc => tc.UserId == user.Id);
+                    var techCompany = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(tc => tc.UserId == user.Id);
                     if (techCompany != null)
-                        context.TechCompanies.Remove(techCompany);
+                        techCompanyRepo.Remove(techCompany);
                     break;
 
             }
-
             await context.SaveChangesAsync();
-
             return Ok(new GeneralResponse<string>
             {
                 Success = true,
