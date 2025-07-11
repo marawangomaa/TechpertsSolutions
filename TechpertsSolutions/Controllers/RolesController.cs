@@ -22,25 +22,16 @@ namespace TechpertsSolutions.Controllers
             roleManager = _roleManager;
             userManager = _userManager;
         }
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateRole([FromBody] string roleName) 
+        [HttpPost("check-role")]
+        public async Task<IActionResult> CheckRole([FromBody] string roleName)
         {
-            if (await roleManager.RoleExistsAsync(roleName)) 
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Role already exists.",
-                    Data = roleName
-                });
-            }
-            await roleManager.CreateAsync(new AppRole { Name = roleName });
-            
-            return Ok(new GeneralResponse<string> 
+            var exists = await roleManager.RoleExistsAsync(roleName);
+
+            return Ok(new GeneralResponse<bool>
             {
                 Success = true,
-                Message = "Role created successfully.",
-                Data = roleName
+                Message = exists ? "Role exists." : "Role does not exist.",
+                Data = exists
             });
         }
         [HttpPost("assign")]
