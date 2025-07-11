@@ -92,7 +92,6 @@ namespace Service
                 Email = user?.Email,
                 UserName = user?.UserName,
                 PhoneNumber = user?.PhoneNumber,
-                EmailConfirmed = user?.EmailConfirmed ?? false,
                 FullName = user?.FullName,
                 Address = user?.Address,
 
