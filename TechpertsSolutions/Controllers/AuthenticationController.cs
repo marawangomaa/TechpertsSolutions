@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.Login;
@@ -28,7 +29,7 @@ namespace TechpertsSolutions.Controllers
         private readonly ITokenService tokenService;
         private readonly TechpertsContext context;
 
-        public AuthenticationController(UserManager<AppUser> _userManager,RoleManager<AppRole> _roleManager, 
+        public AuthenticationController(UserManager<AppUser> _userManager,
             ITokenService _tokenService,
             IRepository<Admin> _adminRepo,
             IRepository<Customer> _customerRepo,
@@ -91,6 +92,7 @@ namespace TechpertsSolutions.Controllers
                 if (result)
                 {
                     var token = tokenService.GenerateJwtToken(user);
+                    var roleName = await userManager.GetRolesAsync(user);
                     return Ok(new GeneralResponse<LoginResultDTO>
                     {
                         Success = true,
@@ -99,7 +101,8 @@ namespace TechpertsSolutions.Controllers
                         {
                             Token = token,
                             UserId = user.Id,
-                            UserName = user.UserName
+                            UserName = user.UserName,
+                            RoleName = roleName
                         }
                     });
                 }

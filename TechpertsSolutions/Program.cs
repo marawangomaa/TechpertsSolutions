@@ -55,6 +55,7 @@ namespace TechpertsSolutions
 
             //  App services
             builder.Services.AddScoped<ICustomerService,CustomerService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ITokenService, TokenService>();
 

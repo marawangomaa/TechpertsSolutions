@@ -40,6 +40,13 @@ namespace Repository
 
                 return (T)(object)customer!;
             }
+            if (typeof(T) == typeof(Admin)) 
+            {
+                var admin = await context.Admins
+                    .Include(a => a.User)
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+            }
 
             return await dbSet.FindAsync(id) ?? throw new KeyNotFoundException($"Entity of type {typeof(T).Name} with id={id} not found.");
         }
@@ -57,6 +64,13 @@ namespace Repository
                     .Include(c => c.Orders)
                     .Include(c => c.Maintenances)
                     .Include(c => c.Delivery)
+                    .ToListAsync();
+            }
+            if (typeof(T) == typeof(Admin)) 
+            {
+                return (IEnumerable<T>)await context.Admins
+                    .Include(a => a.User)
+                    .Include(a => a.Role)
                     .ToListAsync();
             }
 
