@@ -31,7 +31,6 @@ namespace TechpertsSolutions.Controllers
         private readonly RoleManager<AppRole> roleManager;
         private readonly IRepository<Cart> cartRepo;
         private readonly IConfiguration configuration; 
-        //private readonly ITokenService tokenService;
         private readonly TechpertsContext context;
         private readonly ICustomerService customerService;
 
@@ -265,7 +264,7 @@ namespace TechpertsSolutions.Controllers
         private string GenerateJwtToken(AppUser user)
         {
             var claims = new[]
-            {
+             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
@@ -275,7 +274,7 @@ namespace TechpertsSolutions.Controllers
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 issuer: configuration["Jwt:Issuer"],
-                audience: null,
+                audience: configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: creds);
