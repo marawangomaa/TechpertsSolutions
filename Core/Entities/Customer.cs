@@ -9,7 +9,7 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Customer : BaseEntity
     {
-        public string Id { get; set; } = new Guid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string? City { get; set; }
         public string? Country { get; set; }
         public string UserId { get; set; }

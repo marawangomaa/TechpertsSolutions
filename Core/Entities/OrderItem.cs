@@ -10,7 +10,7 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class OrderItem : BaseEntity
     {
-        public string Id { get; set; } = new Guid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string ProductId { get; set; }
         public Product? Product { get; set; }
         public string OrderId { get; set; }

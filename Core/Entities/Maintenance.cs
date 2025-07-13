@@ -9,7 +9,7 @@ namespace Core.Entities
 {
     public class Maintenance : BaseEntity
     {
-        public string Id { get; set; } = new Guid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string WarrantyId { get; set; }
         public Warranty? Warranty { get; set; }
 

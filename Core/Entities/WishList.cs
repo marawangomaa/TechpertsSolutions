@@ -9,7 +9,7 @@ namespace Core.Entities
 {
     public class WishList : BaseEntity
     {
-        public string Id { get; set; } = new Guid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CustomerId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Customer? Customer { get; set; }

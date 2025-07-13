@@ -9,7 +9,7 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Warranty : BaseEntity
     {
-        public string Id { get; set; } = new Guid().ToString();
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
