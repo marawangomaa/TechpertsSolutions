@@ -10,7 +10,6 @@ namespace Core.Entities
     public class Delivery : BaseEntity
     {
         public ICollection<Order>? Orders { get; set; }
-
         public ICollection<Customer>? Customers { get; set; }
         public ICollection<TechCompany> TechCompanies { get; set; }
 
