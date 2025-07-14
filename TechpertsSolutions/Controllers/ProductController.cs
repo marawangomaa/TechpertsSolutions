@@ -76,7 +76,7 @@ namespace TechpertsSolutions.Controllers
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
                 using var stream = new FileStream(savePath, FileMode.Create);
                 await img.CopyToAsync(stream);
-                dto.ImgUrl = $"/uploads/products/{fileName}";
+                dto.ImageUrl = $"/uploads/products/{fileName}";
             }
 
             var product = await _productService.AddAsync(dto);
@@ -110,7 +110,7 @@ namespace TechpertsSolutions.Controllers
                 Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
                 using var stream = new FileStream(savePath, FileMode.Create);
                 await img.CopyToAsync(stream);
-                dto.ImgUrl = $"/uploads/products/{fileName}";
+                dto.ImageUrl = $"/uploads/products/{fileName}";
             }
 
             await _productService.UpdateAsync(id, dto);

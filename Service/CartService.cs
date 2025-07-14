@@ -1,6 +1,6 @@
 ﻿// Service.CartService.cs
 using Core.DTOs.Cart;
-using Core.DTOs.Order;
+using Core.DTOs.Orders;
 using Core.Interfaces;
 using Service.Utilities;
 using System;
@@ -12,29 +12,6 @@ using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
-    // Assuming these interfaces and entities are defined in Core.Interfaces and TechpertsSolutions.Core.Entities
-    // public interface ICartService
-    // {
-    //     Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId);
-    //     Task<string> AddItemAsync(string customerId, CartItemDTO itemDto);
-    //     Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto); // New
-    //     Task<string> RemoveItemAsync(string customerId, string productId);
-    //     Task<string> ClearCartAsync(string customerId); // New
-    //     Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId); // New
-    // }
-
-    // public interface IRepository<T> where T : class
-    // {
-    //     Task<T?> GetByIdAsync(string id);
-    //     Task<T?> GetFirstOrDefaultAsync(System.Linq.Expressions.Expression<Func<T, bool>> predicate, string includeProperties = null);
-    //     Task<IEnumerable<T>> GetAllAsync(System.Linq.Expressions.Expression<Func<T, bool>> predicate = null, string includeProperties = null);
-    //     Task AddAsync(T entity);
-    //     void Update(T entity);
-    //     void Remove(T entity);
-    //     Task<bool> AnyAsync(System.Linq.Expressions.Expression<Func<T, bool>> predicate);
-    //     Task SaveChanges();
-    // }
-
     public class CartService : ICartService
     {
         private readonly IRepository<Cart> cartRepo;
@@ -60,12 +37,6 @@ namespace Service
             orderItemRepo = _orderItemRepo;
         }
 
-        /// <summary>
-        /// Retrieves a customer's cart, creating one if it doesn't exist.
-        /// Includes cart items and product details for a comprehensive view.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer.</param>
-        /// <returns>A CartReadDTO or null if customer not found.</returns>
         public async Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId)
         {
             var customer = await customerRepo.GetByIdAsync(customerId);
@@ -97,12 +68,7 @@ namespace Service
             return CartMapper.MapToCartReadDTO(cart);
         }
 
-        /// <summary>
-        /// Adds an item to the cart or updates its quantity if it already exists.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer.</param>
-        /// <param name="itemDto">The CartItemDTO containing product ID and quantity.</param>
-        /// <returns>A success or error message.</returns>
+     
         public async Task<string> AddItemAsync(string customerId, CartItemDTO itemDto)
         {
             if (itemDto.Quantity <= 0)
@@ -167,12 +133,7 @@ namespace Service
             }
         }
 
-        /// <summary>
-        /// Updates the quantity of a specific item in the cart.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer.</param>
-        /// <param name="updateDto">The DTO containing product ID and new quantity.</param>
-        /// <returns>A success or error message.</returns>
+       
         public async Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto)
         {
             if (updateDto.Quantity <= 0)
@@ -204,12 +165,7 @@ namespace Service
             return "✅ Item quantity updated successfully.";
         }
 
-        /// <summary>
-        /// Removes a specific item from the cart.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer.</param>
-        /// <param name="productId">The ID of the product to remove.</param>
-        /// <returns>A success or error message.</returns>
+
         public async Task<string> RemoveItemAsync(string customerId, string productId)
         {
             var cart = await cartRepo.GetFirstOrDefaultAsync(
@@ -231,11 +187,7 @@ namespace Service
             return "✅ Item removed successfully.";
         }
 
-        /// <summary>
-        /// Clears all items from a customer's cart.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer.</param>
-        /// <returns>A success or error message.</returns>
+ 
         public async Task<string> ClearCartAsync(string customerId)
         {
             var cart = await cartRepo.GetFirstOrDefaultAsync(
@@ -260,12 +212,7 @@ namespace Service
             return "✅ Cart cleared successfully.";
         }
 
-        /// <summary>
-        /// Converts the current cart into a new order.
-        /// Performs stock validation and updates, then clears the cart.
-        /// </summary>
-        /// <param name="customerId">The ID of the customer placing the order.</param>
-        /// <returns>A GeneralResponse containing the created OrderReadDTO or an error message.</returns>
+      
         public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId)
         {
             var cart = await cartRepo.GetFirstOrDefaultAsync(

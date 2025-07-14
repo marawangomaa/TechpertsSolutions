@@ -13,15 +13,13 @@ namespace TechpertsSolutions.Core.Entities
         public string Name { get; set; }
         public decimal Price { get; set; }
         public string? Description { get; set; }
-<<<<<<< HEAD
+
         public int Stock {  get; set; }
         public string? ImageUrl { get; set; }
-=======
         public int StockQuantity { get; set; }
->>>>>>> f87b149283b60c7ec0dfab29fe049911a598a8c0
+
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
-        public string? ImageUrl { get; set; }
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;

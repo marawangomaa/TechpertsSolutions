@@ -9,6 +9,7 @@ namespace Core.DTOs.Product
 {
     public class SpecificationDTO
     {
+        public string Id { get; set; }
         public string Key { get; set; } = null!;
         public string Value { get; set; } = null!;
     }

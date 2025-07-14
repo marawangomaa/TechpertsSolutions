@@ -209,5 +209,15 @@ namespace Repository
         {
             return await context.Set<T>().Where(predicate).ToListAsync();
         }
+
+        public Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

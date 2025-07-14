@@ -73,7 +73,7 @@ namespace Service
             product.TechManagerId = dto.TechManagerId;
             product.StockControlManagerId = dto.StockControlManagerId;
             product.status = dto.Status;
-            product.ImgUrl = dto.ImgUrl;
+            product.ImageUrl = dto.ImageUrl;
 
             _productRepo.Update(product);
             await _productRepo.SaveChanges();
@@ -102,7 +102,7 @@ namespace Service
                 SubCategoryId = p.SubCategoryId,
                 TechManagerId = p.TechManagerId,
                 StockControlManagerId = p.StockControlManagerId,
-                ImgUrl = p.ImgUrl,
+                ImageUrl = p.ImageUrl,
                 Status = p.status,
                 Specifications = p.Specifications?.Select(s => new SpecificationDTO
                 {
@@ -132,7 +132,7 @@ namespace Service
                 SubCategoryId = dto.SubCategoryId,
                 TechManagerId = dto.TechManagerId,
                 StockControlManagerId = dto.StockControlManagerId,
-                ImgUrl = dto.ImgUrl,
+                ImageUrl = dto.ImageUrl,
                 status = dto.Status,
                 Specifications = dto.Specifications?.Select(s => new Specification
                 {
@@ -155,11 +155,16 @@ namespace Service
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                ImgUrl = p.ImgUrl,
+                ImageUrl = p.ImageUrl,
                 SubCategoryId = p.SubCategoryId,
                 SubCategoryName = p.SubCategory?.Name,
-                Status = p.status
+                Status = p.status.ToString()
             };
+        }
+
+        public Task CreateAsync(ProductCreateDTO dto)
+        {
+            throw new NotImplementedException();
         }
     }
 }

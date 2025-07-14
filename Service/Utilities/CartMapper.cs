@@ -1,6 +1,6 @@
 ﻿// Service.Utilities.CartMapper.cs
 using Core.DTOs.Cart;
-using Core.DTOs.Order;
+using Core.DTOs.Orders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +10,7 @@ namespace Service.Utilities
 {
     public static class CartMapper
     {
-        /// <summary>
-        /// Maps a Cart entity to a CartReadDTO, including detailed cart items and subtotal calculation.
-        /// </summary>
-        /// <param name="cart">The Cart entity to map.</param>
-        /// <returns>A CartReadDTO.</returns>
+       
         public static CartReadDTO MapToCartReadDTO(Cart cart)
         {
             var cartItemsReadDTO = cart.CartItems?
@@ -34,11 +30,7 @@ namespace Service.Utilities
             };
         }
 
-        /// <summary>
-        /// Maps a CartItem entity to a CartItemReadDTO, including product details.
-        /// </summary>
-        /// <param name="item">The CartItem entity to map.</param>
-        /// <returns>A CartItemReadDTO.</returns>
+
         public static CartItemReadDTO MapToCartItemReadDTO(CartItem item)
         {
             return new CartItemReadDTO
@@ -53,11 +45,7 @@ namespace Service.Utilities
             };
         }
 
-        /// <summary>
-        /// Maps a CartItemDTO to a CartItem entity for adding/updating.
-        /// </summary>
-        /// <param name="dto">The CartItemDTO.</param>
-        /// <returns>A CartItem entity.</returns>
+        
         public static CartItem MapToCartItemEntity(CartItemDTO dto)
         {
             return new CartItem
@@ -67,12 +55,6 @@ namespace Service.Utilities
                 // CartId is set when adding to an existing cart
             };
         }
-
-        /// <summary>
-        /// Maps a CartItem entity to a CartItemDTO.
-        /// </summary>
-        /// <param name="item">The CartItem entity.</param>
-        /// <returns>A CartItemDTO.</returns>
         public static CartItemDTO MapToCartItemDTO(CartItem item)
         {
             return new CartItemDTO
@@ -82,11 +64,6 @@ namespace Service.Utilities
             };
         }
 
-        /// <summary>
-        /// Maps a Cart entity and its items to an OrderReadDTO.
-        /// </summary>
-        /// <param name="order">The Order entity to map.</param>
-        /// <returns>An OrderReadDTO.</returns>
         public static OrderReadDTO MapToOrderReadDTO(Order order)
         {
             return new OrderReadDTO
@@ -100,11 +77,7 @@ namespace Service.Utilities
             };
         }
 
-        /// <summary>
-        /// Maps an OrderItem entity to an OrderItemReadDTO.
-        /// </summary>
-        /// <param name="orderItem">The OrderItem entity to map.</param>
-        /// <returns>An OrderItemReadDTO.</returns>
+   
         public static OrderItemReadDTO MapToOrderItemReadDTO(OrderItem orderItem)
         {
             return new OrderItemReadDTO

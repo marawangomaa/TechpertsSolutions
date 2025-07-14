@@ -16,7 +16,7 @@ namespace Core.DTOs.Product
         public string? Description { get; set; }
         public int Stock { get; set; }
         public string? ImageUrl { get; set; }
-
+        public ProductPendingStatus Status { get; set; }
         public string CategoryId { get; set; }
         public string? SubCategoryId { get; set; }
 

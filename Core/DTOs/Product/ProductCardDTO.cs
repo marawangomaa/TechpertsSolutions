@@ -12,8 +12,10 @@ namespace Core.DTOs.Product
       public string Id { get; set; }
     public string Name { get; set; }
     public decimal Price { get; set; }
+    public string? SubCategoryId { get; set; }
     public string? ImageUrl { get; set; } 
     public string? CategoryName { get; set; }
+    public string SubCategoryName { get; set; }
     public string Status { get; set; }
 
     }

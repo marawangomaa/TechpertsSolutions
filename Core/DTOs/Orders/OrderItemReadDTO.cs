@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs.Order
+namespace Core.DTOs.Orders
 {
     public class OrderItemReadDTO
     {
