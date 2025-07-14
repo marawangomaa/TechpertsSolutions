@@ -10,14 +10,13 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Product : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
         public decimal Price { get; set; }
         public string? Description { get; set; }
-
+        public int StockQuantity { get; set; }
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
-
+        public string? ImageUrl { get; set; }
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;

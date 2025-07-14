@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.Cart
 {
-    public class CartItemDTO
+    public class CartUpdateItemQuantityDTO
     {
         public string ProductId { get; set; }
-        public int Quantity { get; set; } = 1; // New: Default to 1 if not specified
-        // CartId is not needed here as it will be derived from the customer's cart
-
+        public int Quantity { get; set; }
     }
 }

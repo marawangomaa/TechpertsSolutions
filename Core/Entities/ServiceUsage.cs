@@ -9,7 +9,6 @@ namespace Core.Entities
 {
     public class ServiceUsage : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string ServiceType { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }

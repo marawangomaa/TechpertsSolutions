@@ -9,7 +9,6 @@ namespace Core.Entities
 {
     public class OrderHistory : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public ICollection<Order>? Orders { get; set; }
     }
 }
