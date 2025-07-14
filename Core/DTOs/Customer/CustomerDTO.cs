@@ -14,12 +14,8 @@
         public string? Address { get; set; }
 
         // IdentityRole fields via AppRole
-        public string? RoleName { get; set; }
-        public string? RoleNotes { get; set; }
-
         public string? CartId { get; set; }
         public string? WishListId { get; set; }
-
         public List<string>? PCAssemblyIds { get; set; }
         public List<string>? OrderIds { get; set; }
         public List<string>? MaintenanceIds { get; set; }

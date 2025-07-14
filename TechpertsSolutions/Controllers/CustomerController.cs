@@ -29,15 +29,45 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(string id) 
         {
-            var customer = await customerService.GetCustomerByIdAsync(id);
-            return Ok(new GeneralResponse<CustomerDTO>
+            if (string.IsNullOrWhiteSpace(id)) 
             {
-                Success = true,
-                Message = "Customer retrieved successfully",
-                Data = customer
-            });
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "ID must not be null or empty",
+                    Data = "Invalid input"
+                });
+            }
+            if (!Guid.TryParse(id, out Guid guidId)) 
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "ID format is invalid",
+                    Data = "Expected GUID"
+                });
+            }
+            try
+            {
+                var customer = await customerService.GetCustomerByIdAsync(id);
+                return Ok(new GeneralResponse<CustomerDTO>
+                {
+                    Success = true,
+                    Message = "Customer retrieved successfully",
+                    Data = customer
+                });
+            }
+            catch (Exception ex) 
+            {
+                return NotFound(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer not found",
+                    Data = ex.Message
+                });
+            }
         }
-        [HttpPut("update/{id}")]
+        [HttpPatch("update/{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] CustomerEditDTO customer)
         {
             if (!ModelState.IsValid)
@@ -46,26 +76,56 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Invalid data provided",
-                    Data = null
+                    Data = "Not Valid Entry"
                 });
             }
 
-            var updatedCustomer = await customerService.UpdateCustomerAsync(id, customer);
-            if (updatedCustomer == null)
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "ID must not be null or empty",
+                    Data = "Invalid input"
+                });
+            }
+            if (!Guid.TryParse(id, out Guid guidId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "ID format is invalid",
+                    Data = "Expected GUID"
+                });
+            }
+            try
+            {
+                var updatedCustomer = await customerService.UpdateCustomerAsync(id, customer);
+                if (updatedCustomer == null)
+                {
+                    return NotFound(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = $"Customer with ID {id} not found",
+                        Data = "Not Updated"
+                    });
+                }
+                return Ok(new GeneralResponse<CustomerDTO>
+                {
+                    Success = true,
+                    Message = "Customer updated successfully",
+                    Data = updatedCustomer
+                });
+            }
+            catch (Exception ex)
             {
                 return NotFound(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = $"Customer with ID {id} not found",
-                    Data = null
+                    Message = "Customer not found",
+                    Data = ex.Message
                 });
             }
-            return Ok(new GeneralResponse<CustomerDTO>
-            {
-                Success = true,
-                Message = "Customer updated successfully",
-                Data = updatedCustomer
-            });
         }
 
     }

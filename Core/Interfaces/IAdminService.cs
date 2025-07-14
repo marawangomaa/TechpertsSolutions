@@ -12,8 +12,6 @@ namespace Core.Interfaces
     {
         Task<IEnumerable<AdminReadDTO>> GetAllAsync();
         Task<AdminReadDTO> GetByIdAsync(string id);
-        Task<AdminReadDTO> CreateAsync(AdminCreateDTO dto);
-        Task<bool> UpdateRoleAsync(string id, AdminUpdateDTO dto);
-        Task<bool> DeleteAsync(string id);
+        
     }
 }

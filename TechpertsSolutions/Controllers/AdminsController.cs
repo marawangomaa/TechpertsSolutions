@@ -29,62 +29,41 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(string id) 
         {
-            var admin  = await adminService.GetByIdAsync(id);
-            if(admin == null) return NotFound( new GeneralResponse<string> 
-            {
-                Success = false,
-                Message = "Failed to get data",
-                Data = "Admin does not exist"
-            });
-            return Ok(new GeneralResponse<AdminReadDTO> 
-            {
-                Success = true,
-                Message = "retrieved admin successfully",
-                Data = admin
-            });
-        }
-
-        [HttpPost(nameof(Create))]
-        public async Task<IActionResult> Create([FromBody] AdminCreateDTO dto) 
-        {
-            var created = await adminService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new {id = created.Id},created);
-        }
-
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateRole(string id, AdminUpdateDTO dto)
-        {
-            var result = await adminService.UpdateRoleAsync(id,dto);
-            if (!result) return NotFound(
-                new GeneralResponse<string> 
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Failed to update",
-                    Data = "Not Found"
+                    Message = "ID must not be null or empty",
+                    Data = "Invalid input"
                 });
-            return Ok(new GeneralResponse<AdminUpdateDTO> 
-            {
-                Success = true,
-                Message = "Updated Successfully",
-                Data = result
-            });
-        }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
-        {
-            var success = await adminService.DeleteAsync(id);
-            if (!success) return NotFound(
-                new GeneralResponse<string> 
+            if (!Guid.TryParse(id, out Guid guidId))
+                return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Does not Exist",
-                    Data = "Failed to delete"
+                    Message = "ID format is invalid",
+                    Data = "Expected GUID"
                 });
-            return Ok(new GeneralResponse<string>{
+
+            try
+            {
+                var admin = await adminService.GetByIdAsync(id);
+                return Ok(new GeneralResponse<AdminReadDTO>
+                {
                     Success = true,
-                    Message = "Found and deleted",
-                    Data = "deleted successfully"});
+                    Message = "Retrieved admin successfully",
+                    Data = admin
+                });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Admin not found",
+                    Data = ex.Message
+                });
+            }
         }
 
     }

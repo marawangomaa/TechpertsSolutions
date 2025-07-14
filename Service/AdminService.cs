@@ -17,30 +17,7 @@ namespace Service
         {
             adminRepository = _adminRepository;
         }
-        public async Task<AdminReadDTO> CreateAsync(AdminCreateDTO dto)
-        {
-            var admin = new Admin() 
-            {
-                UserId = dto.UserId,
-                RoleId = dto.RoleId,
-            };
-            await adminRepository.AddAsync(admin);
-            await adminRepository.SaveChanges();
-
-            return await GetByIdAsync(admin.Id);
-        }
-
-        public async Task<bool> DeleteAsync(string id)
-        {
-            var admin = await adminRepository.GetByIdAsync(id);
-            if (admin == null) return false;
-
-            adminRepository.Remove(admin);
-            await adminRepository.SaveChanges();
-
-            return true;
-        }
-
+        
         public async Task<IEnumerable<AdminReadDTO>> GetAllAsync()
         {
             var admins = await adminRepository.GetAllAsync();
@@ -54,14 +31,6 @@ namespace Service
             return AdminMapper.AdminReadDTOMapper(admin);
         }
 
-        public async Task<bool> UpdateRoleAsync(string id, AdminUpdateDTO dto)
-        {
-            var admin = await adminRepository.GetByIdAsync(id);
-            if (admin == null) return false;
-            admin.RoleId = dto.RoleId;
-            adminRepository.Update(admin);
-            await adminRepository.SaveChanges();
-            return true;
-        }
+        
     }
 }

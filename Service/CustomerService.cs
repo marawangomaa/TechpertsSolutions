@@ -37,18 +37,6 @@ namespace Service
             customer.City = dto.City;
             customer.Country = dto.Country;
 
-            // Update nested AppUser data
-            if (customer.User != null)
-            {
-                customer.User.FullName = dto.FullName;
-                customer.User.Email = dto.Email;
-                customer.User.PhoneNumber = dto.PhoneNumber;
-                customer.User.Address = dto.Address;
-                customer.User.UserName = dto.UserName;
-            }
-            if (customer.Role != null)
-                customer.Role.Notes = dto.RoleNotes;
-
             _customerRepository.Update(customer);
             await _customerRepository.SaveChanges();
 
