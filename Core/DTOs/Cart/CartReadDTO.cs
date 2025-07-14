@@ -11,6 +11,8 @@ namespace Core.DTOs.Cart
         public string Id { get; set; }
         public string CustomerId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public List<CartItemReadDTO> CartItems { get; set; }
+        public List<CartItemReadDTO> CartItems { get; set; } = new List<CartItemReadDTO>();
+        public decimal SubTotal { get; set; } // New: Calculated total price of items in the cart
+
     }
 }

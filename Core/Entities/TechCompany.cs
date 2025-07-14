@@ -9,7 +9,10 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class TechCompany : BaseEntity
     {
+<<<<<<< HEAD
 
+=======
+>>>>>>> f87b149283b60c7ec0dfab29fe049911a598a8c0
         public string? MapLocation { get; set; }
         public string? City { get; set; }
         public string? Country { get; set; }

@@ -17,6 +17,16 @@ namespace Repository.Data.Configurtaions
                     .WithMany(t => t.Deliveries);
 
 
+            builder.HasMany(d => d.Orders)
+                    .WithOne(o => o.Delivery)
+                    .HasForeignKey(o => o.DeliveryId);
+
+            builder.HasMany(d => d.Customers)
+                   .WithOne(c => c.Delivery)
+                   .HasForeignKey(c => c.DeliveryId);
+
+
+
         }
     }
 }

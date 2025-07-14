@@ -11,6 +11,12 @@ namespace Core.DTOs.Cart
     {
         public string Id { get; set; }
         public string ProductId { get; set; }
-        public string ProductName { get; set; } = string.Empty;
+        public string ProductName { get; set; }
+        public decimal Price { get; set; } // New: Price of the product
+        public int Quantity { get; set; } // New: Quantity of the product in the cart
+        public string ImageUrl { get; set; } // New: Image URL of the product
+        public int StockQuantity { get; set; } // New: Current stock of the product (for validation)
+        public decimal ItemTotal => Price * Quantity; // New: Total for this specific item
+
     }
 }
