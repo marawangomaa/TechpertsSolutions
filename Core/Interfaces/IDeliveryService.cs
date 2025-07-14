@@ -11,8 +11,8 @@ namespace Core.Interfaces
     {
         Task<IEnumerable<DeliveryDTO>> GetAllAsync();
         Task<DeliveryDTO?> GetByIdAsync(string id);
-        Task AddAsync(DeliveryCreateDTO dto);
-        Task UpdateAsync(string id, DeliveryCreateDTO dto);
-        Task DeleteAsync(string id);
+        Task<DeliveryDTO> AddAsync(DeliveryCreateDTO dto);
+        Task<bool> UpdateAsync(string id, DeliveryCreateDTO dto); 
+        Task<bool> DeleteAsync(string id);
     }
 }

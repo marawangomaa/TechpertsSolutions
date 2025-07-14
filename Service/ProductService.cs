@@ -1,5 +1,6 @@
 ﻿using Core.DTOs.Product;
 using Core.Enums;
+using Core.Entities;
 using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
 
@@ -23,7 +24,7 @@ namespace Service
         {
             var products = await _productRepo.GetAllAsync();
 
-            // Apply Filters
+            // Filters
             if (status.HasValue)
                 products = products.Where(p => p.status == status.Value);
 
@@ -33,7 +34,7 @@ namespace Service
             if (!string.IsNullOrWhiteSpace(nameSearch))
                 products = products.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
 
-            // Apply Sorting
+            // Sorting
             products = sortBy?.ToLower() switch
             {
                 "price" => sortDescending ? products.OrderByDescending(p => p.Price) : products.OrderBy(p => p.Price),
@@ -59,10 +60,10 @@ namespace Service
             return MapToProductDTO(product);
         }
 
-        public async Task UpdateAsync(string id, ProductUpdateDTO dto)
+        public async Task<bool> UpdateAsync(string id, ProductUpdateDTO dto)
         {
             var product = await _productRepo.GetByIdAsync(id);
-            if (product == null) return;
+            if (product == null) return false;
 
             product.Name = dto.Name;
             product.Price = dto.Price;
@@ -77,17 +78,20 @@ namespace Service
 
             _productRepo.Update(product);
             await _productRepo.SaveChanges();
+            return true;
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task<bool> DeleteAsync(string id)
         {
             var product = await _productRepo.GetByIdAsync(id);
-            if (product == null) return;
+            if (product == null) return false;
+
             _productRepo.Remove(product);
             await _productRepo.SaveChanges();
+            return true;
         }
 
-        
+        // Mapping
 
         private ProductDTO MapToProductDTO(Product p)
         {
@@ -161,6 +165,5 @@ namespace Service
                 Status = p.status.ToString()
             };
         }
-
     }
 }

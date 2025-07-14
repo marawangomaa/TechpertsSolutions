@@ -20,7 +20,7 @@ namespace Core.Interfaces
 
         Task<ProductDTO?> GetByIdAsync(string id);
         Task<ProductDTO> AddAsync(ProductCreateDTO dto);
-        Task UpdateAsync(string id, ProductUpdateDTO dto);
-        Task DeleteAsync(string id);
+        Task<bool> UpdateAsync(string id, ProductUpdateDTO dto);
+        Task<bool> DeleteAsync(string id);
     }
 }

@@ -21,7 +21,6 @@ namespace TechpertsSolutions.Controllers
             _env = env;
         }
 
- 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll(
             [FromQuery] ProductPendingStatus? status,
@@ -42,19 +41,47 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-                return NotFound(new GeneralResponse<string> { Success = false, Message = "Product not found", Data = id });
-
-            return Ok(new GeneralResponse<ProductDTO>
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
-                Success = true,
-                Message = "Product retrieved successfully.",
-                Data = product
-            });
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product ID.",
+                    Data = id
+                });
+            }
+
+            try
+            {
+                var product = await _productService.GetByIdAsync(id);
+                if (product == null)
+                {
+                    return NotFound(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = id
+                    });
+                }
+
+                return Ok(new GeneralResponse<ProductDTO>
+                {
+                    Success = true,
+                    Message = "Product retrieved successfully.",
+                    Data = product
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Server error occurred.",
+                    Data = ex.Message
+                });
+            }
         }
 
-   
         [HttpPost]
         [Authorize(Roles = "Admin,TechManager")]
         public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO dto, IFormFile? img)
@@ -69,26 +96,37 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (img != null)
+            try
             {
-                var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await img.CopyToAsync(stream);
-                dto.ImageUrl = $"/uploads/products/{fileName}";
-            }
+                if (img != null)
+                {
+                    var fileName = $"{Guid.NewGuid()}_{img.FileName}";
+                    var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
+                    using var stream = new FileStream(savePath, FileMode.Create);
+                    await img.CopyToAsync(stream);
+                    dto.ImageUrl = $"/uploads/products/{fileName}";
+                }
 
-            var product = await _productService.AddAsync(dto);
-            return Ok(new GeneralResponse<ProductDTO>
+                var product = await _productService.AddAsync(dto);
+                return Ok(new GeneralResponse<ProductDTO>
+                {
+                    Success = true,
+                    Message = "Product added successfully.",
+                    Data = product
+                });
+            }
+            catch (Exception ex)
             {
-                Success = true,
-                Message = "Product added successfully.",
-                Data = product
-            });
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to create product.",
+                    Data = ex.Message
+                });
+            }
         }
 
-     
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,TechManager")]
         public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDTO dto, IFormFile? img)
@@ -103,37 +141,100 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (img != null)
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
-                var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
-                Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
-                using var stream = new FileStream(savePath, FileMode.Create);
-                await img.CopyToAsync(stream);
-                dto.ImageUrl = $"/uploads/products/{fileName}";
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product ID.",
+                    Data = id
+                });
             }
 
-            await _productService.UpdateAsync(id, dto);
-            return Ok(new GeneralResponse<string>
+            try
             {
-                Success = true,
-                Message = "Product updated successfully.",
-                Data = id
-            });
-        }
+                if (img != null)
+                {
+                    var fileName = $"{Guid.NewGuid()}_{img.FileName}";
+                    var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
+                    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
+                    using var stream = new FileStream(savePath, FileMode.Create);
+                    await img.CopyToAsync(stream);
+                    dto.ImageUrl = $"/uploads/products/{fileName}";
+                }
 
+                var updated = await _productService.UpdateAsync(id, dto);
+                if (!updated)
+                {
+                    return NotFound(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = id
+                    });
+                }
+
+                return Ok(new GeneralResponse<string>
+                {
+                    Success = true,
+                    Message = "Product updated successfully.",
+                    Data = id
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to update product.",
+                    Data = ex.Message
+                });
+            }
+        }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
-            await _productService.DeleteAsync(id);
-            return Ok(new GeneralResponse<string>
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
-                Success = true,
-                Message = "Product deleted successfully.",
-                Data = id
-            });
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product ID.",
+                    Data = id
+                });
+            }
+
+            try
+            {
+                var deleted = await _productService.DeleteAsync(id);
+                if (!deleted)
+                {
+                    return NotFound(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Product not found.",
+                        Data = id
+                    });
+                }
+
+                return Ok(new GeneralResponse<string>
+                {
+                    Success = true,
+                    Message = "Product deleted successfully.",
+                    Data = id
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to delete product.",
+                    Data = ex.Message
+                });
+            }
         }
     }
 }
