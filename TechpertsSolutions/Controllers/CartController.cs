@@ -17,24 +17,44 @@ public class CartController : ControllerBase
     [HttpGet("{customerId}")]
     public async Task<IActionResult> GetCart(string customerId)
     {
-        var cart = await cartService.GetCartByCustomerIdAsync(customerId);
-
-        if (cart == null)
+        if (string.IsNullOrWhiteSpace(customerId))
         {
-            return NotFound(new GeneralResponse<CartReadDTO>
+            return BadRequest(new GeneralResponse<string> 
             {
                 Success = false,
-                Message = $"Cart not found or customer with ID {customerId} does not exist.",
-                Data = null
+                Message = "ID must not be null or empty",
+                Data = "Invalid Input"
             });
         }
-
-        return Ok(new GeneralResponse<CartReadDTO>
+        if (!Guid.TryParse(customerId, out Guid guidId)) 
         {
-            Success = true,
-            Message = "Cart retrieved successfully.",
-            Data = cart
-        });
+            return BadRequest(new GeneralResponse<string>
+            {
+                Success = false,
+                Message = "ID format is invalid",
+                Data = "Expected GUID"
+            });
+        }
+        try
+        {
+            var cart = await cartService.GetCartByCustomerIdAsync(customerId);
+
+            return Ok(new GeneralResponse<CartReadDTO>
+            {
+                Success = true,
+                Message = "Cart retrieved successfully.",
+                Data = cart
+            });
+        }
+        catch (Exception ex) 
+        {
+            return NotFound(new GeneralResponse<string>
+            {
+                Success = false,
+                Message = "Cart not found",
+                Data = ex.Message
+            });
+        }
     }
 
     [HttpPost("{customerId}/items")]
