@@ -162,9 +162,5 @@ namespace Service
             };
         }
 
-        public Task CreateAsync(ProductCreateDTO dto)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
