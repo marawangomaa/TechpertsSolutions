@@ -9,7 +9,6 @@ namespace Core.Entities
 {
     public class Delivery : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public ICollection<Order>? Orders { get; set; }
 
         public ICollection<Customer>? Customers { get; set; }

@@ -97,6 +97,8 @@ namespace Repository
             if (typeof(T) == typeof(Product))
                 return (IQueryable<T>)context.Products
                     .Include(x => x.Category)
+                    .Include(x => x.Stock)
+                    .Include(x => x.ImageUrl)
                     .Include(x => x.SubCategory)
                     .Include(x => x.Specifications)
                     .Include(x => x.Warranties)
@@ -200,6 +202,12 @@ namespace Repository
                     .Include(x => x.TechCompanies);
 
             return dbSet.AsQueryable();
+        }
+
+
+        public async Task<IEnumerable<T>> FindByNameAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await context.Set<T>().Where(predicate).ToListAsync();
         }
     }
 }

@@ -17,5 +17,7 @@ namespace Core.Interfaces
         void Remove(T entity);
         Task SaveChanges();
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
     }
 }

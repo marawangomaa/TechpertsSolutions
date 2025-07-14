@@ -10,7 +10,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Cart : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CustomerId { get; set; }
         public Customer Customer { get; set; }
         public DateTime CreatedAt { get; set; }

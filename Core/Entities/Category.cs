@@ -9,7 +9,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Category : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; }
 
         public ICollection<SubCategory>? SubCategories { get; set; }

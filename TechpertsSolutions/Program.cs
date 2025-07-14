@@ -58,6 +58,8 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IDeliveryService, DeliveryService>();
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>
@@ -121,19 +123,29 @@ namespace TechpertsSolutions
                 await SeedRoles.SeedRolesAsync(services);
             }
 
-            app.UseHttpsRedirection();
-            app.UseCors("AllowAll");
-            app.UseAuthentication();
-            app.UseAuthorization();
-
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
+         
+            app.UseStaticFiles();
+
+       
+            app.UseHttpsRedirection();
+
+     
+            app.UseCors("AllowAll");
+
+         
+            app.UseAuthentication();
+
+            app.UseAuthorization();
+
             app.MapControllers();
 
+          
             app.Run();
         }
     }

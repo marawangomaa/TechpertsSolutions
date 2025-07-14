@@ -9,7 +9,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Order : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public DateTime OrderDate { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }

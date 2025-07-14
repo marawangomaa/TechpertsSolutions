@@ -9,7 +9,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class TechManager : BaseEntity
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string? Specialization { get; set; }
 
         public string UserId { get; set; }

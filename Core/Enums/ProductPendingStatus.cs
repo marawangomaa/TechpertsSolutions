@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.Enums
 {
-    [Flags]
+   
     public enum ProductPendingStatus
     {
         None = 0,
