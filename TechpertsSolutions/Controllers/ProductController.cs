@@ -86,7 +86,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,TechManager")]
+       // [Authorize(Roles = "Admin,TechManager")]
         public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO dto, IFormFile? img)
         {
             if (!ModelState.IsValid)
@@ -131,7 +131,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,TechManager")]
+        //[Authorize(Roles = "Admin,TechManager")]
         public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDTO dto, IFormFile? img)
         {
             if (!ModelState.IsValid)
@@ -196,7 +196,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))

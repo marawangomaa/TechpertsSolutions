@@ -97,8 +97,6 @@ namespace Repository
             if (typeof(T) == typeof(Product))
                 return (IQueryable<T>)context.Products
                     .Include(x => x.Category)
-                    .Include(x => x.Stock)
-                    .Include(x => x.ImageUrl)
                     .Include(x => x.SubCategory)
                     .Include(x => x.Specifications)
                     .Include(x => x.Warranties)
