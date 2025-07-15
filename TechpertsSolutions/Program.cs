@@ -60,6 +60,7 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+            builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>
