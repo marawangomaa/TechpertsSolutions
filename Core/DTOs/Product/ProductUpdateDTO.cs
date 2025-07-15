@@ -20,6 +20,7 @@ namespace Core.DTOs.Product
         public string CategoryId { get; set; }
         public string? SubCategoryId { get; set; }
 
+        public decimal? DiscountPrice { get; set; }
         public string TechManagerId { get; set; }
         public string StockControlManagerId { get; set; }
         public List<SpecificationDTO>? Specifications { get; set; }

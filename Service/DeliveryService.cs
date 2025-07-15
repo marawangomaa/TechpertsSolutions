@@ -20,23 +20,20 @@ namespace Service
         public async Task<IEnumerable<DeliveryDTO>> GetAllAsync()
         {
             var deliveries = await _deliveryrepo.GetAllAsync();
-            return deliveries.Select(MapToDTO);
+            return deliveries.Select(d => new DeliveryDTO { Id = d.Id });
         }
 
         public async Task<DeliveryDTO?> GetByIdAsync(string id)
         {
             var delivery = await _deliveryrepo.GetByIdAsync(id);
-            return delivery == null ? null : MapToDTO(delivery);
+            return delivery == null ? null : new DeliveryDTO { Id = delivery.Id };
         }
 
-        public async Task<DeliveryDTO> AddAsync(DeliveryCreateDTO dto)
+        public async Task<DeliveryDTO> AddAsync()
         {
             var entity = new Delivery
             {
-                Id = Guid.NewGuid().ToString(),
-                Orders = dto.Orders,
-                Customers = dto.Customers,
-                TechCompanies = dto.TechCompanies
+                Id = Guid.NewGuid().ToString()
             };
 
             await _deliveryrepo.AddAsync(entity);
@@ -44,26 +41,8 @@ namespace Service
 
             return new DeliveryDTO
             {
-                Id = entity.Id,
-                Orders = entity.Orders,
-                Customers = entity.Customers,
-                TechCompanies = entity.TechCompanies
+                Id = entity.Id
             };
-        }
-
-        public async Task<bool> UpdateAsync(string id, DeliveryCreateDTO dto)
-        {
-            var entity = await _deliveryrepo.GetByIdAsync(id);
-            if (entity == null)
-                return false;
-
-            entity.Orders = dto.Orders;
-            entity.Customers = dto.Customers;
-            entity.TechCompanies = dto.TechCompanies;
-
-            _deliveryrepo.Update(entity);
-            await _deliveryrepo.SaveChanges();
-            return true;
         }
 
         public async Task<bool> DeleteAsync(string id)
@@ -77,15 +56,43 @@ namespace Service
             return true;
         }
 
-        private DeliveryDTO MapToDTO(Delivery entity)
+        public async Task<DeliveryDetailsDTO?> GetDetailsByIdAsync(string id)
         {
-            return new DeliveryDTO
+            var entity = await _deliveryrepo.GetByIdAsync(id);
+            if (entity == null) return null;
+
+            return new DeliveryDetailsDTO
             {
                 Id = entity.Id,
-                Orders = entity.Orders,
-                Customers = entity.Customers,
-                TechCompanies = entity.TechCompanies
+                Customers = entity.Customers?.Select(c => new DeliveryCustomerDTO
+                {
+                    Id = c.Id,
+                    City = c.City,
+                    Country = c.Country,
+                    UserFullName = c.User.FullName
+                }).ToList(),
+
+                Orders = entity.Orders?.Select(o => new DeliveryOrderDTO
+                {
+                    Id = o.Id,
+                    OrderDate = o.OrderDate,
+                    TotalAmount = o.TotalAmount,
+                    CustomerName = o.Customer?.User?.FullName ?? "",
+                    City = o.Customer?.City,
+                    Status = o.Status
+                }).ToList(),
+
+                TechCompanies = entity.TechCompanies?.Select(t => new DeliveryTechCompanyDTO
+                {
+                    Id = t.Id,
+                    City = t.City,
+                    Country = t.Country,
+                    UserFullName = t.User.FullName
+                }).ToList()
             };
         }
+
+       
     }
 }
+    

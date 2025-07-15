@@ -23,17 +23,20 @@ namespace TechpertsSolutions.Controllers
 
         [HttpGet("all")]
         public async Task<IActionResult> GetAll(
-            [FromQuery] ProductPendingStatus? status,
-            [FromQuery] string? categoryId,
-            [FromQuery] string? search,
-            [FromQuery] string? sortBy,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ProductPendingStatus? status = null,
+            [FromQuery] string? categoryId = null,
+            [FromQuery] string? search = null,
+            [FromQuery] string? sortBy = "name",
             [FromQuery] bool sortDesc = false)
         {
-            var result = await _productService.GetAllAsync(status, categoryId, search, sortBy, sortDesc);
-            return Ok(new GeneralResponse<IEnumerable<ProductCardDTO>>
+            var result = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId, search, sortBy, sortDesc);
+
+            return Ok(new GeneralResponse<PaginatedDTO<ProductCardDTO>>
             {
                 Success = true,
-                Message = "Products fetched successfully.",
+                Message = "Products fetched successfully with pagination.",
                 Data = result
             });
         }

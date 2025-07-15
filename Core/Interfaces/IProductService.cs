@@ -10,13 +10,15 @@ namespace Core.Interfaces
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductCardDTO>> GetAllAsync(
-             ProductPendingStatus? status = null,
-             string? categoryId = null,
-             string? nameSearch = null,
-             string? sortBy = null,
-             bool sortDescending = false
-         );
+        Task<PaginatedDTO<ProductCardDTO>> GetAllAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            ProductPendingStatus? status = null,
+            string? categoryId = null,
+            string? nameSearch = null,
+            string? sortBy = null,
+            bool sortDescending = false
+        );
 
         Task<ProductDTO?> GetByIdAsync(string id);
         Task<ProductDTO> AddAsync(ProductCreateDTO dto);

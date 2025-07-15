@@ -13,6 +13,7 @@ namespace Core.DTOs.Product
 
         public string Name { get; set; } = null!;
         public decimal Price { get; set; }
+        public decimal? DiscountPrice { get; set; }
         public string? Description { get; set; }
         public int Stock { get; set; }
         public ProductPendingStatus Status { get; set; }
