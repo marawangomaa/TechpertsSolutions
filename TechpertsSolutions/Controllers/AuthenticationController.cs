@@ -62,7 +62,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO register)
+        public async Task<IActionResult> Register([FromForm] RegisterDTO register)
         {
             var user = new AppUser
             {
@@ -93,7 +93,7 @@ namespace TechpertsSolutions.Controllers
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO login)
+        public async Task<IActionResult> Login([FromForm] LoginDTO login)
         {
 
             var user = await userManager.FindByEmailAsync(login.Email);
@@ -126,7 +126,7 @@ namespace TechpertsSolutions.Controllers
             });
         }
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO forgotPassword) 
+        public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDTO forgotPassword) 
         {
             var user = await userManager.FindByEmailAsync(forgotPassword.Email);
             if (user == null) 
@@ -147,7 +147,7 @@ namespace TechpertsSolutions.Controllers
             });
         }
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPassword) 
+        public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDTO resetPassword) 
         {
             var user = await userManager.FindByEmailAsync(resetPassword.Email);
             if (user == null) 
@@ -180,7 +180,7 @@ namespace TechpertsSolutions.Controllers
 
         [HttpDelete("delete-account")]
         [Authorize]
-        public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDTO request)
+        public async Task<IActionResult> DeleteAccount([FromForm] DeleteAccountDTO request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))

@@ -88,7 +88,7 @@ public class CartController : ControllerBase
     /// <param name="itemDto">The details of the item to add/update (ProductId, Quantity).</param>
     /// <returns>A response indicating success or failure.</returns>
     [HttpPost("{customerId}/items")]
-    public async Task<IActionResult> AddItem(string customerId, [FromBody] CartItemDTO itemDto)
+    public async Task<IActionResult> AddItem(string customerId, [FromForm] CartItemDTO itemDto)
     {
         // Basic DTO validation
         if (itemDto == null || string.IsNullOrWhiteSpace(itemDto.ProductId) || itemDto.Quantity <= 0)
@@ -123,7 +123,7 @@ public class CartController : ControllerBase
     /// <param name="updateDto">The DTO containing ProductId and the new Quantity.</param>
     /// <returns>A response indicating success or failure.</returns>
     [HttpPut("{customerId}/items")]
-    public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromBody] CartUpdateItemQuantityDTO updateDto)
+    public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromForm] CartUpdateItemQuantityDTO updateDto)
     {
         // Basic DTO validation
         if (updateDto == null || string.IsNullOrWhiteSpace(updateDto.ProductId) || updateDto.Quantity <= 0)
@@ -158,7 +158,7 @@ public class CartController : ControllerBase
     /// <param name="productId">The unique identifier of the product to remove.</param>
     /// <returns>A response indicating success or failure.</returns>
     [HttpDelete("{customerId}/items/{productId}")]
-    public async Task<IActionResult> RemoveItem(string customerId, string productId)
+    public async Task<IActionResult> RemoveItem([FromForm] string customerId,[FromForm] string productId)
     {
         if (string.IsNullOrWhiteSpace(productId))
         {

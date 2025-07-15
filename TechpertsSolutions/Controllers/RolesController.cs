@@ -52,7 +52,7 @@ namespace TechpertsSolutions.Controllers
             customerService = _customerService;
         }
         [HttpPost("check-role")]
-        public async Task<IActionResult> CheckRole([FromBody] string roleName)
+        public async Task<IActionResult> CheckRole([FromForm] string roleName)
         {
             var exists = await roleManager.RoleExistsAsync(roleName);
 
@@ -64,7 +64,7 @@ namespace TechpertsSolutions.Controllers
             });
         }
         [HttpPost("assign")]
-        public async Task<IActionResult> AssignRole(string userEmail, RoleType roleName)
+        public async Task<IActionResult> AssignRole([FromForm] string userEmail, RoleType roleName)
         {
             var user = await userManager.FindByEmailAsync(userEmail);
 
@@ -187,7 +187,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("unassign")]
-        public async Task<IActionResult> UnassignRole(string userEmail, RoleType roleName)
+        public async Task<IActionResult> UnassignRole([FromForm] string userEmail, RoleType roleName)
         {
             var user = await userManager.FindByEmailAsync(userEmail);
             if (user == null)

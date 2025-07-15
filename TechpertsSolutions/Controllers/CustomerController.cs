@@ -68,7 +68,7 @@ namespace TechpertsSolutions.Controllers
             }
         }
         [HttpPatch("update/{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] CustomerEditDTO customer)
+        public async Task<IActionResult> Update(string id, [FromForm] CustomerEditDTO customer)
         {
             if (!ModelState.IsValid)
             {
