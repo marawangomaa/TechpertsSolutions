@@ -14,11 +14,8 @@ namespace TechpertsSolutions.Core.Entities
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public string? Description { get; set; }
-
         public int Stock {  get; set; }
         public string? ImageUrl { get; set; }
-        public int StockQuantity { get; set; }
-
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
         public string? SubCategoryId { get; set; }

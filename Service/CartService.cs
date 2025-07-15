@@ -82,8 +82,8 @@ namespace Service
             if (product == null)
                 return $"❌ Product with ID {itemDto.ProductId} does not exist.";
 
-            if (product.StockQuantity < itemDto.Quantity)
-                return $"❌ Not enough stock for product {product.Name}. Available: {product.StockQuantity}.";
+            if (product.Stock < itemDto.Quantity)
+                return $"❌ Not enough stock for product {product.Name}. Available: {product.Stock}.";
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
@@ -109,8 +109,8 @@ namespace Service
             {
                 // If item exists, update quantity
                 int newQuantity = existingItem.Quantity + itemDto.Quantity;
-                if (product.StockQuantity < newQuantity)
-                    return $"❌ Cannot add {itemDto.Quantity} more. Total requested ({newQuantity}) exceeds available stock ({product.StockQuantity}).";
+                if (product.Stock < newQuantity)
+                    return $"❌ Cannot add {itemDto.Quantity} more. Total requested ({newQuantity}) exceeds available stock ({product.Stock}).";
 
                 existingItem.Quantity = newQuantity;
                 cartItemRepo.Update(existingItem);
@@ -155,8 +155,8 @@ namespace Service
             if (itemToUpdate.Product == null)
                 return "❌ Product details not available for stock check."; // Should not happen with includeProperties
 
-            if (itemToUpdate.Product.StockQuantity < updateDto.Quantity)
-                return $"❌ Not enough stock for product {itemToUpdate.Product.Name}. Available: {itemToUpdate.Product.StockQuantity}. Requested: {updateDto.Quantity}.";
+            if (itemToUpdate.Product.Stock < updateDto.Quantity)
+                return $"❌ Not enough stock for product {itemToUpdate.Product.Name}. Available: {itemToUpdate.Product.Stock}. Requested: {updateDto.Quantity}.";
 
             itemToUpdate.Quantity = updateDto.Quantity;
             cartItemRepo.Update(itemToUpdate);
@@ -243,12 +243,12 @@ namespace Service
                     };
                 }
 
-                if (cartItem.Product.StockQuantity < cartItem.Quantity)
+                if (cartItem.Product.Stock < cartItem.Quantity)
                 {
                     return new GeneralResponse<OrderReadDTO>
                     {
                         Success = false,
-                        Message = $"❌ Not enough stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.StockQuantity}, Requested: {cartItem.Quantity}.",
+                        Message = $"❌ Not enough stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}.",
                         Data = null
                     };
                 }
@@ -281,7 +281,7 @@ namespace Service
                 totalAmount += orderItem.ItemTotal;
 
                 // Update product stock
-                cartItem.Product.StockQuantity -= cartItem.Quantity;
+                cartItem.Product.Stock -= cartItem.Quantity;
                 productRepo.Update(cartItem.Product);
             }
 

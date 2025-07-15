@@ -41,7 +41,7 @@ namespace Service.Utilities
                 Price = item.Product?.Price ?? 0, // Ensure Product is loaded for price
                 Quantity = item.Quantity, // New: Map quantity
                 ImageUrl = item.Product?.ImageUrl, // New: Map image URL
-                StockQuantity = item.Product?.StockQuantity ?? 0 // New: Map stock quantity
+                Stock = item.Product?.Stock ?? 0 // New: Map stock quantity
             };
         }
 
