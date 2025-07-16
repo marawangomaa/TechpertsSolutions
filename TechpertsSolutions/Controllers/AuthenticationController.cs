@@ -95,26 +95,115 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
-
             var user = await userManager.FindByEmailAsync(login.Email);
             if (user != null)
             {
                 var result = await userManager.CheckPasswordAsync(user, login.Password);
                 if (result)
                 {
+                    // Generate the JWT token
                     var token = GenerateJwtToken(user);
-                    var roleName = await userManager.GetRolesAsync(user);
+                    // Get all roles for the user as a List
+                    var roles = (await userManager.GetRolesAsync(user)).ToList();
+
+                    // Initialize LoginResultDTO
+                    var loginResultDTO = new LoginResultDTO
+                    {
+                        Token = token,
+                        UserId = user.Id,
+                        UserName = user.UserName,
+                        RoleName = roles // Assign all roles
+                    };
+
+                    // --- Populate specific entity IDs based on assigned roles ---
+                    // Use individual 'if' statements as a user can have multiple roles.
+
+                    if (roles.Contains("Customer"))
+                    {
+                        // Use GetFirstOrDefaultAsync with a predicate for efficiency
+                        var customer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
+                        if (customer != null)
+                        {
+                            loginResultDTO.CustomerId = customer.Id;
+                        }
+                        else
+                        {
+                            // Log or handle the case where a customer role exists but no customer profile
+                            Console.WriteLine($"Warning: Customer role assigned to UserId {user.Id}, but no Customer profile found during login.");
+                        }
+                    }
+
+                    if (roles.Contains("SaleManager")) // Ensure the role name matches exactly
+                    {
+                        var salesManager = await salesManagerRepo.GetFirstOrDefaultAsync(sm => sm.UserId == user.Id);
+                        if (salesManager != null)
+                        {
+                            loginResultDTO.SalesManagerId = salesManager.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: SaleManager role assigned to UserId {user.Id}, but no SaleManager profile found during login.");
+                        }
+                    }
+
+                    if (roles.Contains("TechManager"))
+                    {
+                        var techManager = await techManagerRepo.GetFirstOrDefaultAsync(tm => tm.UserId == user.Id);
+                        if (techManager != null)
+                        {
+                            loginResultDTO.TechManagerId = techManager.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: TechManager role assigned to UserId {user.Id}, but no TechManager profile found during login.");
+                        }
+                    }
+
+                    if (roles.Contains("StockControlManager"))
+                    {
+                        var stockManager = await stockControlManagerRepo.GetFirstOrDefaultAsync(sc => sc.UserId == user.Id);
+                        if (stockManager != null)
+                        {
+                            loginResultDTO.StockControlManagerId = stockManager.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: StockControlManager role assigned to UserId {user.Id}, but no StockControlManager profile found during login.");
+                        }
+                    }
+
+                    if (roles.Contains("Admin"))
+                    {
+                        var admin = await adminRepo.GetFirstOrDefaultAsync(a => a.UserId == user.Id);
+                        if (admin != null)
+                        {
+                            loginResultDTO.AdminId = admin.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: Admin role assigned to UserId {user.Id}, but no Admin profile found during login.");
+                        }
+                    }
+
+                    if (roles.Contains("TechCompany"))
+                    {
+                        var techCompany = await techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.UserId == user.Id);
+                        if (techCompany != null)
+                        {
+                            loginResultDTO.TechCompanyId = techCompany.Id;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Warning: TechCompany role assigned to UserId {user.Id}, but no TechCompany profile found during login.");
+                        }
+                    }
+
+                    // Return the populated DTO
                     return Ok(new GeneralResponse<LoginResultDTO>
                     {
                         Success = true,
                         Message = "User logged in successfully.",
-                        Data = new LoginResultDTO
-                        {
-                            Token = token,
-                            UserId = user.Id,
-                            UserName = user.UserName,
-                            RoleName = roleName
-                        }
+                        Data = loginResultDTO
                     });
                 }
             }
