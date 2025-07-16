@@ -62,7 +62,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromForm] RegisterDTO register)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO register)
         {
             var user = new AppUser
             {
@@ -93,7 +93,7 @@ namespace TechpertsSolutions.Controllers
             }
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] LoginDTO login)
+        public async Task<IActionResult> Login([FromBody] LoginDTO login)
         {
 
             var user = await userManager.FindByEmailAsync(login.Email);
