@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.Maintenance;
 using Core.Entities;
 using Core.Interfaces;
+using Core.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,22 +50,59 @@ namespace Service
             return MapToMaintenanceDetailsDTO(maintenance);
         }
 
-        public async Task<MaintenanceDTO> AddAsync()
+        public async Task<MaintenanceDTO> AddAsync(MaintenanceCreateDTO dto)
         {
             var entity = new Maintenance
             {
-                Id = Guid.NewGuid().ToString()
+                Id = Guid.NewGuid().ToString(),
+                CustomerId = dto.CustomerId,
+                TechCompanyId = dto.TechCompanyId,
+                WarrantyId = dto.WarrantyId,
+                ServiceUsageId = dto.ServiceUsageId
             };
 
             await _maintenanceRepo.AddAsync(entity);
-            await _maintenanceRepo.SaveChanges();
+            await _maintenanceRepo.SaveChangesAsync();
+
+            var customer = await _customerRepo.GetByIdAsync(dto.CustomerId);
+            var techCompany = await _techCompanyRepo.GetByIdAsync(dto.TechCompanyId);
+            var warranty = await _warrantyRepo.GetByIdAsync(dto.WarrantyId);
+            var serviceUsage = await _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId);
 
             return new MaintenanceDTO
             {
-                Id = entity.Id
+                Id = entity.Id,
+                CustomerName = customer?.User?.FullName ?? "Unknown",
+                TechCompanyName = techCompany?.User?.FullName ?? "Unknown",
+                ProductName = warranty?.Product?.Name ?? "Unknown",
+                ServiceType = serviceUsage?.ServiceType ?? "Unknown",
+                WarrantyStart = warranty?.StartDate ?? DateTime.MinValue,
+                WarrantyEnd = warranty?.EndDate ?? DateTime.MinValue
             };
         }
 
+
+        //public async Task<bool> UpdateAsync(string id, MaintenanceUpdateDTO dto)
+        //{
+        //    if (string.IsNullOrWhiteSpace(id)) return false;
+
+        //    var maintenance = await _maintenanceRepo.GetByIdAsync(id);
+        //    if (maintenance == null) return false;
+
+        //    if (await _customerRepo.GetByIdAsync(dto.CustomerId) == null) return false;
+        //    if (await _techCompanyRepo.GetByIdAsync(dto.TechCompanyId) == null) return false;
+        //    if (await _warrantyRepo.GetByIdAsync(dto.WarrantyId) == null) return false;
+        //    if (await _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId) == null) return false;
+
+        //    maintenance.CustomerId = dto.CustomerId;
+        //    maintenance.TechCompanyId = dto.TechCompanyId;
+        //    maintenance.WarrantyId = dto.WarrantyId;
+        //    maintenance.ServiceUsageId = dto.ServiceUsageId;
+
+        //    _maintenanceRepo.Update(maintenance);
+        //    await _maintenanceRepo.SaveChangesAsync();
+        //    return true;
+        //}
         public async Task<bool> UpdateAsync(string id, MaintenanceUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(id)) return false;
@@ -72,10 +110,18 @@ namespace Service
             var maintenance = await _maintenanceRepo.GetByIdAsync(id);
             if (maintenance == null) return false;
 
-            if (await _customerRepo.GetByIdAsync(dto.CustomerId) == null) return false;
-            if (await _techCompanyRepo.GetByIdAsync(dto.TechCompanyId) == null) return false;
-            if (await _warrantyRepo.GetByIdAsync(dto.WarrantyId) == null) return false;
-            if (await _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId) == null) return false;
+            var customerTask = _customerRepo.GetByIdAsync(dto.CustomerId);
+            var techCompanyTask = _techCompanyRepo.GetByIdAsync(dto.TechCompanyId);
+            var warrantyTask = _warrantyRepo.GetByIdAsync(dto.WarrantyId);
+            var serviceUsageTask = _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId);
+
+            await Task.WhenAll(customerTask, techCompanyTask, warrantyTask, serviceUsageTask);
+
+            if (customerTask.Result == null || techCompanyTask.Result == null ||
+                warrantyTask.Result == null || serviceUsageTask.Result == null)
+            {
+                return false;
+            }
 
             maintenance.CustomerId = dto.CustomerId;
             maintenance.TechCompanyId = dto.TechCompanyId;
@@ -83,7 +129,8 @@ namespace Service
             maintenance.ServiceUsageId = dto.ServiceUsageId;
 
             _maintenanceRepo.Update(maintenance);
-            await _maintenanceRepo.SaveChanges();
+            await _maintenanceRepo.SaveChangesAsync();
+
             return true;
         }
 
@@ -94,7 +141,7 @@ namespace Service
                 return false;
 
             _maintenanceRepo.Remove(entity);
-            await _maintenanceRepo.SaveChanges();
+            await _maintenanceRepo.SaveChangesAsync();
             return true;
         }
 

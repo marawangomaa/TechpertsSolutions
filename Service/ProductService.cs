@@ -9,10 +9,16 @@ namespace Service
     public class ProductService : IProductService
     {
         private readonly IRepository<Product> _productRepo;
+        private readonly IRepository<Specification> _specRepo;
+        private readonly IRepository<Warranty> _warrantyRepo;
 
-        public ProductService(IRepository<Product> productRepo)
+        public ProductService(IRepository<Product> productRepo,
+            IRepository<Specification> specRepo,
+            IRepository<Warranty> warrantyRepo)
         {
             _productRepo = productRepo;
+            _specRepo = specRepo;
+            _warrantyRepo = warrantyRepo;
         }
 
         public async Task<PaginatedDTO<ProductCardDTO>> GetAllAsync(
@@ -20,11 +26,13 @@ namespace Service
             int pageSize = 10,
             ProductPendingStatus? status = null,
             string? categoryId = null,
+            string? subCategoryId = null,
             string? nameSearch = null,
             string? sortBy = null,
             bool sortDescending = false)
         {
-            var allProducts = (await _productRepo.GetAllAsync()).AsQueryable();
+            //var allProducts = (await _productRepo.GetAllAsync()).AsQueryable();
+            var allProducts = await _productRepo.GetAllWithIncludesAsync(p=>p.Category, p => p.SubCategory, p => p.StockControlManager, p => p.TechManager);
 
             // Apply filters
             if (status.HasValue)
@@ -32,6 +40,10 @@ namespace Service
 
             if (!string.IsNullOrWhiteSpace(categoryId))
                 allProducts = allProducts.Where(p => p.CategoryId == categoryId);
+
+            if (!string.IsNullOrWhiteSpace(subCategoryId))
+                allProducts = allProducts.Where(p => p.SubCategoryId == subCategoryId);
+
 
             if (!string.IsNullOrWhiteSpace(nameSearch))
                 allProducts = allProducts.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
@@ -64,7 +76,15 @@ namespace Service
 
         public async Task<ProductDTO?> GetByIdAsync(string id)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdWithIncludesAsync(id,
+                p => p.Category, 
+                p => p.SubCategory, 
+                p => p.StockControlManager, 
+                p => p.TechManager,
+                p => p.StockControlManager.User,
+                p => p.TechManager.User,
+                p => p.Warranties,
+                p => p.Specifications);
             return product == null ? null : MapToProductDTO(product);
         }
 
@@ -72,13 +92,34 @@ namespace Service
         {
             var product = MapToProduct(dto);
             await _productRepo.AddAsync(product);
-            await _productRepo.SaveChanges();
+            await _productRepo.SaveChangesAsync();
+            var addedProductWithIncludes = await _productRepo.GetByIdWithIncludesAsync(
+             product.Id, // Use the ID of the newly added product
+             p => p.Category,
+             p => p.SubCategory,
+             p => p.StockControlManager,
+             p => p.TechManager,
+             p => p.StockControlManager.User, // Include nested User for manager names
+             p => p.TechManager.User,         // Include nested User for manager names
+             p => p.Warranties,               // Include collections
+             p => p.Specifications            // Include collections
+            );
             return MapToProductDTO(product);
         }
 
         public async Task<bool> UpdateAsync(string id, ProductUpdateDTO dto)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdWithIncludesAsync(
+             id,
+             p => p.Category,
+             p => p.SubCategory,
+             p => p.StockControlManager,
+             p => p.TechManager,
+             p => p.StockControlManager.User,
+             p => p.TechManager.User,
+             p => p.Warranties,      // Include for updating and response
+             p => p.Specifications   // Include for updating and response
+             );
             if (product == null) return false;
 
             product.Name = dto.Name;
@@ -93,8 +134,112 @@ namespace Service
             product.status = dto.Status;
             product.ImageUrl = dto.ImageUrl;
 
+            if (dto.Specifications != null)
+            {
+                var currentSpecifications = product.Specifications?.ToList() ?? new List<Specification>();
+                var updatedSpecifications = new List<Specification>();
+
+                foreach (var specDto in dto.Specifications)
+                {
+                    var existingSpec = currentSpecifications.FirstOrDefault(s => s.Id == specDto.Id);
+                    if (existingSpec != null)
+                    {
+                        // Update existing specification
+                        existingSpec.Key = specDto.Key;
+                        existingSpec.Value = specDto.Value;
+                        updatedSpecifications.Add(existingSpec);
+                    }
+                    else
+                    {
+                        // Add new specification
+                        updatedSpecifications.Add(new Specification
+                        {
+                            // If ID is provided for new items, ensure it's handled or generated (e.g., Guid.NewGuid().ToString())
+                            Key = specDto.Key,
+                            Value = specDto.Value,
+                            ProductId = product.Id // Ensure foreign key is set
+                        });
+                    }
+                }
+
+                // Remove specifications that are no longer in the DTO
+                var specsToRemove = currentSpecifications.Where(s => !updatedSpecifications.Any(us => us.Id == s.Id)).ToList();
+                foreach (var spec in specsToRemove)
+                {
+                    _specRepo.Remove(spec); // Assuming IRepository can remove child entities directly
+                }
+
+                product.Specifications = updatedSpecifications; // Assign the updated list
+            }
+            else
+            {
+                // If DTO has null specs, clear existing specifications
+                if (product.Specifications != null)
+                {
+                    foreach (var spec in product.Specifications.ToList())
+                    {
+                        _specRepo.Remove(spec);
+                    }
+                    product.Specifications.Clear();
+                }
+            }
+
+            // FIX: Handle Warranties updates (similar logic to Specifications)
+            if (dto.Warranties != null)
+            {
+                var currentWarranties = product.Warranties?.ToList() ?? new List<Warranty>();
+                var updatedWarranties = new List<Warranty>();
+
+                foreach (var warrantyDto in dto.Warranties)
+                {
+                    var existingWarranty = currentWarranties.FirstOrDefault(w => w.Id == warrantyDto.Id);
+                    if (existingWarranty != null)
+                    {
+                        // Update existing warranty
+                        existingWarranty.Description = warrantyDto.Description;
+                        existingWarranty.StartDate = warrantyDto.StartDate;
+                        existingWarranty.EndDate = warrantyDto.EndDate;
+                        updatedWarranties.Add(existingWarranty);
+                    }
+                    else
+                    {
+                        // Add new warranty
+                        updatedWarranties.Add(new Warranty
+                        {
+                            Description = warrantyDto.Description,
+                            StartDate = warrantyDto.StartDate,
+                            EndDate = warrantyDto.EndDate,
+                            ProductId = product.Id // Ensure foreign key is set
+                        });
+                    }
+                }
+
+                // Remove warranties that are no longer in the DTO
+                var warrantiesToRemove = currentWarranties.Where(w => !updatedWarranties.Any(uw => uw.Id == w.Id)).ToList();
+                foreach (var warranty in warrantiesToRemove)
+                {
+                    _warrantyRepo.Remove(warranty);
+                }
+
+                product.Warranties = updatedWarranties; // Assign the updated list
+            }
+            else
+            {
+                // If DTO has null warranties, clear existing warranties
+                if (product.Warranties != null)
+                {
+                    foreach (var warranty in product.Warranties.ToList())
+                    {
+                        _warrantyRepo.Remove(warranty);
+                    }
+                    product.Warranties.Clear();
+                }
+            }
+
             _productRepo.Update(product);
-            await _productRepo.SaveChanges();
+            await _specRepo.SaveChangesAsync();
+            await _warrantyRepo.SaveChangesAsync();
+            await _productRepo.SaveChangesAsync();
             return true;
         }
 
@@ -104,7 +249,7 @@ namespace Service
             if (product == null) return false;
 
             _productRepo.Remove(product);
-            await _productRepo.SaveChanges();
+            await _productRepo.SaveChangesAsync();
             return true;
         }
 
@@ -121,6 +266,10 @@ namespace Service
                 SubCategoryId = p.SubCategoryId,
                 TechManagerId = p.TechManagerId,
                 StockControlManagerId = p.StockControlManagerId,
+                CategoryName = p.Category.Name,
+                SubCategoryName = p.SubCategory.Name,
+                TechManagerName = p.TechManager.User.FullName,
+                StockControlManagerName = p.StockControlManager.User.FullName,
                 ImageUrl = p.ImageUrl,
                 Status = p.status,
                 DiscountPrice = p.DiscountPrice,
@@ -177,6 +326,8 @@ namespace Service
                 Name = p.Name,
                 Price = p.Price,
                 ImageUrl = p.ImageUrl,
+                CategoryId = p.CategoryId,
+                CategoryName = p.Category?.Name,
                 SubCategoryId = p.SubCategoryId,
                 SubCategoryName = p.SubCategory?.Name,
                 DiscountPrice = p.DiscountPrice,

@@ -1,5 +1,6 @@
 ﻿using Core.Enums;
 using Core.Interfaces;
+using Core.Interfaces.Services;
 using Core.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -82,7 +83,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Failed to assign role",
-                    Data = result.Errors.Select(e => e.Description)
+                    Data = string.Join(" ", result.Errors.Select(e => e.Description))
                 });
             }
             var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
@@ -217,7 +218,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = $"Failed to remove role '{roleName}' from user.",
-                    Data = result.Errors.Select(e => e.Description)
+                    Data = string.Join(" ", result.Errors.Select(e => e.Description))
                 });
             }
 
@@ -275,7 +276,7 @@ namespace TechpertsSolutions.Controllers
                     Data = "no roles set yet"
                 });
             }
-            return Ok(new GeneralResponse<string>
+            return Ok(new GeneralResponse<dynamic>
             {
                 Success = true,
                 Message = "Roles retrieved successfully.",

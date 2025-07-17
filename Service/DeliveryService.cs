@@ -37,7 +37,7 @@ namespace Service
             };
 
             await _deliveryrepo.AddAsync(entity);
-            await _deliveryrepo.SaveChanges();
+            await _deliveryrepo.SaveChangesAsync();
 
             return new DeliveryDTO
             {
@@ -52,7 +52,7 @@ namespace Service
                 return false;
 
             _deliveryrepo.Remove(entity);
-            await _deliveryrepo.SaveChanges();
+            await _deliveryrepo.SaveChangesAsync();
             return true;
         }
 

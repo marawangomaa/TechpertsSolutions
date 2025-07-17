@@ -10,6 +10,7 @@ using System.Text;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;
+using Core.Interfaces.Services;
 
 namespace TechpertsSolutions
 {
@@ -57,6 +58,7 @@ namespace TechpertsSolutions
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -146,7 +148,6 @@ namespace TechpertsSolutions
 
             app.MapControllers();
 
-          
             app.Run();
         }
     }

@@ -15,6 +15,7 @@ namespace Core.Interfaces
             int pageSize = 10,
             ProductPendingStatus? status = null,
             string? categoryId = null,
+            string? subCategoryId = null,
             string? nameSearch = null,
             string? sortBy = null,
             bool sortDescending = false

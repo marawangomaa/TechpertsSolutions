@@ -42,7 +42,6 @@ namespace Service
             var customer = await customerRepo.GetByIdAsync(customerId);
             if (customer == null)
             {
-                Console.WriteLine($"Customer with ID {customerId} not found.");
                 return null; // Or throw a specific exception
             }
 
@@ -62,7 +61,7 @@ namespace Service
                 };
 
                 await cartRepo.AddAsync(cart);
-                await cartRepo.SaveChanges();
+                await cartRepo.SaveChangesAsync();
             }
 
             return CartMapper.MapToCartReadDTO(cart);
@@ -100,7 +99,7 @@ namespace Service
                     CartItems = new List<CartItem>()
                 };
                 await cartRepo.AddAsync(cart);
-                await cartRepo.SaveChanges(); // Save to get cart.Id
+                await cartRepo.SaveChangesAsync(); // Save to get cart.Id
             }
 
             var existingItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
@@ -114,7 +113,7 @@ namespace Service
 
                 existingItem.Quantity = newQuantity;
                 cartItemRepo.Update(existingItem);
-                await cartItemRepo.SaveChanges();
+                await cartItemRepo.SaveChangesAsync();
                 return "✅ Item quantity updated successfully.";
             }
             else
@@ -128,7 +127,7 @@ namespace Service
                 };
 
                 await cartItemRepo.AddAsync(newItem);
-                await cartItemRepo.SaveChanges();
+                await cartItemRepo.SaveChangesAsync();
                 return "✅ Item added successfully.";
             }
         }
@@ -160,7 +159,7 @@ namespace Service
 
             itemToUpdate.Quantity = updateDto.Quantity;
             cartItemRepo.Update(itemToUpdate);
-            await cartItemRepo.SaveChanges();
+            await cartItemRepo.SaveChangesAsync();
 
             return "✅ Item quantity updated successfully.";
         }
@@ -182,7 +181,7 @@ namespace Service
 
             cart.CartItems.Remove(item); // Remove from navigation property
             cartItemRepo.Remove(item); // Mark for deletion in DB
-            await cartItemRepo.SaveChanges();
+            await cartItemRepo.SaveChangesAsync();
 
             return "✅ Item removed successfully.";
         }
@@ -207,7 +206,7 @@ namespace Service
                 cart.CartItems.Remove(item);
                 cartItemRepo.Remove(item);
             }
-            await cartItemRepo.SaveChanges();
+            await cartItemRepo.SaveChangesAsync();
 
             return "✅ Cart cleared successfully.";
         }
@@ -289,7 +288,7 @@ namespace Service
 
             // 4. Save the new order and updated products
             await orderRepo.AddAsync(newOrder);
-            await orderRepo.SaveChanges(); // Save order and product stock changes
+            await orderRepo.SaveChangesAsync(); // Save order and product stock changes
 
             // 5. Clear the cart after successful order placement
             await ClearCartAsync(customerId); // Re-use existing method

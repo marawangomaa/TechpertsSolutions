@@ -1,5 +1,5 @@
 ﻿using Core.DTOs.Admin;
-using Core.Interfaces;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
@@ -10,61 +10,72 @@ namespace TechpertsSolutions.Controllers
     [ApiController]
     public class AdminsController : ControllerBase
     {
-        private readonly IAdminService adminService;
-        public AdminsController(IAdminService _adminService) 
+        private readonly IAdminService _adminService;
+
+        public AdminsController(IAdminService adminService)
         {
-            adminService = _adminService;
+            _adminService = adminService;
         }
-        [HttpGet("All")]
-        public async Task<IActionResult> GetAll() 
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
         {
-            var admins = await adminService.GetAllAsync();
+            var admins = await _adminService.GetAllAsync();
             return Ok(new GeneralResponse<List<AdminReadDTO>>
             {
                 Success = true,
-                Message = "retrieved admin list",
-                Data = admins
+                Message = "Retrieved admin list successfully",
+                Data = admins.ToList()
             });
         }
-        [HttpGet("get/{id}")]
-        public async Task<IActionResult> GetById(string id) 
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "ID must not be null or empty",
+                    Message = "ID must not be null or empty.",
                     Data = "Invalid input"
                 });
 
-            if (!Guid.TryParse(id, out Guid guidId))
+            if (!Guid.TryParse(id, out _))
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "ID format is invalid",
-                    Data = "Expected GUID"
+                    Message = "Invalid ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
                 });
 
             try
             {
-                var admin = await adminService.GetByIdAsync(id);
+                var admin = await _adminService.GetByIdAsync(id);
+
+                if (admin == null)
+                    return NotFound(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Admin not found.",
+                        Data = $"No admin with ID {id}."
+                    });
+
                 return Ok(new GeneralResponse<AdminReadDTO>
                 {
                     Success = true,
-                    Message = "Retrieved admin successfully",
+                    Message = "Admin retrieved successfully.",
                     Data = admin
                 });
             }
-            catch (KeyNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(new GeneralResponse<string>
+                return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Admin not found",
+                    Message = "An unexpected error occurred.",
                     Data = ex.Message
                 });
             }
         }
-
     }
 }

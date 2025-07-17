@@ -21,6 +21,5 @@ namespace Service.Utilities
                 RoleName = admin.Role?.Name
             };
         }
-
     }
 }

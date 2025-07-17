@@ -27,11 +27,12 @@ namespace TechpertsSolutions.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] ProductPendingStatus? status = null,
             [FromQuery] string? categoryId = null,
+            [FromQuery] string? subCategoryId = null,
             [FromQuery] string? search = null,
             [FromQuery] string? sortBy = "name",
             [FromQuery] bool sortDesc = false)
         {
-            var result = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId, search, sortBy, sortDesc);
+            var result = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId,subCategoryId ,search, sortBy, sortDesc);
 
             return Ok(new GeneralResponse<PaginatedDTO<ProductCardDTO>>
             {
@@ -130,9 +131,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{Id}")]
         //[Authorize(Roles = "Admin,TechManager")]
-        public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDTO dto, IFormFile? img)
+        public async Task<IActionResult> UpdateProduct(string Id,[FromForm] ProductUpdateDTO dto, IFormFile? img)
         {
             if (!ModelState.IsValid)
             {
@@ -144,13 +145,13 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            if (string.IsNullOrWhiteSpace(Id) || !Guid.TryParse(Id, out _))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Invalid product ID.",
-                    Data = id
+                    Data = Id
                 });
             }
 
@@ -166,14 +167,14 @@ namespace TechpertsSolutions.Controllers
                     dto.ImageUrl = $"/uploads/products/{fileName}";
                 }
 
-                var updated = await _productService.UpdateAsync(id, dto);
+                var updated = await _productService.UpdateAsync(Id,dto);
                 if (!updated)
                 {
                     return NotFound(new GeneralResponse<string>
                     {
                         Success = false,
                         Message = "Product not found.",
-                        Data = id
+                        Data = Id
                     });
                 }
 
@@ -181,7 +182,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = true,
                     Message = "Product updated successfully.",
-                    Data = id
+                    Data = Id
                 });
             }
             catch (Exception ex)

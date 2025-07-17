@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.Customer;
+using Core.Interfaces.Services;
 using Core.Interfaces;
 
 
@@ -18,7 +19,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("All")]
         public async Task<IActionResult> GetAll() 
         {
-            var customers = await customerService.GetAllCustomersAsync();
+            var customers = (await customerService.GetAllCustomersAsync()).ToList();
             return Ok(new GeneralResponse<List<CustomerDTO>> 
             {
                 Success = true,
@@ -67,66 +68,69 @@ namespace TechpertsSolutions.Controllers
                 });
             }
         }
-        [HttpPatch("update/{id}")]
-        public async Task<IActionResult> Update(string id, [FromForm] CustomerEditDTO customer)
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] CustomerEditDTO customerDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid data provided",
-                    Data = "Not Valid Entry"
-                });
-            }
-
             if (string.IsNullOrWhiteSpace(id))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "ID must not be null or empty",
-                    Data = "Invalid input"
+                    Message = "ID must not be null or empty.",
+                    Data = "Invalid ID input."
                 });
             }
-            if (!Guid.TryParse(id, out Guid guidId))
+
+            if (!Guid.TryParse(id, out _))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "ID format is invalid",
-                    Data = "Expected GUID"
+                    Message = "Invalid ID format. Expected GUID.",
+                    Data = "Invalid ID format."
                 });
             }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid input data.",
+                    Data = "Model validation failed."
+                });
+            }
+
             try
             {
-                var updatedCustomer = await customerService.UpdateCustomerAsync(id, customer);
+                var updatedCustomer = await customerService.UpdateCustomerAsync(id, customerDto);
+
                 if (updatedCustomer == null)
                 {
                     return NotFound(new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = $"Customer with ID {id} not found",
-                        Data = "Not Updated"
+                        Message = $"Customer with ID '{id}' not found or update failed.",
+                        Data = "Update failed."
                     });
                 }
-                return Ok(new GeneralResponse<CustomerDTO>
+
+                return Ok(new GeneralResponse<CustomerEditDTO>
                 {
                     Success = true,
-                    Message = "Customer updated successfully",
+                    Message = "Customer updated successfully.",
                     Data = updatedCustomer
                 });
             }
             catch (Exception ex)
             {
-                return NotFound(new GeneralResponse<string>
+                return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Customer not found",
+                    Message = "An unexpected error occurred while updating the customer.",
                     Data = ex.Message
                 });
             }
         }
-
     }
 }

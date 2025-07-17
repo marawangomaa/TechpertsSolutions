@@ -30,17 +30,16 @@ namespace Service.Utilities
             };
         }
 
-
         public static CartItemReadDTO MapToCartItemReadDTO(CartItem item)
         {
             return new CartItemReadDTO
             {
                 Id = item.Id,
                 ProductId = item.ProductId,
-                ProductName = item.Product?.Name,
+                ProductName = item.Product.Name,
                 Price = item.Product?.Price ?? 0, // Ensure Product is loaded for price
                 Quantity = item.Quantity, // New: Map quantity
-                ImageUrl = item.Product?.ImageUrl, // New: Map image URL
+                ImageUrl = item.Product.ImageUrl, // New: Map image URL
                 Stock = item.Product?.Stock ?? 0 // New: Map stock quantity
             };
         }

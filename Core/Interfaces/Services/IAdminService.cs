@@ -6,12 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface IAdminService
     {
         Task<IEnumerable<AdminReadDTO>> GetAllAsync();
         Task<AdminReadDTO> GetByIdAsync(string id);
-        
     }
 }
