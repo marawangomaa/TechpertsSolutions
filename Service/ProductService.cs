@@ -141,7 +141,7 @@ namespace Service
 
                 foreach (var specDto in dto.Specifications)
                 {
-                    var existingSpec = currentSpecifications.FirstOrDefault(s => s.Id == specDto.Id);
+                    var existingSpec = currentSpecifications.FirstOrDefault(s => !string.IsNullOrEmpty(specDto.Id) && s.Id == specDto.Id);
                     if (existingSpec != null)
                     {
                         // Update existing specification
@@ -154,7 +154,6 @@ namespace Service
                         // Add new specification
                         updatedSpecifications.Add(new Specification
                         {
-                            // If ID is provided for new items, ensure it's handled or generated (e.g., Guid.NewGuid().ToString())
                             Key = specDto.Key,
                             Value = specDto.Value,
                             ProductId = product.Id // Ensure foreign key is set
@@ -192,7 +191,7 @@ namespace Service
 
                 foreach (var warrantyDto in dto.Warranties)
                 {
-                    var existingWarranty = currentWarranties.FirstOrDefault(w => w.Id == warrantyDto.Id);
+                    var existingWarranty = currentWarranties.FirstOrDefault(w => !string.IsNullOrEmpty(warrantyDto.Id) && w.Id == warrantyDto.Id);
                     if (existingWarranty != null)
                     {
                         // Update existing warranty
@@ -245,11 +244,38 @@ namespace Service
 
         public async Task<bool> DeleteAsync(string id)
         {
-            var product = await _productRepo.GetByIdAsync(id);
+            var product = await _productRepo.GetByIdWithIncludesAsync(id, 
+                p => p.Specifications, 
+                p => p.Warranties);
+            
             if (product == null) return false;
 
+            // Remove related specifications
+            if (product.Specifications != null)
+            {
+                foreach (var spec in product.Specifications.ToList())
+                {
+                    _specRepo.Remove(spec);
+                }
+            }
+
+            // Remove related warranties
+            if (product.Warranties != null)
+            {
+                foreach (var warranty in product.Warranties.ToList())
+                {
+                    _warrantyRepo.Remove(warranty);
+                }
+            }
+
+            // Remove the product
             _productRepo.Remove(product);
+            
+            // Save changes
+            await _specRepo.SaveChangesAsync();
+            await _warrantyRepo.SaveChangesAsync();
             await _productRepo.SaveChangesAsync();
+            
             return true;
         }
 

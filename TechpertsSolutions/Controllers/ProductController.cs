@@ -104,9 +104,12 @@ namespace TechpertsSolutions.Controllers
             {
                 if (img != null)
                 {
+                    // Ensure uploads directory exists
+                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "products");
+                    Directory.CreateDirectory(uploadsDir);
+                    
                     var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                    var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
+                    var savePath = Path.Combine(uploadsDir, fileName);
                     using var stream = new FileStream(savePath, FileMode.Create);
                     await img.CopyToAsync(stream);
                     dto.ImageUrl = $"/uploads/products/{fileName}";
@@ -131,9 +134,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        [HttpPut("{Id}")]
+        [HttpPut("{id}")]
         //[Authorize(Roles = "Admin,TechManager")]
-        public async Task<IActionResult> UpdateProduct(string Id,[FromForm] ProductUpdateDTO dto, IFormFile? img)
+        public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDTO dto, IFormFile? img)
         {
             if (!ModelState.IsValid)
             {
@@ -145,13 +148,13 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(Id) || !Guid.TryParse(Id, out _))
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Invalid product ID.",
-                    Data = Id
+                    Data = id
                 });
             }
 
@@ -159,22 +162,27 @@ namespace TechpertsSolutions.Controllers
             {
                 if (img != null)
                 {
+                    // Ensure uploads directory exists
+                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "products");
+                    Directory.CreateDirectory(uploadsDir);
+                    
                     var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                    var savePath = Path.Combine(_env.WebRootPath, "uploads", "products", fileName);
-                    Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
+                    var savePath = Path.Combine(uploadsDir, fileName);
                     using var stream = new FileStream(savePath, FileMode.Create);
                     await img.CopyToAsync(stream);
                     dto.ImageUrl = $"/uploads/products/{fileName}";
                 }
 
-                var updated = await _productService.UpdateAsync(Id,dto);
+                // Set the ID from the route parameter to ensure consistency
+                dto.Id = id;
+                var updated = await _productService.UpdateAsync(id, dto);
                 if (!updated)
                 {
                     return NotFound(new GeneralResponse<string>
                     {
                         Success = false,
                         Message = "Product not found.",
-                        Data = Id
+                        Data = id
                     });
                 }
 
@@ -182,7 +190,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = true,
                     Message = "Product updated successfully.",
-                    Data = Id
+                    Data = id
                 });
             }
             catch (Exception ex)
