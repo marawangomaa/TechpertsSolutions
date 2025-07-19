@@ -1,16 +1,19 @@
-using Core.Interfaces;
+﻿using Core.Interfaces;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Repository;
 using Service;
+using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;
-using Core.Interfaces.Services;
 
 namespace TechpertsSolutions
 {
@@ -21,14 +24,18 @@ namespace TechpertsSolutions
             var builder = WebApplication.CreateBuilder(args);
 
             //  Add services
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(opt => {
+                opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
             builder.Services.AddEndpointsApiExplorer();
 
             // Adding JWT support to Swagger
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
-                c.SchemaFilter<EnumSchemaFilter>();
+                c.CustomSchemaIds(type => type.FullName); // <-- Fix for duplicate class names
+                // c.SchemaFilter<EnumSchemaFilter>(); // Temporarily disabled
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -37,7 +44,7 @@ namespace TechpertsSolutions
                     Type = SecuritySchemeType.Http,
                     Scheme = "Bearer"
                 });
-
+                
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -52,6 +59,9 @@ namespace TechpertsSolutions
                         Array.Empty<string>()
                     }
                 });
+                // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                // c.IncludeXmlComments(xmlPath);
             });
 
             //  App services
@@ -65,6 +75,8 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
+            builder.Services.AddScoped<ISpecificationService, SpecificationService>();
+
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>
@@ -133,17 +145,12 @@ namespace TechpertsSolutions
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            app.UseDeveloperExceptionPage();
 
-         
             app.UseStaticFiles();
-
-       
-            app.UseHttpsRedirection();
-
      
             app.UseCors("AllowAll");
-
-         
+            app.UseHttpsRedirection();
             app.UseAuthentication();
 
             app.UseAuthorization();

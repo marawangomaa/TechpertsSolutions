@@ -1,18 +1,20 @@
-﻿using Core.Entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TechpertsSolutions.Core.Entities
+namespace Core.DTOs.Specifications
 {
-    public class Specification : BaseEntity
+    public class CreateSpecificationDTO
     {
+        [System.ComponentModel.DataAnnotations.Required]
         public string Key { get; set; } = string.Empty;
+        
+        [System.ComponentModel.DataAnnotations.Required]
         public string Value { get; set; } = string.Empty;
-
+        
+        [System.ComponentModel.DataAnnotations.Required]
         public string ProductId { get; set; } = string.Empty;
-        public Product? Product { get; set; }
     }
 }

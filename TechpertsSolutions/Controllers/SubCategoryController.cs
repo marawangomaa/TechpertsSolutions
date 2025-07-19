@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs; // Assuming GeneralResponse is here
 
 
-namespace TechpertsSolutions.API.Controllers
+namespace TechpertsSolutions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
