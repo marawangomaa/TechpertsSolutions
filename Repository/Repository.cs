@@ -280,6 +280,10 @@ namespace Repository
 
             return await query.ToListAsync();
         }
+        public async Task<IEnumerable<T>> FindByNameAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _context.Set<T>().Where(predicate).ToListAsync();
+        }
 
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate) =>
             await _dbSet.AnyAsync(predicate);
@@ -289,6 +293,7 @@ namespace Repository
         public void Update(T entity) => _dbSet.Update(entity);
 
         public void Remove(T entity) => _dbSet.Remove(entity);
+        public void RemoveRange(IEnumerable<T> entities) => _dbSet.RemoveRange(entities);
 
         public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
     }
