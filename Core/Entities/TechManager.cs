@@ -15,7 +15,6 @@ namespace TechpertsSolutions.Core.Entities
         public AppUser User { get; set; }
         public string RoleId { get; set; }
         public AppRole Role { get; set; }
-
-        public ICollection<Product>? ManagedProducts { get; set; }
+        public List<Product>? ManagedProducts { get; set; } = new List<Product>();
     }
 }

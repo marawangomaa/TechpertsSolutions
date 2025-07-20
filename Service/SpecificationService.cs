@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Specifications;
+using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -20,72 +21,406 @@ namespace Service
             _productRepo = productRepo;
         }
 
-        public async Task<IEnumerable<SpecificationDTO>> GetAllSpecificationsAsync()
+        public async Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetAllSpecificationsAsync()
         {
-            var specs = await _specRepo.GetAllWithIncludesAsync(s => s.Product);
-            return SpecificationMapper.MapToSpecificationDTOList(specs);
+            try
+            {
+                var specs = await _specRepo.GetAllWithIncludesAsync(s => s.Product);
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = true,
+                    Message = "Specifications retrieved successfully.",
+                    Data = SpecificationMapper.MapToSpecificationDTOList(specs)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving specifications.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<SpecificationDTO?> GetSpecificationByIdAsync(string id)
+        public async Task<GeneralResponse<SpecificationDTO>> GetSpecificationByIdAsync(string id)
         {
-            var spec = await _specRepo.GetByIdWithIncludesAsync(id, s => s.Product);
-            return SpecificationMapper.MapToSpecificationDTO(spec);
+            // Input validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Specification ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Specification ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var spec = await _specRepo.GetByIdWithIncludesAsync(id, s => s.Product);
+                if (spec == null)
+                {
+                    return new GeneralResponse<SpecificationDTO>
+                    {
+                        Success = false,
+                        Message = $"Specification with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = true,
+                    Message = "Specification retrieved successfully.",
+                    Data = SpecificationMapper.MapToSpecificationDTO(spec)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the specification.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<IEnumerable<SpecificationDTO>> GetSpecificationsByProductIdAsync(string productId)
+        public async Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId)
         {
-            var productExists = await _productRepo.AnyAsync(p => p.Id == productId);
-            if (!productExists)
-                return Enumerable.Empty<SpecificationDTO>();
+            // Input validation
+            if (string.IsNullOrWhiteSpace(productId))
+            {
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = false,
+                    Message = "Product ID cannot be null or empty.",
+                    Data = null
+                };
+            }
 
-            var specs = await _specRepo.FindWithIncludesAsync(
-                s => s.ProductId == productId,
-                s => s.Product
-            );
+            if (!Guid.TryParse(productId, out _))
+            {
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = false,
+                    Message = "Invalid Product ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
 
-            return SpecificationMapper.MapToSpecificationDTOList(specs);
+            try
+            {
+                var productExists = await _productRepo.AnyAsync(p => p.Id == productId);
+                if (!productExists)
+                {
+                    return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                    {
+                        Success = false,
+                        Message = $"Product with ID '{productId}' not found.",
+                        Data = null
+                    };
+                }
+
+                var specs = await _specRepo.FindWithIncludesAsync(
+                    s => s.ProductId == productId,
+                    s => s.Product
+                );
+
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = true,
+                    Message = "Product specifications retrieved successfully.",
+                    Data = SpecificationMapper.MapToSpecificationDTOList(specs)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving product specifications.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<SpecificationDTO?> CreateSpecificationAsync(CreateSpecificationDTO dto)
+        public async Task<GeneralResponse<SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO dto)
         {
-            var productExists = await _productRepo.AnyAsync(p => p.Id == dto.ProductId);
-            if (!productExists)
-                return null;
+            // Input validation
+            if (dto == null)
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Specification data cannot be null.",
+                    Data = null
+                };
+            }
 
-            var spec = SpecificationMapper.MapToSpecification(dto);
+            if (string.IsNullOrWhiteSpace(dto.Key))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Specification key is required.",
+                    Data = null
+                };
+            }
 
-            await _specRepo.AddAsync(spec);
-            await _specRepo.SaveChangesAsync();
+            if (string.IsNullOrWhiteSpace(dto.Value))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Specification value is required.",
+                    Data = null
+                };
+            }
 
-            return SpecificationMapper.MapToSpecificationDTO(spec);
+            if (string.IsNullOrWhiteSpace(dto.ProductId))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Product ID is required.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(dto.ProductId, out _))
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Product ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var productExists = await _productRepo.AnyAsync(p => p.Id == dto.ProductId);
+                if (!productExists)
+                {
+                    return new GeneralResponse<SpecificationDTO>
+                    {
+                        Success = false,
+                        Message = $"Product with ID '{dto.ProductId}' not found.",
+                        Data = null
+                    };
+                }
+
+                var spec = SpecificationMapper.MapToSpecification(dto);
+
+                await _specRepo.AddAsync(spec);
+                await _specRepo.SaveChangesAsync();
+
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = true,
+                    Message = "Specification created successfully.",
+                    Data = SpecificationMapper.MapToSpecificationDTO(spec)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<SpecificationDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while creating the specification.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<bool> UpdateSpecificationAsync(UpdateSpecificationDTO dto)
+        public async Task<GeneralResponse<bool>> UpdateSpecificationAsync(UpdateSpecificationDTO dto)
         {
-            var spec = await _specRepo.GetByIdAsync(dto.Id);
-            if (spec == null) return false;
+            // Input validation
+            if (dto == null)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Update data cannot be null.",
+                    Data = false
+                };
+            }
 
-            var productExists = await _productRepo.AnyAsync(p => p.Id == dto.ProductId);
-            if (!productExists)
-                return false;
+            if (string.IsNullOrWhiteSpace(dto.Id))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Specification ID is required.",
+                    Data = false
+                };
+            }
 
-            SpecificationMapper.MapToSpecification(dto, spec);
+            if (!Guid.TryParse(dto.Id, out _))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Invalid Specification ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
 
-            _specRepo.Update(spec);
-            await _specRepo.SaveChangesAsync();
+            if (string.IsNullOrWhiteSpace(dto.Key))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Specification key is required.",
+                    Data = false
+                };
+            }
 
-            return true;
+            if (string.IsNullOrWhiteSpace(dto.Value))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Specification value is required.",
+                    Data = false
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.ProductId))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Product ID is required.",
+                    Data = false
+                };
+            }
+
+            if (!Guid.TryParse(dto.ProductId, out _))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Invalid Product ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
+
+            try
+            {
+                var spec = await _specRepo.GetByIdAsync(dto.Id);
+                if (spec == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"Specification with ID '{dto.Id}' not found.",
+                        Data = false
+                    };
+                }
+
+                var productExists = await _productRepo.AnyAsync(p => p.Id == dto.ProductId);
+                if (!productExists)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"Product with ID '{dto.ProductId}' not found.",
+                        Data = false
+                    };
+                }
+
+                SpecificationMapper.MapToSpecification(dto, spec);
+
+                _specRepo.Update(spec);
+                await _specRepo.SaveChangesAsync();
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Specification updated successfully.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating the specification.",
+                    Data = false
+                };
+            }
         }
 
-        public async Task<bool> DeleteSpecificationAsync(string id)
+        public async Task<GeneralResponse<bool>> DeleteSpecificationAsync(string id)
         {
-            var spec = await _specRepo.GetByIdAsync(id);
-            if (spec == null) return false;
+            // Input validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Specification ID cannot be null or empty.",
+                    Data = false
+                };
+            }
 
-            _specRepo.Remove(spec);
-            await _specRepo.SaveChangesAsync();
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Invalid Specification ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
 
-            return true;
+            try
+            {
+                var spec = await _specRepo.GetByIdAsync(id);
+                if (spec == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"Specification with ID '{id}' not found.",
+                        Data = false
+                    };
+                }
+
+                _specRepo.Remove(spec);
+                await _specRepo.SaveChangesAsync();
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Specification deleted successfully.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while deleting the specification.",
+                    Data = false
+                };
+            }
         }
     }
 }

@@ -12,6 +12,6 @@ namespace Core.Entities
         public string CustomerId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Customer? Customer { get; set; }
-        public ICollection<WishListItem>? WishListItems { get; set; }
+        public List<WishListItem>? WishListItems { get; set; } = new List<WishListItem>();
     }
 }

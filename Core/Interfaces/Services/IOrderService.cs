@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Orders;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace Core.Interfaces.Services
 {
     public interface IOrderService
     {
-        Task<OrderReadDTO> CreateOrderAsync(OrderCreateDTO dto);
-        Task<OrderReadDTO> GetOrderByIdAsync(string id);
-        Task<IEnumerable<OrderReadDTO>> GetAllOrdersAsync();
-        Task<IEnumerable<OrderReadDTO>> GetOrdersByCustomerIdAsync(string customerId);
+        Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto);
+        Task<GeneralResponse<OrderReadDTO>> GetOrderByIdAsync(string id);
+        Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetAllOrdersAsync();
+        Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId);
     }
 }

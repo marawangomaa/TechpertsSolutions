@@ -31,23 +31,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var history = await _historyService.GetHistoryByIdAsync(id);
-            if (history == null || string.IsNullOrEmpty(history.Id))
+            var response = await _historyService.GetHistoryByIdAsync(id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Order history not found.",
-                    Data = id
-                });
+                return NotFound(response);
             }
-
-            return Ok(new GeneralResponse<OrderHistoryReadDTO>
-            {
-                Success = true,
-                Message = "Order history retrieved successfully.",
-                Data = history
-            });
+            return Ok(response);
         }
 
         [HttpGet("customer/{customerId}")]
@@ -63,25 +52,23 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var history = await _historyService.GetHistoryByCustomerIdAsync(customerId);
-            return Ok(new GeneralResponse<OrderHistoryReadDTO>
+            var response = await _historyService.GetHistoryByCustomerIdAsync(customerId);
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Customer order history retrieved successfully.",
-                Data = history
-            });
+                return NotFound(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet]
         public async Task<ActionResult<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>>> GetAllHistories()
         {
-            var histories = await _historyService.GetAllOrderHistoriesAsync();
-            return Ok(new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+            var response = await _historyService.GetAllOrderHistoriesAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "All order histories retrieved successfully.",
-                Data = histories
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
     }
 }

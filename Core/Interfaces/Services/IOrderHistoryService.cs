@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Orders;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,8 @@ namespace Core.Interfaces.Services
 {
     public interface IOrderHistoryService
     {
-        Task<OrderHistoryReadDTO> GetHistoryByIdAsync(string id);
-        Task<OrderHistoryReadDTO> GetHistoryByCustomerIdAsync(string customerId);
-        Task<IEnumerable<OrderHistoryReadDTO>> GetAllOrderHistoriesAsync();
+        Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByIdAsync(string id);
+        Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByCustomerIdAsync(string customerId);
+        Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetAllOrderHistoriesAsync();
     }
 }

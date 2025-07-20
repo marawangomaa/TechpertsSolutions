@@ -4,7 +4,6 @@ using TechpertsSolutions.Core.DTOs.Customer;
 using Core.Interfaces.Services;
 using Core.Interfaces;
 
-
 namespace TechpertsSolutions.Controllers
 {
     [Route("api/[controller]")]
@@ -16,17 +15,18 @@ namespace TechpertsSolutions.Controllers
         {
             customerService = _customerService;
         }
+        
         [HttpGet("All")]
         public async Task<IActionResult> GetAll() 
         {
-            var customers = (await customerService.GetAllCustomersAsync()).ToList();
-            return Ok(new GeneralResponse<List<CustomerDTO>> 
+            var response = await customerService.GetAllCustomersAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "All Customers retrieved successfully",
-                Data = customers
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
+        
         [HttpGet("get/{id}")]
         public async Task<IActionResult> GetById(string id) 
         {
@@ -48,26 +48,15 @@ namespace TechpertsSolutions.Controllers
                     Data = "Expected GUID"
                 });
             }
-            try
+            
+            var response = await customerService.GetCustomerByIdAsync(id);
+            if (!response.Success)
             {
-                var customer = await customerService.GetCustomerByIdAsync(id);
-                return Ok(new GeneralResponse<CustomerDTO>
-                {
-                    Success = true,
-                    Message = "Customer retrieved successfully",
-                    Data = customer
-                });
+                return NotFound(response);
             }
-            catch (Exception ex) 
-            {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Customer not found",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
+        
         [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] CustomerEditDTO customerDto)
         {
@@ -93,44 +82,21 @@ namespace TechpertsSolutions.Controllers
 
             if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Invalid input data.",
+                    Message = "Validation failed: " + string.Join("; ", errors),
                     Data = "Model validation failed."
                 });
             }
 
-            try
+            var response = await customerService.UpdateCustomerAsync(id, customerDto);
+            if (!response.Success)
             {
-                var updatedCustomer = await customerService.UpdateCustomerAsync(id, customerDto);
-
-                if (updatedCustomer == null)
-                {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = $"Customer with ID '{id}' not found or update failed.",
-                        Data = "Update failed."
-                    });
-                }
-
-                return Ok(new GeneralResponse<CustomerEditDTO>
-                {
-                    Success = true,
-                    Message = "Customer updated successfully.",
-                    Data = updatedCustomer
-                });
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while updating the customer.",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
     }
 }

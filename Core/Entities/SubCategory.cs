@@ -14,6 +14,6 @@ namespace TechpertsSolutions.Core.Entities
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
 
-        public ICollection<Product>? Products { get; set; }
+        public List<Product>? Products { get; set; } = new List<Product>();
     }
 }

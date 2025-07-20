@@ -22,17 +22,17 @@ namespace TechpertsSolutions.Core.Entities
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;
-        public ICollection<Specification>? Specifications { get; set; }
-        public ICollection<Warranty>? Warranties { get; set; }
+        public List<Specification>? Specifications { get; set;} = new List<Specification>();
+        public List<Warranty>? Warranties { get; set; } = new List<Warranty>();
 
         public string TechManagerId { get; set; }
         public TechManager? TechManager { get; set; }
 
         public string StockControlManagerId { get; set; }
         public StockControlManager? StockControlManager { get; set; }
-        public List<CartItem>? CartItems { get; set; }
-        public List<WishListItem>? WishListItems { get; set; }
-        public List<PCAssemblyItem>? PCAssemblyItems { get; set; }
-        public List<OrderItem>? OrderItems { get; set; }
+        public List<CartItem>? CartItems { get; set; } = new List<CartItem>(); 
+        public List<WishListItem>? WishListItems { get; set; } = new List<WishListItem>();
+        public List<PCAssemblyItem>? PCAssemblyItems { get; set; } = new List<PCAssemblyItem>();
+        public List<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
     }
 }

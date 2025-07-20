@@ -1,15 +1,13 @@
 ﻿using Core.DTOs.Product;
 using Core.Enums;
 using Core.Interfaces.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -32,14 +30,12 @@ namespace TechpertsSolutions.Controllers
             [FromQuery] string? sortBy = "name",
             [FromQuery] bool sortDesc = false)
         {
-            var result = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId,subCategoryId ,search, sortBy, sortDesc);
-
-            return Ok(new GeneralResponse<PaginatedDTO<ProductCardDTO>>
+            var response = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId, subCategoryId, search, sortBy, sortDesc);
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Products fetched successfully with pagination.",
-                Data = result
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
@@ -55,48 +51,25 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            try
+            var response = await _productService.GetByIdAsync(id);
+            if (!response.Success)
             {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = "Product not found.",
-                        Data = id
-                    });
-                }
-
-                return Ok(new GeneralResponse<ProductDTO>
-                {
-                    Success = true,
-                    Message = "Product retrieved successfully.",
-                    Data = product
-                });
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Server error occurred.",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
 
         [HttpPost]
-       // [Authorize(Roles = "Admin,TechManager")]
+        // [Authorize(Roles = "Admin,TechManager")]
         public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO dto, IFormFile? img)
         {
             if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Invalid model.",
-                    Data = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                    Message = "Validation failed: " + string.Join("; ", errors)
                 });
             }
 
@@ -115,13 +88,12 @@ namespace TechpertsSolutions.Controllers
                     dto.ImageUrl = $"/uploads/products/{fileName}";
                 }
 
-                var product = await _productService.AddAsync(dto);
-                return Ok(new GeneralResponse<ProductDTO>
+                var response = await _productService.AddAsync(dto);
+                if (!response.Success)
                 {
-                    Success = true,
-                    Message = "Product added successfully.",
-                    Data = product
-                });
+                    return BadRequest(response);
+                }
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -140,11 +112,11 @@ namespace TechpertsSolutions.Controllers
         {
             if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Invalid model.",
-                    Data = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage))
+                    Message = "Validation failed: " + string.Join("; ", errors)
                 });
             }
 
@@ -175,23 +147,12 @@ namespace TechpertsSolutions.Controllers
 
                 // Set the ID from the route parameter to ensure consistency
                 dto.Id = id;
-                var updated = await _productService.UpdateAsync(id, dto);
-                if (!updated)
+                var response = await _productService.UpdateAsync(id, dto);
+                if (!response.Success)
                 {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = "Product not found.",
-                        Data = id
-                    });
+                    return NotFound(response);
                 }
-
-                return Ok(new GeneralResponse<string>
-                {
-                    Success = true,
-                    Message = "Product updated successfully.",
-                    Data = id
-                });
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -218,35 +179,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            try
+            var response = await _productService.DeleteAsync(id);
+            if (!response.Success)
             {
-                var deleted = await _productService.DeleteAsync(id);
-                if (!deleted)
-                {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = "Product not found.",
-                        Data = id
-                    });
-                }
-
-                return Ok(new GeneralResponse<string>
-                {
-                    Success = true,
-                    Message = "Product deleted successfully.",
-                    Data = id
-                });
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Failed to delete product.",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
     }
 }

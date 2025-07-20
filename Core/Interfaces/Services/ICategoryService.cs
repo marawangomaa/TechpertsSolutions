@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Category;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Core.Interfaces.Services
 {
     public interface ICategoryService
     {
-        Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync();
-        Task<CategoryDTO> GetCategoryByIdAsync(string Id);
-        Task<CategoryDTO> CreateCategoryAsync(CategoryCreateDTO categoryDTO);
-        Task<bool> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDTO);
-        Task<bool> DeleteCategoryAsync(string Id);
+        Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync();
+        Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string Id);
+        Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryDTO);
+        Task<GeneralResponse<bool>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDTO);
+        Task<GeneralResponse<bool>> DeleteCategoryAsync(string Id);
     }
 }

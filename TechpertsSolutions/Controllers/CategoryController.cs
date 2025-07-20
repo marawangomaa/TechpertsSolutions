@@ -1,17 +1,11 @@
-﻿using Core.DTOs; // Added to access GeneralResponse<T>
-using Core.DTOs.Category;
-using Core.Interfaces.Services; // Assuming ICategoryService is in this namespace
+﻿using Core.DTOs.Category;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic; // For IEnumerable
-using System.Linq; // For LINQ operations if needed
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
-
-// Assuming your DTOs are accessible, e.g., in a "Core.DTOs" or similar namespace
-// For this example, I'll assume they are in the same project or a referenced project.
-// If not, you might need a 'using' statement like:
-// using TechpertsSolutions.DTOs; // Or wherever your DTOs are located
 
 namespace TechpertsSolutions.Controllers
 {
@@ -19,7 +13,7 @@ namespace TechpertsSolutions.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryService _categoryService; // Renamed to _categoryService for common C# naming conventions
+        private readonly ICategoryService _categoryService;
 
         public CategoryController(ICategoryService categoryService)
         {
@@ -34,13 +28,12 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<IEnumerable<CategoryDTO>>))]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _categoryService.GetAllCategoriesAsync();
-            return Ok(new GeneralResponse<IEnumerable<CategoryDTO>>
+            var response = await _categoryService.GetAllCategoriesAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Categories retrieved successfully.",
-                Data = categories
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         /// <summary>
@@ -53,22 +46,12 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<CategoryDTO>))]
         public async Task<IActionResult> GetById(string Id)
         {
-            var category = await _categoryService.GetCategoryByIdAsync(Id);
-            if (category == null)
+            var response = await _categoryService.GetCategoryByIdAsync(Id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = $"Category with ID {Id} not found.",
-                    Data = null
-                });
+                return NotFound(response);
             }
-            return Ok(new GeneralResponse<CategoryDTO>
-            {
-                Success = true,
-                Message = "Category retrieved successfully.",
-                Data = category
-            });
+            return Ok(response);
         }
 
         /// <summary>
@@ -83,25 +66,20 @@ namespace TechpertsSolutions.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // For validation errors, you might want to return a more detailed message
-                // or a list of errors in the GeneralResponse. For simplicity, we'll
-                // just indicate failure and the default ModelState errors.
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "Validation failed.",
-                    // Data = null, // Or you could pass ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    Message = "Validation failed: " + string.Join("; ", errors)
                 });
             }
 
-            var createdCategory = await _categoryService.CreateCategoryAsync(categoryCreateDto);
-            // It's good practice to return 201 Created with the location of the new resource
-            return CreatedAtAction(nameof(GetById), new { Id = createdCategory.Id }, new GeneralResponse<CategoryDTO>
+            var response = await _categoryService.CreateCategoryAsync(categoryCreateDto);
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Category created successfully.",
-                Data = createdCategory
-            });
+                return BadRequest(response);
+            }
+            return CreatedAtAction(nameof(GetById), new { Id = response.Data?.Id }, response);
         }
 
         /// <summary>
@@ -111,7 +89,7 @@ namespace TechpertsSolutions.Controllers
         /// <param name="categoryUpdateDto">The updated category data (from body).</param>
         /// <returns>A GeneralResponse indicating success or failure.</returns>
         [HttpPut("Update/{Id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))] // Changed to 200 OK as we're returning a body
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
         public async Task<IActionResult> Update(string Id, [FromBody] CategoryUpdateDTO categoryUpdateDto)
@@ -121,37 +99,26 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Route ID and body ID do not match.",
-                    Data = null
+                    Message = "Route ID and body ID do not match."
                 });
             }
 
             if (!ModelState.IsValid)
             {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Validation failed.",
-                    Data = null
+                    Message = "Validation failed: " + string.Join("; ", errors)
                 });
             }
 
-            var result = await _categoryService.UpdateCategoryAsync(categoryUpdateDto);
-            if (!result)
+            var response = await _categoryService.UpdateCategoryAsync(categoryUpdateDto);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Category with ID {Id} not found.",
-                    Data = null
-                });
+                return NotFound(response);
             }
-            return Ok(new GeneralResponse<object> // Changed to Ok as we're returning a body
-            {
-                Success = true,
-                Message = "Category updated successfully.",
-                Data = null // Or you could return the updated DTO if desired
-            });
+            return Ok(response);
         }
 
         /// <summary>
@@ -160,26 +127,16 @@ namespace TechpertsSolutions.Controllers
         /// <param name="Id">The ID of the category to delete.</param>
         /// <returns>A GeneralResponse indicating success or failure.</returns>
         [HttpDelete("Delete/{Id}")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))] // Changed to 200 OK as we're returning a body
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
         public async Task<IActionResult> Delete(string Id)
         {
-            var result = await _categoryService.DeleteCategoryAsync(Id);
-            if (!result)
+            var response = await _categoryService.DeleteCategoryAsync(Id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Category with ID {Id} not found.",
-                    Data = null
-                });
+                return NotFound(response);
             }
-            return Ok(new GeneralResponse<object> // Changed to Ok as we're returning a body
-            {
-                Success = true,
-                Message = "Category deleted successfully.",
-                Data = null
-            });
+            return Ok(response);
         }
     }
 }

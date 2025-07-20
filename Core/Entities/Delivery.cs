@@ -9,9 +9,9 @@ namespace Core.Entities
 {
     public class Delivery : BaseEntity
     {
-        public ICollection<Order>? Orders { get; set; }
-        public ICollection<Customer>? Customers { get; set; }
-        public ICollection<TechCompany> TechCompanies { get; set; }
+        public List<Order>? Orders { get; set; } = new List<Order>();
+        public List<Customer>? Customers { get; set; } = new List<Customer>();
+        public List<TechCompany> TechCompanies { get; set; } = new List<TechCompany>();
 
     }
 }

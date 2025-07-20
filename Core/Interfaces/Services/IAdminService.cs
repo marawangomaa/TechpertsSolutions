@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Admin;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Core.Interfaces.Services
 {
     public interface IAdminService
     {
-        Task<IEnumerable<AdminReadDTO>> GetAllAsync();
-        Task<AdminReadDTO> GetByIdAsync(string id);
+        Task<GeneralResponse<IEnumerable<AdminReadDTO>>> GetAllAsync();
+        Task<GeneralResponse<AdminReadDTO>> GetByIdAsync(string id);
     }
 }

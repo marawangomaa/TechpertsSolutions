@@ -1,16 +1,18 @@
-﻿using Core.DTOs.SubCategory;
+﻿using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces.Services;
-using Microsoft.AspNetCore.Authorization; // For [Authorize] attribute
-using Microsoft.AspNetCore.Mvc;
+using Core.DTOs.SubCategory;
+using TechpertsSolutions.Core.DTOs;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs; // Assuming GeneralResponse is here
-
+using System.Linq;
 
 namespace TechpertsSolutions.Controllers
 {
+    /// <summary>
+    /// Controller for managing subcategories.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     // [Authorize] // Uncomment if you want to secure all endpoints in this controller
@@ -36,13 +38,12 @@ namespace TechpertsSolutions.Controllers
         {
             try
             {
-                var subCategories = await _subCategoryService.GetAllSubCategoriesAsync();
-                return Ok(new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                var response = await _subCategoryService.GetAllSubCategoriesAsync();
+                if (!response.Success)
                 {
-                    Success = true,
-                    Message = "Subcategories retrieved successfully.",
-                    Data = subCategories
-                });
+                    return BadRequest(response);
+                }
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -68,21 +69,12 @@ namespace TechpertsSolutions.Controllers
         {
             try
             {
-                var subCategory = await _subCategoryService.GetSubCategoryByIdAsync(id);
-                if (subCategory == null)
+                var response = await _subCategoryService.GetSubCategoryByIdAsync(id);
+                if (!response.Success)
                 {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = $"SubCategory with ID '{id}' not found."
-                    });
+                    return NotFound(response);
                 }
-                return Ok(new GeneralResponse<SubCategoryDTO>
-                {
-                    Success = true,
-                    Message = "SubCategory retrieved successfully.",
-                    Data = subCategory
-                });
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -108,21 +100,12 @@ namespace TechpertsSolutions.Controllers
         {
             try
             {
-                var subCategories = await _subCategoryService.GetSubCategoriesByCategoryIdAsync(categoryId);
-                return Ok(new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                var response = await _subCategoryService.GetSubCategoriesByCategoryIdAsync(categoryId);
+                if (!response.Success)
                 {
-                    Success = true,
-                    Message = $"Subcategories for Category ID '{categoryId}' retrieved successfully.",
-                    Data = subCategories
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message
-                });
+                    return BadRequest(response);
+                }
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -160,25 +143,16 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                var newSubCategory = await _subCategoryService.CreateSubCategoryAsync(createDto);
+                var response = await _subCategoryService.CreateSubCategoryAsync(createDto);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
                 return CreatedAtAction(
                     nameof(GetSubCategoryById),
-                    new { id = newSubCategory.Id },
-                    new GeneralResponse<SubCategoryDTO>
-                    {
-                        Success = true,
-                        Message = "SubCategory created successfully.",
-                        Data = newSubCategory
-                    }
+                    new { id = response.Data?.Id },
+                    response
                 );
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message
-                });
             }
             catch (Exception ex)
             {
@@ -226,28 +200,12 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                var result = await _subCategoryService.UpdateSubCategoryAsync(updateDto);
-                if (!result)
+                var response = await _subCategoryService.UpdateSubCategoryAsync(updateDto);
+                if (!response.Success)
                 {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = $"SubCategory with ID '{id}' not found."
-                    });
+                    return NotFound(response);
                 }
-                return Ok(new GeneralResponse<string> // Return 200 OK with a success message
-                {
-                    Success = true,
-                    Message = "SubCategory updated successfully."
-                });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = ex.Message
-                });
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -274,20 +232,12 @@ namespace TechpertsSolutions.Controllers
         {
             try
             {
-                var result = await _subCategoryService.DeleteSubCategoryAsync(id);
-                if (!result)
+                var response = await _subCategoryService.DeleteSubCategoryAsync(id);
+                if (!response.Success)
                 {
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = $"SubCategory with ID '{id}' not found."
-                    });
+                    return NotFound(response);
                 }
-                return Ok(new GeneralResponse<string> // Return 200 OK with a success message
-                {
-                    Success = true,
-                    Message = "SubCategory deleted successfully."
-                });
+                return Ok(response);
             }
             catch (Exception ex)
             {

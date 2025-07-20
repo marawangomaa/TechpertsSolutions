@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Orders;
+using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -23,55 +24,217 @@ namespace Service
             _orderHistoryRepo = orderHistoryRepo;
         }
 
-        public async Task<OrderReadDTO> CreateOrderAsync(OrderCreateDTO dto)
+        public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
-            var order = OrderMapper.ToEntity(dto);
-            
-            // Calculate total amount properly
-            order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
-
-            // Create or get order history for the customer
-            var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
-            order.OrderHistoryId = orderHistory.Id;
-
-            await _orderRepo.AddAsync(order);
-            await _orderRepo.SaveChangesAsync();
-
-            return OrderMapper.ToReadDTO(order);
-        }
-
-        public async Task<OrderReadDTO> GetOrderByIdAsync(string id)
-        {
-            var order = await _orderRepo.GetByIdWithIncludesAsync(id, 
-                o => o.OrderItems, 
-                o => o.Customer,
-                o => o.OrderHistory);
-            
-            if (order == null)
+            // Input validation
+            if (dto == null)
             {
-                return null;
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Order data cannot be null.",
+                    Data = null
+                };
             }
-            
-            return OrderMapper.ToReadDTO(order);
+
+            if (string.IsNullOrWhiteSpace(dto.CustomerId))
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Customer ID is required.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(dto.CustomerId, out _))
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            if (dto.OrderItems == null || !dto.OrderItems.Any())
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Order must contain at least one item.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var order = OrderMapper.ToEntity(dto);
+                
+                // Calculate total amount properly
+                order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
+
+                // Create or get order history for the customer
+                var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
+                order.OrderHistoryId = orderHistory.Id;
+
+                await _orderRepo.AddAsync(order);
+                await _orderRepo.SaveChangesAsync();
+
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = true,
+                    Message = "Order created successfully.",
+                    Data = OrderMapper.ToReadDTO(order)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while creating the order.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<IEnumerable<OrderReadDTO>> GetAllOrdersAsync()
+        public async Task<GeneralResponse<OrderReadDTO>> GetOrderByIdAsync(string id)
         {
-            var orders = await _orderRepo.GetAllWithIncludesAsync(
-                o => o.OrderItems, 
-                o => o.Customer,
-                o => o.OrderHistory);
-            return orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
+            // Input validation
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Order ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var order = await _orderRepo.GetByIdWithIncludesAsync(id, 
+                    o => o.OrderItems, 
+                    o => o.Customer,
+                    o => o.OrderHistory);
+                
+                if (order == null)
+                {
+                    return new GeneralResponse<OrderReadDTO>
+                    {
+                        Success = false,
+                        Message = $"Order with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+                
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = true,
+                    Message = "Order retrieved successfully.",
+                    Data = OrderMapper.ToReadDTO(order)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the order.",
+                    Data = null
+                };
+            }
         }
 
-        public async Task<IEnumerable<OrderReadDTO>> GetOrdersByCustomerIdAsync(string customerId)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetAllOrdersAsync()
         {
-            var orders = await _orderRepo.FindWithIncludesAsync(
-                o => o.CustomerId == customerId, 
-                o => o.OrderItems, 
-                o => o.Customer,
-                o => o.OrderHistory);
-            return orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
+            try
+            {
+                var orders = await _orderRepo.GetAllWithIncludesAsync(
+                    o => o.OrderItems, 
+                    o => o.Customer,
+                    o => o.OrderHistory);
+                
+                var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
+                
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = true,
+                    Message = "Orders retrieved successfully.",
+                    Data = orderDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving orders.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var orders = await _orderRepo.FindWithIncludesAsync(
+                    o => o.CustomerId == customerId, 
+                    o => o.OrderItems, 
+                    o => o.Customer,
+                    o => o.OrderHistory);
+                
+                var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
+                
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = true,
+                    Message = "Customer orders retrieved successfully.",
+                    Data = orderDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving customer orders.",
+                    Data = null
+                };
+            }
         }
 
         private async Task<OrderHistory> GetOrCreateOrderHistoryAsync(string customerId)

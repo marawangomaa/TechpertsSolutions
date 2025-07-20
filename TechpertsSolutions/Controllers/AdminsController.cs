@@ -20,13 +20,12 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
-            var admins = await _adminService.GetAllAsync();
-            return Ok(new GeneralResponse<List<AdminReadDTO>>
+            var response = await _adminService.GetAllAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Retrieved admin list successfully",
-                Data = admins.ToList()
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
@@ -48,34 +47,12 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid GUID format"
                 });
 
-            try
+            var response = await _adminService.GetByIdAsync(id);
+            if (!response.Success)
             {
-                var admin = await _adminService.GetByIdAsync(id);
-
-                if (admin == null)
-                    return NotFound(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = "Admin not found.",
-                        Data = $"No admin with ID {id}."
-                    });
-
-                return Ok(new GeneralResponse<AdminReadDTO>
-                {
-                    Success = true,
-                    Message = "Admin retrieved successfully.",
-                    Data = admin
-                });
+                return NotFound(response);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred.",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
     }
 }

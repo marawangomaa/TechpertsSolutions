@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Maintenance;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace Core.Interfaces.Services
 {
     public interface IMaintenanceService
     {
-        Task<IEnumerable<MaintenanceDTO>> GetAllAsync();
-        Task<MaintenanceDetailsDTO?> GetByIdAsync(string id);
-        Task<MaintenanceDTO> AddAsync(MaintenanceCreateDTO dto);
-        Task<bool> UpdateAsync(string id, MaintenanceUpdateDTO dto);
-        Task<bool> DeleteAsync(string id);
+        Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAllAsync();
+        Task<GeneralResponse<MaintenanceDetailsDTO>> GetByIdAsync(string id);
+        Task<GeneralResponse<MaintenanceDTO>> AddAsync(MaintenanceCreateDTO dto);
+        Task<GeneralResponse<bool>> UpdateAsync(string id, MaintenanceUpdateDTO dto);
+        Task<GeneralResponse<bool>> DeleteAsync(string id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Category;
+using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -25,112 +26,319 @@ namespace Service
             _productRepository = productRepository;
             _cartItemRepository = cartItemRepository;
         }
-        public async Task<IEnumerable<CategoryDTO>> GetAllCategoriesAsync()
-        {
-            var categories = await _categoryRepository.GetAllWithIncludesAsync(
-                c => c.SubCategories,
-                c => c.Products
-            );
 
-            // Use CategoryMapper for mapping
-            return CategoryMapper.MapToCategoryDTOList(categories);
+        public async Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync()
+        {
+            try
+            {
+                var categories = await _categoryRepository.GetAllWithIncludesAsync(
+                    c => c.SubCategories,
+                    c => c.Products
+                );
+
+                // Use CategoryMapper for mapping
+                return new GeneralResponse<IEnumerable<CategoryDTO>>
+                {
+                    Success = true,
+                    Message = "Categories retrieved successfully.",
+                    Data = CategoryMapper.MapToCategoryDTOList(categories)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<CategoryDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving categories.",
+                    Data = null
+                };
+            }
         }
 
         // Retrieves a single category by ID, including its sub-categories and products.
-        public async Task<CategoryDTO?> GetCategoryByIdAsync(string id)
+        public async Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string id)
         {
-            var category = await _categoryRepository.GetByIdWithIncludesAsync(
-                id,
-                c => c.SubCategories,
-                c => c.Products
-            );
-
-            if (category == null)
+            // Input validation
+            if (string.IsNullOrWhiteSpace(id))
             {
-                return null;
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "Category ID cannot be null or empty.",
+                    Data = null
+                };
             }
 
-            // Use CategoryMapper for mapping
-            return CategoryMapper.MapToCategoryDTO(category);
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var category = await _categoryRepository.GetByIdWithIncludesAsync(
+                    id,
+                    c => c.SubCategories,
+                    c => c.Products
+                );
+
+                if (category == null)
+                {
+                    return new GeneralResponse<CategoryDTO>
+                    {
+                        Success = false,
+                        Message = $"Category with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                // Use CategoryMapper for mapping
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = true,
+                    Message = "Category retrieved successfully.",
+                    Data = CategoryMapper.MapToCategoryDTO(category)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the category.",
+                    Data = null
+                };
+            }
         }
 
         // Creates a new category from a DTO.
-        public async Task<CategoryDTO> CreateCategoryAsync(CategoryCreateDTO categoryCreateDto)
+        public async Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryCreateDto)
         {
-            // Use CategoryMapper for mapping
-            var category = CategoryMapper.MapToCategory(categoryCreateDto);
+            // Input validation
+            if (categoryCreateDto == null)
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "Category data cannot be null.",
+                    Data = null
+                };
+            }
 
-            await _categoryRepository.AddAsync(category); // Add entity via repository
-            await _categoryRepository.SaveChangesAsync(); // Save changes
+            if (string.IsNullOrWhiteSpace(categoryCreateDto.Name))
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "Category name is required.",
+                    Data = null
+                };
+            }
 
-            // Use CategoryMapper for mapping
-            return CategoryMapper.MapToCategoryDTO(category);
+            try
+            {
+                // Use CategoryMapper for mapping
+                var category = CategoryMapper.MapToCategory(categoryCreateDto);
+
+                await _categoryRepository.AddAsync(category); // Add entity via repository
+                await _categoryRepository.SaveChangesAsync(); // Save changes
+
+                // Use CategoryMapper for mapping
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = true,
+                    Message = "Category created successfully.",
+                    Data = CategoryMapper.MapToCategoryDTO(category)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while creating the category.",
+                    Data = null
+                };
+            }
         }
 
         // Updates an existing category from a DTO.
-        public async Task<bool> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDto)
+        public async Task<GeneralResponse<bool>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDto)
         {
-            var category = await _categoryRepository.GetByIdAsync(categoryUpdateDto.Id);
-            if (category == null)
+            // Input validation
+            if (categoryUpdateDto == null)
             {
-                return false; // Category not found
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Update data cannot be null.",
+                    Data = false
+                };
             }
 
-            // Use CategoryMapper for mapping
-            CategoryMapper.MapToCategory(categoryUpdateDto, category);
+            if (string.IsNullOrWhiteSpace(categoryUpdateDto.Id))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Category ID is required.",
+                    Data = false
+                };
+            }
 
-            _categoryRepository.Update(category); // Mark entity as updated
-            await _categoryRepository.SaveChangesAsync(); // Save changes
-            return true;
+            if (!Guid.TryParse(categoryUpdateDto.Id, out _))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryUpdateDto.Name))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Category name is required.",
+                    Data = false
+                };
+            }
+
+            try
+            {
+                var category = await _categoryRepository.GetByIdAsync(categoryUpdateDto.Id);
+                if (category == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"Category with ID '{categoryUpdateDto.Id}' not found.",
+                        Data = false
+                    };
+                }
+
+                // Use CategoryMapper for mapping
+                CategoryMapper.MapToCategory(categoryUpdateDto, category);
+
+                _categoryRepository.Update(category); // Mark entity as updated
+                await _categoryRepository.SaveChangesAsync(); // Save changes
+                
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Category updated successfully.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating the category.",
+                    Data = false
+                };
+            }
         }
 
         // Deletes a category by ID.
-        public async Task<bool> DeleteCategoryAsync(string id)
+        public async Task<GeneralResponse<bool>> DeleteCategoryAsync(string id)
         {
-            var category = await _categoryRepository.GetByIdAsync(id);
-            if (category == null)
+            // Input validation
+            if (string.IsNullOrWhiteSpace(id))
             {
-                return false; // Category not found
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Category ID cannot be null or empty.",
+                    Data = false
+                };
             }
 
-            // --- Start of changes for manual deletion ---
-
-            // 1. Find all products associated with this category
-            // Use FindAsync from productRepository for filtering
-            var productsToDelete = await _productRepository.FindAsync(p => p.CategoryId == id);
-
-            // 2. For each product, find and delete its associated cart items
-            foreach (var product in productsToDelete)
+            if (!Guid.TryParse(id, out _))
             {
-                var cartItemsToDelete = await _cartItemRepository.FindAsync(ci => ci.ProductId == product.Id);
-                // If your IRepository<T> doesn't have a RemoveRange, you'll need to loop:
-                foreach (var cartItem in cartItemsToDelete)
+                return new GeneralResponse<bool>
                 {
-                    _cartItemRepository.Remove(cartItem);
+                    Success = false,
+                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
+
+            try
+            {
+                var category = await _categoryRepository.GetByIdAsync(id);
+                if (category == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"Category with ID '{id}' not found.",
+                        Data = false
+                    };
+                }
+
+                // --- Start of changes for manual deletion ---
+
+                // 1. Find all products associated with this category
+                // Use FindAsync from productRepository for filtering
+                var productsToDelete = await _productRepository.FindAsync(p => p.CategoryId == id);
+
+                // 2. For each product, find and delete its associated cart items
+                foreach (var product in productsToDelete)
+                {
+                    var cartItemsToDelete = await _cartItemRepository.FindAsync(ci => ci.ProductId == product.Id);
+                    // If your IRepository<T> doesn't have a RemoveRange, you'll need to loop:
+                    foreach (var cartItem in cartItemsToDelete)
+                    {
+                        _cartItemRepository.Remove(cartItem);
+                    }
+                    // If you added RemoveRange to IRepository, you could use:
+                    // _cartItemRepository.RemoveRange(cartItemsToDelete.ToList());
+                }
+
+                // 3. Remove the products
+                // Again, if no RemoveRange, loop:
+                foreach (var product in productsToDelete)
+                {
+                    _productRepository.Remove(product);
                 }
                 // If you added RemoveRange to IRepository, you could use:
-                // _cartItemRepository.RemoveRange(cartItemsToDelete.ToList());
-            }
+                // _productRepository.RemoveRange(productsToDelete.ToList());
 
-            // 3. Remove the products
-            // Again, if no RemoveRange, loop:
-            foreach (var product in productsToDelete)
+                // --- End of changes for manual deletion ---
+
+                // 4. Finally, remove the category itself
+                _categoryRepository.Remove(category);
+
+                // 5. Save all changes. This single SaveChangesAsync call will commit
+                // all pending deletions (cart items, then products, then category)
+                // within a single transaction, resolving the foreign key conflict.
+                await _categoryRepository.SaveChangesAsync();
+                
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Category deleted successfully.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
             {
-                _productRepository.Remove(product);
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while deleting the category.",
+                    Data = false
+                };
             }
-            // If you added RemoveRange to IRepository, you could use:
-            // _productRepository.RemoveRange(productsToDelete.ToList());
-
-            // --- End of changes for manual deletion ---
-
-            // 4. Finally, remove the category itself
-            _categoryRepository.Remove(category);
-
-            // 5. Save all changes. This single SaveChangesAsync call will commit
-            // all pending deletions (cart items, then products, then category)
-            // within a single transaction, resolving the foreign key conflict.
-            await _categoryRepository.SaveChangesAsync();
-            return true;
         }
     }
 }

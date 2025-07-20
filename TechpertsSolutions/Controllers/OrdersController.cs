@@ -61,35 +61,23 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var result = await _service.GetOrderByIdAsync(id);
-            if (result == null)
+            var response = await _service.GetOrderByIdAsync(id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Order not found.",
-                    Data = id
-                });
+                return NotFound(response);
             }
-
-            return Ok(new GeneralResponse<OrderReadDTO>
-            {
-                Success = true,
-                Message = "Order retrieved successfully.",
-                Data = result
-            });
+            return Ok(response);
         }
 
         [HttpGet]
         public async Task<ActionResult<GeneralResponse<IEnumerable<OrderReadDTO>>>> GetAll()
         {
-            var orders = await _service.GetAllOrdersAsync();
-            return Ok(new GeneralResponse<IEnumerable<OrderReadDTO>>
+            var response = await _service.GetAllOrdersAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Orders retrieved successfully.",
-                Data = orders
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("by-customer/{customerId}")]
@@ -115,13 +103,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var orders = await _service.GetOrdersByCustomerIdAsync(customerId);
-            return Ok(new GeneralResponse<IEnumerable<OrderReadDTO>>
+            var response = await _service.GetOrdersByCustomerIdAsync(customerId);
+            if (!response.Success)
             {
-                Success = true,
-                Message = "Customer orders retrieved successfully.",
-                Data = orders
-            });
+                return NotFound(response);
+            }
+            return Ok(response);
         }
     }
 }

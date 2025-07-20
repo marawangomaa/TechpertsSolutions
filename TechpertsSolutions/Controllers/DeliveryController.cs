@@ -19,13 +19,12 @@ namespace TechpertsSolutions.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var deliveries = await _service.GetAllAsync();
-            return Ok(new GeneralResponse<IEnumerable<DeliveryDTO>>
+            var response = await _service.GetAllAsync();
+            if (!response.Success)
             {
-                Success = true,
-                Message = "All deliveries fetched",
-                Data = deliveries
-            });
+                return BadRequest(response);
+            }
+            return Ok(response);
         }
 
         [HttpGet("{id}")]
@@ -41,23 +40,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var delivery = await _service.GetByIdAsync(id);
-            if (delivery == null)
+            var response = await _service.GetByIdAsync(id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Delivery not found",
-                    Data = id
-                });
+                return NotFound(response);
             }
-
-            return Ok(new GeneralResponse<DeliveryDTO>
-            {
-                Success = true,
-                Message = "Delivery found",
-                Data = delivery
-            });
+            return Ok(response);
         }
 
         [HttpGet("details/{id}")]
@@ -73,47 +61,23 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var details = await _service.GetDetailsByIdAsync(id);
-            if (details == null)
+            var response = await _service.GetDetailsByIdAsync(id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Delivery not found",
-                    Data = id
-                });
+                return NotFound(response);
             }
-
-            return Ok(new GeneralResponse<DeliveryDetailsDTO>
-            {
-                Success = true,
-                Message = "Delivery details fetched",
-                Data = details
-            });
+            return Ok(response);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create()
         {
-            try
+            var response = await _service.AddAsync();
+            if (!response.Success)
             {
-                var created = await _service.AddAsync();
-                return Ok(new GeneralResponse<DeliveryDTO>
-                {
-                    Success = true,
-                    Message = "Delivery created successfully",
-                    Data = created
-                });
+                return BadRequest(response);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Failed to create delivery",
-                    Data = ex.Message
-                });
-            }
+            return Ok(response);
         }
 
         [HttpDelete("{id}")]
@@ -129,23 +93,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var deleted = await _service.DeleteAsync(id);
-            if (!deleted)
+            var response = await _service.DeleteAsync(id);
+            if (!response.Success)
             {
-                return NotFound(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = $"Delivery with ID {id} not found",
-                    Data = id
-                });
+                return NotFound(response);
             }
-
-            return Ok(new GeneralResponse<string>
-            {
-                Success = true,
-                Message = "Delivery deleted successfully",
-                Data = id
-            });
+            return Ok(response);
         }
     }
 }

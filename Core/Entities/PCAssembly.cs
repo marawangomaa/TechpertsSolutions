@@ -15,6 +15,6 @@ namespace Core.Entities
         public Customer? Customer { get; set; }
         public string ServiceUsageId { get; set; }
         public ServiceUsage? ServiceUsage { get; set; }
-        public ICollection<PCAssemblyItem>? PCAssemblyItems { get; set; }
+        public List<PCAssemblyItem>? PCAssemblyItems { get; set; } = new List<PCAssemblyItem>();
     }
 }

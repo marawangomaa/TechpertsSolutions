@@ -11,7 +11,7 @@ namespace TechpertsSolutions.Core.Entities
     {
         public string Name { get; set; }
 
-        public ICollection<SubCategory>? SubCategories { get; set; }
-        public ICollection<Product>? Products { get; set; }
+        public List<SubCategory>? SubCategories { get; set; } = new List<SubCategory>();
+        public List<Product>? Products { get; set; } = new List<Product>();
     }
 }

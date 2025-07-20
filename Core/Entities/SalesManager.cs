@@ -13,7 +13,7 @@ namespace TechpertsSolutions.Core.Entities
         public AppUser User { get; set; }
         public string RoleId { get; set; }
         public AppRole Role { get; set; }
-        public ICollection<Order>? Orders { get; set; }
+        public List<Order>? Orders { get; set; } = new List<Order>();
     }
     
 }

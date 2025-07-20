@@ -12,7 +12,7 @@ namespace Core.Entities
         public string ServiceType { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
-        public ICollection<Order>? Orders { get; set; }
-        public ICollection<PCAssembly>? PCAssemblies { get; set; }
+        public List<Order>? Orders { get; set; } = new List<Order>();
+        public List<PCAssembly>? PCAssemblies { get; set; } = new List<PCAssembly>();
     }
 }
