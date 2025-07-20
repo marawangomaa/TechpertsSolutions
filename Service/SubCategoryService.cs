@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.SubCategory;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -30,19 +31,7 @@ namespace Service
             _logger = logger;
         }
 
-        // Helper method for manual mapping from Entity to DTO
-        private SubCategoryDTO MapToSubCategoryDto(SubCategory subCategory)
-        {
-            if (subCategory == null) return null;
 
-            return new SubCategoryDTO
-            {
-                Id = subCategory.Id,
-                Name = subCategory.Name,
-                CategoryId = subCategory.CategoryId,
-                CategoryName = subCategory.Category?.Name // Null check for Category navigation property
-            };
-        }
 
         public async Task<IEnumerable<SubCategoryDTO>> GetAllSubCategoriesAsync()
         {
@@ -51,12 +40,7 @@ namespace Service
                 // Include Category to get CategoryName for DTO mapping
                 var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(sc => sc.Category);
 
-                var subCategoryDtos = new List<SubCategoryDTO>();
-                foreach (var sc in subCategories)
-                {
-                    subCategoryDtos.Add(MapToSubCategoryDto(sc));
-                }
-                return subCategoryDtos;
+                return SubCategoryMapper.MapToSubCategoryDTOList(subCategories);
             }
             catch (Exception ex)
             {
@@ -71,7 +55,7 @@ namespace Service
             {
                 // Include Category to get CategoryName for DTO mapping
                 var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(id, sc => sc.Category);
-                return MapToSubCategoryDto(subCategory);
+                return SubCategoryMapper.MapToSubCategoryDTO(subCategory);
             }
             catch (KeyNotFoundException)
             {
@@ -95,20 +79,15 @@ namespace Service
                     throw new ArgumentException($"Category with ID '{createDto.CategoryId}' does not exist.");
                 }
 
-                // Manual mapping from DTO to Entity
-                var subCategory = new SubCategory
-                {
-                    Id = Guid.NewGuid().ToString(), // Generate a new ID
-                    Name = createDto.Name,
-                    CategoryId = createDto.CategoryId
-                };
+                // Use SubCategoryMapper for mapping
+                var subCategory = SubCategoryMapper.MapToSubCategory(createDto);
 
                 await _subCategoryRepository.AddAsync(subCategory);
                 await _subCategoryRepository.SaveChangesAsync();
 
                 // Fetch the created subcategory with its category for the DTO response
                 var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(subCategory.Id, sc => sc.Category);
-                return MapToSubCategoryDto(createdSubCategory);
+                return SubCategoryMapper.MapToSubCategoryDTO(createdSubCategory);
             }
             catch (ArgumentException)
             {
@@ -138,10 +117,8 @@ namespace Service
                     throw new ArgumentException($"Category with ID '{updateDto.CategoryId}' does not exist.");
                 }
 
-                // Manual mapping from DTO to existing Entity
-                existingSubCategory.Name = updateDto.Name;
-                existingSubCategory.CategoryId = updateDto.CategoryId;
-                // Id is not updated as it's the primary key
+                // Use SubCategoryMapper for mapping
+                SubCategoryMapper.MapToSubCategory(updateDto, existingSubCategory);
 
                 _subCategoryRepository.Update(existingSubCategory);
                 await _subCategoryRepository.SaveChangesAsync();
@@ -208,12 +185,7 @@ namespace Service
                     sc => sc.Category
                 );
 
-                var subCategoryDtos = new List<SubCategoryDTO>();
-                foreach (var sc in subCategories)
-                {
-                    subCategoryDtos.Add(MapToSubCategoryDto(sc));
-                }
-                return subCategoryDtos;
+                return SubCategoryMapper.MapToSubCategoryDTOList(subCategories);
             }
             catch (ArgumentException)
             {

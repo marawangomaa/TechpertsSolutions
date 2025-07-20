@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,29 +22,23 @@ namespace Service
         public async Task<IEnumerable<DeliveryDTO>> GetAllAsync()
         {
             var deliveries = await _deliveryrepo.GetAllAsync();
-            return deliveries.Select(d => new DeliveryDTO { Id = d.Id });
+            return DeliveryMapper.MapToDeliveryDTOList(deliveries);
         }
 
         public async Task<DeliveryDTO?> GetByIdAsync(string id)
         {
             var delivery = await _deliveryrepo.GetByIdAsync(id);
-            return delivery == null ? null : new DeliveryDTO { Id = delivery.Id };
+            return DeliveryMapper.MapToDeliveryDTO(delivery);
         }
 
         public async Task<DeliveryDTO> AddAsync()
         {
-            var entity = new Delivery
-            {
-                Id = Guid.NewGuid().ToString()
-            };
+            var entity = DeliveryMapper.MapToDelivery();
 
             await _deliveryrepo.AddAsync(entity);
             await _deliveryrepo.SaveChangesAsync();
 
-            return new DeliveryDTO
-            {
-                Id = entity.Id
-            };
+            return DeliveryMapper.MapToDeliveryDTO(entity);
         }
 
         public async Task<bool> DeleteAsync(string id)
@@ -60,37 +55,7 @@ namespace Service
         public async Task<DeliveryDetailsDTO?> GetDetailsByIdAsync(string id)
         {
             var entity = await _deliveryrepo.GetByIdAsync(id);
-            if (entity == null) return null;
-
-            return new DeliveryDetailsDTO
-            {
-                Id = entity.Id,
-                Customers = entity.Customers?.Select(c => new DeliveryCustomerDTO
-                {
-                    Id = c.Id,
-                    City = c.City,
-                    Country = c.Country,
-                    UserFullName = c.User.FullName
-                }).ToList(),
-
-                Orders = entity.Orders?.Select(o => new DeliveryOrderDTO
-                {
-                    Id = o.Id,
-                    OrderDate = o.OrderDate,
-                    TotalAmount = o.TotalAmount,
-                    CustomerName = o.Customer?.User?.FullName ?? "",
-                    City = o.Customer?.City,
-                    Status = o.Status
-                }).ToList(),
-
-                TechCompanies = entity.TechCompanies?.Select(t => new DeliveryTechCompanyDTO
-                {
-                    Id = t.Id,
-                    City = t.City,
-                    Country = t.Country,
-                    UserFullName = t.User.FullName
-                }).ToList()
-            };
+            return DeliveryMapper.MapToDeliveryDetailsDTO(entity);
         }
 
        

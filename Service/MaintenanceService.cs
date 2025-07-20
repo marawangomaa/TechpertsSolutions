@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,33 +34,18 @@ namespace Service
         public async Task<IEnumerable<MaintenanceDTO>> GetAllAsync()
         {
             var maintenances = await _maintenanceRepo.GetAllAsync();
-            return maintenances.Select(m => new MaintenanceDTO
-            {
-                Id = m.Id
-            });
+            return MaintenanceMapper.MapToMaintenanceDTOList(maintenances);
         }
 
         public async Task<MaintenanceDetailsDTO?> GetByIdAsync(string id)
         {
             var maintenance = await _maintenanceRepo.GetByIdAsync(id);
-            if (maintenance == null) return null;
-
-            var warranty = maintenance.Warranty;
-            var product = warranty?.Product;
-
-            return MapToMaintenanceDetailsDTO(maintenance);
+            return MaintenanceMapper.MapToMaintenanceDetailsDTO(maintenance);
         }
 
         public async Task<MaintenanceDTO> AddAsync(MaintenanceCreateDTO dto)
         {
-            var entity = new Maintenance
-            {
-                Id = Guid.NewGuid().ToString(),
-                CustomerId = dto.CustomerId,
-                TechCompanyId = dto.TechCompanyId,
-                WarrantyId = dto.WarrantyId,
-                ServiceUsageId = dto.ServiceUsageId
-            };
+            var entity = MaintenanceMapper.MapToMaintenance(dto);
 
             await _maintenanceRepo.AddAsync(entity);
             await _maintenanceRepo.SaveChangesAsync();
@@ -69,16 +55,13 @@ namespace Service
             var warranty = await _warrantyRepo.GetByIdAsync(dto.WarrantyId);
             var serviceUsage = await _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId);
 
-            return new MaintenanceDTO
-            {
-                Id = entity.Id,
-                CustomerName = customer?.User?.FullName ?? "Unknown",
-                TechCompanyName = techCompany?.User?.FullName ?? "Unknown",
-                ProductName = warranty?.Product?.Name ?? "Unknown",
-                ServiceType = serviceUsage?.ServiceType ?? "Unknown",
-                WarrantyStart = warranty?.StartDate ?? DateTime.MinValue,
-                WarrantyEnd = warranty?.EndDate ?? DateTime.MinValue
-            };
+            return MaintenanceMapper.MapToMaintenanceDTO(entity, 
+                customer?.User?.FullName ?? "Unknown",
+                techCompany?.User?.FullName ?? "Unknown",
+                warranty?.Product?.Name ?? "Unknown",
+                serviceUsage?.ServiceType ?? "Unknown",
+                warranty?.StartDate ?? DateTime.MinValue,
+                warranty?.EndDate ?? DateTime.MinValue);
         }
 
 
@@ -123,10 +106,7 @@ namespace Service
                 return false;
             }
 
-            maintenance.CustomerId = dto.CustomerId;
-            maintenance.TechCompanyId = dto.TechCompanyId;
-            maintenance.WarrantyId = dto.WarrantyId;
-            maintenance.ServiceUsageId = dto.ServiceUsageId;
+            MaintenanceMapper.MapToMaintenance(dto, maintenance);
 
             _maintenanceRepo.Update(maintenance);
             await _maintenanceRepo.SaveChangesAsync();
@@ -145,48 +125,6 @@ namespace Service
             return true;
         }
 
-        private MaintenanceDetailsDTO MapToMaintenanceDetailsDTO(Maintenance maintenance)
-        {
-            return new MaintenanceDetailsDTO
-            {
-                Id = maintenance.Id,
 
-                Customer = maintenance.Customer == null ? null : new MaintenanceCustomerDTO
-                {
-                    Id = maintenance.Customer.Id,
-                    FullName = maintenance.Customer.User.FullName
-                },
-
-                TechCompany = maintenance.TechCompany == null ? null : new MaintenanceTechCompanyDTO
-                {
-                    Id = maintenance.TechCompany.Id,
-                    FullName = maintenance.TechCompany.User.FullName
-                },
-
-                Warranty = maintenance.Warranty == null ? null : new MaintenanceWarrantyDTO
-                {
-                    Id = maintenance.Warranty.Id,
-                    Description = maintenance.Warranty.Description,
-                    StartDate = maintenance.Warranty.StartDate,
-                    EndDate = maintenance.Warranty.EndDate,
-                    ProductName = maintenance.Warranty.Product?.Name
-                },
-
-                Product = maintenance.Warranty?.Product == null ? null : new MaintenanceProductDTO
-                {
-                    Id = maintenance.Warranty.Product.Id,
-                    Name = maintenance.Warranty.Product.Name,
-                    Price = maintenance.Warranty.Product.Price
-                },
-
-                ServiceUsage = maintenance.serviceUsage == null ? null : new MaintenanceServiceUsageDTO
-                {
-                    Id = maintenance.serviceUsage.Id,
-                    ServiceType = maintenance.serviceUsage.ServiceType,
-                    UsedOn = maintenance.serviceUsage.UsedOn,
-                    CallCount = maintenance.serviceUsage.CallCount
-                }
-            };
-        }
     }
 }

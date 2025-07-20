@@ -3,6 +3,7 @@ using Core.DTOs.Login;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -148,12 +149,7 @@ namespace Service
 
                 await transaction.CommitAsync();
 
-                return new GeneralResponse<string>
-                {
-                    Success = true,
-                    Message = "Your account has been deleted successfully.",
-                    Data = user.Email
-                };
+                return AuthMapper.MapToDeleteAccountResponse(true, "Your account has been deleted successfully.", user.Email);
             }
             catch (Exception ex)
             {

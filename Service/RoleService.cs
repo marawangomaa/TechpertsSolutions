@@ -2,6 +2,7 @@
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Service.Utilities;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -57,12 +58,7 @@ namespace Service
         public async Task<GeneralResponse<bool>> CheckRoleAsync(string roleName)
         {
             var exists = await roleManager.RoleExistsAsync(roleName);
-            return new GeneralResponse<bool>
-            {
-                Success = true,
-                Message = exists ? "Role exists." : "Role does not exist.",
-                Data = exists
-            };
+            return RoleMapper.MapToRoleCheckResponse(exists);
         }
 
         public async Task<GeneralResponse<string>> AssignRoleAsync(string userEmail, RoleType roleName)
@@ -98,12 +94,9 @@ namespace Service
 
             await context.SaveChangesAsync();
 
-            return new GeneralResponse<string>
-            {
-                Success = true,
-                Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
-                Data = $"Role '{roleName}' assigned to user '{userEmail}' successfully."
-            };
+            return RoleMapper.MapToRoleAssignmentResponse(true, 
+                $"Role '{roleName}' assigned to user '{userEmail}' successfully.", 
+                $"Role '{roleName}' assigned to user '{userEmail}' successfully.");
         }
 
         public async Task<GeneralResponse<string>> UnassignRoleAsync(string userEmail, RoleType roleName)
@@ -153,24 +146,8 @@ namespace Service
 
         public Task<GeneralResponse<List<string>>> GetAllRolesAsync()
         {
-            var roles = roleManager.Roles.Select(r => r.Name).ToList();
-
-            if (roles.Any())
-            {
-                return Task.FromResult(new GeneralResponse<List<string>>
-                {
-                    Success = true,
-                    Message = "Roles retrieved successfully.",
-                    Data = roles
-                });
-            }
-
-            return Task.FromResult(new GeneralResponse<List<string>>
-            {
-                Success = false,
-                Message = "No roles found.",
-                Data = new List<string>()
-            });
+            var roles = roleManager.Roles.ToList();
+            return Task.FromResult(RoleMapper.MapToRoleListResponse(roles));
         }
 
         private async Task AddDomainEntityAsync(RoleType roleName, string userId, string roleId)

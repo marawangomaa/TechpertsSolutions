@@ -2,6 +2,7 @@
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using Microsoft.EntityFrameworkCore;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
@@ -22,29 +23,13 @@ namespace Service
         public async Task<IEnumerable<SpecificationDTO>> GetAllSpecificationsAsync()
         {
             var specs = await _specRepo.GetAllWithIncludesAsync(s => s.Product);
-            return specs.Select(s => new SpecificationDTO
-            {
-                Id = s.Id,
-                Key = s.Key,
-                Value = s.Value,
-                ProductId = s.ProductId,
-                ProductName = s.Product?.Name
-            });
+            return SpecificationMapper.MapToSpecificationDTOList(specs);
         }
 
         public async Task<SpecificationDTO?> GetSpecificationByIdAsync(string id)
         {
             var spec = await _specRepo.GetByIdWithIncludesAsync(id, s => s.Product);
-            if (spec == null) return null;
-
-            return new SpecificationDTO
-            {
-                Id = spec.Id,
-                Key = spec.Key,
-                Value = spec.Value,
-                ProductId = spec.ProductId,
-                ProductName = spec.Product?.Name
-            };
+            return SpecificationMapper.MapToSpecificationDTO(spec);
         }
 
         public async Task<IEnumerable<SpecificationDTO>> GetSpecificationsByProductIdAsync(string productId)
@@ -58,14 +43,7 @@ namespace Service
                 s => s.Product
             );
 
-            return specs.Select(s => new SpecificationDTO
-            {
-                Id = s.Id,
-                Key = s.Key,
-                Value = s.Value,
-                ProductId = s.ProductId,
-                ProductName = s.Product?.Name
-            });
+            return SpecificationMapper.MapToSpecificationDTOList(specs);
         }
 
         public async Task<SpecificationDTO?> CreateSpecificationAsync(CreateSpecificationDTO dto)
@@ -74,24 +52,12 @@ namespace Service
             if (!productExists)
                 return null;
 
-            var spec = new Specification
-            {
-                Id = Guid.NewGuid().ToString(),
-                Key = dto.Key,
-                Value = dto.Value,
-                ProductId = dto.ProductId
-            };
+            var spec = SpecificationMapper.MapToSpecification(dto);
 
             await _specRepo.AddAsync(spec);
             await _specRepo.SaveChangesAsync();
 
-            return new SpecificationDTO
-            {
-                Id = spec.Id,
-                Key = spec.Key,
-                Value = spec.Value,
-                ProductId = spec.ProductId
-            };
+            return SpecificationMapper.MapToSpecificationDTO(spec);
         }
 
         public async Task<bool> UpdateSpecificationAsync(UpdateSpecificationDTO dto)
@@ -103,9 +69,7 @@ namespace Service
             if (!productExists)
                 return false;
 
-            spec.Key = dto.Key;
-            spec.Value = dto.Value;
-            spec.ProductId = dto.ProductId;
+            SpecificationMapper.MapToSpecification(dto, spec);
 
             _specRepo.Update(spec);
             await _specRepo.SaveChangesAsync();

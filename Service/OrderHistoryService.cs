@@ -26,23 +26,7 @@ namespace Service
                 h => h.Id == id,
                 includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer");
             
-            if (history == null)
-            {
-                return new OrderHistoryReadDTO
-                {
-                    Id = string.Empty,
-                    Orders = new List<OrderReadDTO>()
-                };
-            }
-            
-            return new OrderHistoryReadDTO
-            {
-                Id = history.Id ?? string.Empty,
-                Orders = history.Orders?.Where(o => o != null)
-                                     .Select(OrderMapper.ToReadDTO)
-                                     .Where(dto => dto != null)
-                                     .ToList() ?? new List<OrderReadDTO>()
-            };
+            return OrderHistoryMapper.MapToOrderHistoryReadDTO(history);
         }
 
         public async Task<OrderHistoryReadDTO> GetHistoryByCustomerIdAsync(string customerId)
@@ -51,23 +35,7 @@ namespace Service
                 h => h.Orders.Any(o => o.CustomerId == customerId),
                 includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer");
 
-            if (history == null)
-            {
-                return new OrderHistoryReadDTO
-                {
-                    Id = string.Empty,
-                    Orders = new List<OrderReadDTO>()
-                };
-            }
-
-            return new OrderHistoryReadDTO
-            {
-                Id = history.Id ?? string.Empty,
-                Orders = history.Orders?.Where(o => o != null && o.CustomerId == customerId)
-                                     .Select(OrderMapper.ToReadDTO)
-                                     .Where(dto => dto != null)
-                                     .ToList() ?? new List<OrderReadDTO>()
-            };
+            return OrderHistoryMapper.MapToOrderHistoryReadDTO(history, customerId);
         }
 
         public async Task<IEnumerable<OrderHistoryReadDTO>> GetAllOrderHistoriesAsync()
@@ -85,14 +53,7 @@ namespace Service
                         h => h.Id == history.Id,
                         includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer");
                     
-                    result.Add(new OrderHistoryReadDTO
-                    {
-                        Id = historyWithIncludes?.Id ?? string.Empty,
-                        Orders = historyWithIncludes?.Orders?.Where(o => o != null)
-                                             .Select(OrderMapper.ToReadDTO)
-                                             .Where(dto => dto != null)
-                                             .ToList() ?? new List<OrderReadDTO>()
-                    });
+                    result.Add(OrderHistoryMapper.MapToOrderHistoryReadDTO(historyWithIncludes));
                 }
             }
             

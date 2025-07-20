@@ -4,6 +4,7 @@ using Core.Entities;
 using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
 using Core.Interfaces.Services;
+using Service.Utilities;
 
 namespace Service
 {
@@ -63,7 +64,7 @@ namespace Service
             var items = allProducts
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(MapToProductCardDTO)
+                .Select(ProductMapper.MapToProductCardDTO)
                 .ToList();
 
             return new PaginatedDTO<ProductCardDTO>
@@ -86,12 +87,12 @@ namespace Service
                 p => p.TechManager.User,
                 p => p.Warranties,
                 p => p.Specifications);
-            return product == null ? null : MapToProductDTO(product);
+            return product == null ? null : ProductMapper.MapToProductDTO(product);
         }
 
         public async Task<ProductDTO> AddAsync(ProductCreateDTO dto)
         {
-            var product = MapToProduct(dto);
+            var product = ProductMapper.MapToProduct(dto);
             await _productRepo.AddAsync(product);
             await _productRepo.SaveChangesAsync();
             var addedProductWithIncludes = await _productRepo.GetByIdWithIncludesAsync(
@@ -105,7 +106,7 @@ namespace Service
              p => p.Warranties,               // Include collections
              p => p.Specifications            // Include collections
             );
-            return MapToProductDTO(product);
+            return ProductMapper.MapToProductDTO(product);
         }
 
         public async Task<bool> UpdateAsync(string id, ProductUpdateDTO dto)
@@ -280,86 +281,6 @@ namespace Service
             return true;
         }
 
-        private ProductDTO MapToProductDTO(Product p)
-        {
-            return new ProductDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                Description = p.Description,
-                Stock = p.Stock,
-                CategoryId = p.CategoryId,
-                SubCategoryId = p.SubCategoryId,
-                TechManagerId = p.TechManagerId,
-                StockControlManagerId = p.StockControlManagerId,
-                CategoryName = p.Category.Name,
-                SubCategoryName = p.SubCategory.Name,
-                TechManagerName = p.TechManager.User.FullName,
-                StockControlManagerName = p.StockControlManager.User.FullName,
-                ImageUrl = p.ImageUrl,
-                Status = p.status,
-                DiscountPrice = p.DiscountPrice,
-                Specifications = p.Specifications?.Select(s => new SpecificationDTO
-                {
-                    Id = s.Id,
-                    Key = s.Key,
-                    Value = s.Value
-                }).ToList(),
-                Warranties = p.Warranties?.Select(w => new WarrantyDTO
-                {
-                    Id = w.Id,
-                    Description = w.Description,
-                    StartDate = w.StartDate,
-                    EndDate = w.EndDate
-                }).ToList()
-            };
-        }
 
-        private Product MapToProduct(ProductCreateDTO dto)
-        {
-            return new Product
-            {
-                Name = dto.Name,
-                Price = dto.Price,
-                Description = dto.Description,
-                Stock = dto.Stock,
-                CategoryId = dto.CategoryId,
-                SubCategoryId = dto.SubCategoryId,
-                TechManagerId = dto.TechManagerId,
-                StockControlManagerId = dto.StockControlManagerId,
-                ImageUrl = dto.ImageUrl,
-                status = dto.Status,
-                DiscountPrice = dto.DiscountPrice,
-                Specifications = dto.Specifications?.Select(s => new Specification
-                {
-                    Key = s.Key,
-                    Value = s.Value
-                }).ToList(),
-                Warranties = dto.Warranties?.Select(w => new Warranty
-                {
-                    Description = w.Description,
-                    StartDate = w.StartDate,
-                    EndDate = w.EndDate
-                }).ToList()
-            };
-        }
-
-        private ProductCardDTO MapToProductCardDTO(Product p)
-        {
-            return new ProductCardDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                ImageUrl = p.ImageUrl,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category?.Name,
-                SubCategoryId = p.SubCategoryId,
-                SubCategoryName = p.SubCategory?.Name,
-                DiscountPrice = p.DiscountPrice,
-                Status = p.status.ToString()
-            };
-        }
     }
 }
