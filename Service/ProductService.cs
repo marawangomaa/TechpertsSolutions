@@ -3,6 +3,7 @@ using Core.Enums;
 using Core.Entities;
 using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
+using Core.Interfaces.Services;
 
 namespace Service
 {

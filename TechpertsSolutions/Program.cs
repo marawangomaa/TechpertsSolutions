@@ -76,7 +76,8 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
-
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IOrderHistoryService, OrderHistoryService>();
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>

@@ -4,7 +4,7 @@ using Core.DTOs.Orders;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs; // Ensure this using directive is present
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface ICartService
     {

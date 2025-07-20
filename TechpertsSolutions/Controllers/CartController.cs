@@ -1,10 +1,10 @@
 ﻿// Controllers.CartController.cs (Assuming this file path)
 using Core.DTOs.Cart;
-using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Threading.Tasks;
+using Core.Interfaces.Services;
 
 namespace TechpertsSolutions.Controllers 
 {
