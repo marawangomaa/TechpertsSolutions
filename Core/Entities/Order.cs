@@ -21,6 +21,7 @@ namespace TechpertsSolutions.Core.Entities
         public string SalesManagerId { get; set; }
         public string ServiceUsageId { get; set; }
         public SalesManager SalesManager { get; set; }
+        public string? OrderHistoryId { get; set; }
         public ICollection<OrderItem>? OrderItems { get; set; }
         public OrderHistory? OrderHistory { get; set; }
         public ServiceUsage? ServiceUsage { get; set; }

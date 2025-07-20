@@ -23,6 +23,12 @@ namespace Repository.Data.Configurtaions
             builder.HasMany(c => c.PCAssemblyItems)
                    .WithOne(pai => pai.Cart)
                    .OnDelete(DeleteBehavior.NoAction);
+
+            // One-to-one relationship with Order
+            builder.HasOne(c => c.Order)
+                   .WithOne(o => o._Cart)
+                   .HasForeignKey<Order>(o => o.CartId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

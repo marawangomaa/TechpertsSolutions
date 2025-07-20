@@ -12,26 +12,40 @@ namespace Service.Utilities
     {
         public static OrderReadDTO ToReadDTO(Order order)
         {
+            if (order == null)
+            {
+                return null;
+            }
+
             return new OrderReadDTO
             {
-                Id = order.Id,
-                CustomerId = order.CustomerId,
+                Id = order.Id ?? string.Empty,
+                CustomerId = order.CustomerId ?? string.Empty,
                 OrderDate = order.OrderDate,
-                Status = order.Status,
+                Status = order.Status ?? "Unknown",
                 TotalAmount = order.TotalAmount,
-                OrderItems = order.OrderItems?.Select(ToItemReadDTO).ToList() ?? new()
+                OrderItems = order.OrderItems != null 
+                    ? order.OrderItems.Select(ToItemReadDTO).ToList() 
+                    : new List<OrderItemReadDTO>()
             };
         }
 
         public static OrderItemReadDTO ToItemReadDTO(OrderItem item)
         {
+            if (item == null)
+            {
+                return null;
+            }
+
             return new OrderItemReadDTO
             {
-                Id = item.Id,
-                ProductId = item.ProductId,
-                ProductName = item.Product?.Name ?? string.Empty,
+                Id = item.Id ?? string.Empty,
+                ProductId = item.ProductId ?? string.Empty,
+                ProductName = item.Product?.Name ?? "Unknown Product",
                 Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice
+                UnitPrice = item.UnitPrice,
+                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
+                ItemTotal = item.ItemTotal
             };
         }
 
@@ -47,6 +61,7 @@ namespace Service.Utilities
                 DeliveryId = dto.DeliveryId,
                 SalesManagerId = dto.SalesManagerId,
                 ServiceUsageId = dto.ServiceUsageId,
+                OrderHistoryId = null, // Will be set by the service
                 OrderItems = dto.OrderItems.Select(item => new OrderItem
                 {
                     Id = Guid.NewGuid().ToString(),

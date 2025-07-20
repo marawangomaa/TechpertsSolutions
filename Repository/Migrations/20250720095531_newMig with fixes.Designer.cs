@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TechpertsSolutions.Repository.Data;
 
@@ -11,9 +12,11 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    partial class TechpertsContextModelSnapshot : ModelSnapshot
+    [Migration("20250720095531_newMig with fixes")]
+    partial class newMigwithfixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

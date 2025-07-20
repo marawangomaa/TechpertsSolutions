@@ -160,14 +160,14 @@ namespace TechpertsSolutions.Controllers
         /// <param name="productId">The unique identifier of the product to remove.</param>
         /// <returns>A response indicating success or failure.</returns>
         [HttpDelete("{customerId}/items/{productId}")]
-        public async Task<IActionResult> RemoveItem([FromForm] string customerId, [FromForm] string productId)
+        public async Task<IActionResult> RemoveItem(string customerId, string productId)
         {
-            if (string.IsNullOrWhiteSpace(productId))
+            if (string.IsNullOrWhiteSpace(customerId) || string.IsNullOrWhiteSpace(productId))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Product ID must not be null or empty.",
+                    Message = "Customer ID and Product ID must not be null or empty.",
                     Data = null
                 });
             }
@@ -237,6 +237,16 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
             var result = await cartService.PlaceOrderAsync(customerId);
 
             if (result.Success)
@@ -246,11 +256,127 @@ namespace TechpertsSolutions.Controllers
             else
             {
                 // Use appropriate status codes based on the error message from the service
-                if (result.Message.Contains("Cart is empty") || result.Message.Contains("not found"))
+                if (result.Message.Contains("not found") || result.Message.Contains("empty"))
                 {
                     return NotFound(result); // 404 for resource not found/empty
                 }
-                else if (result.Message.Contains("stock"))
+                else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
+                {
+                    return Conflict(result); // 409 Conflict for stock issues
+                }
+                else
+                {
+                    return BadRequest(result); // 400 for other validation/business logic errors
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts the customer's current cart into a new order with additional parameters.
+        /// Performs comprehensive validation and clears the cart upon successful order creation.
+        /// </summary>
+        /// <param name="checkoutDto">The checkout details including customer ID and optional parameters.</param>
+        /// <returns>A response containing the created order details or an error message.</returns>
+        [HttpPost("checkout")]
+        public async Task<IActionResult> CheckoutWithDetails([FromBody] CartCheckoutDTO checkoutDto)
+        {
+            if (checkoutDto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Checkout details cannot be null.",
+                    Data = null
+                });
+            }
+
+            // Validate the model
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = $"Validation failed: {string.Join(", ", errors)}",
+                    Data = null
+                });
+            }
+
+            // Additional validation
+            if (string.IsNullOrWhiteSpace(checkoutDto.CustomerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID is required.",
+                    Data = null
+                });
+            }
+
+            if (!Guid.TryParse(checkoutDto.CustomerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
+            // Validate optional GUIDs if provided
+            if (!string.IsNullOrWhiteSpace(checkoutDto.DeliveryId) && !Guid.TryParse(checkoutDto.DeliveryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Delivery ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(checkoutDto.SalesManagerId) && !Guid.TryParse(checkoutDto.SalesManagerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Sales Manager ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
+            if (!string.IsNullOrWhiteSpace(checkoutDto.ServiceUsageId) && !Guid.TryParse(checkoutDto.ServiceUsageId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Service Usage ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
+            var result = await cartService.PlaceOrderAsync(
+                checkoutDto.CustomerId,
+                checkoutDto.DeliveryId,
+                checkoutDto.SalesManagerId,
+                checkoutDto.ServiceUsageId
+            );
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                // Use appropriate status codes based on the error message from the service
+                if (result.Message.Contains("not found") || result.Message.Contains("empty"))
+                {
+                    return NotFound(result); // 404 for resource not found/empty
+                }
+                else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
                 {
                     return Conflict(result); // 409 Conflict for stock issues
                 }

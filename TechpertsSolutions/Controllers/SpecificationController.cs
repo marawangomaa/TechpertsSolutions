@@ -60,7 +60,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<SpecificationDTO>> Create([FromBody] CreateSpecificationDTO dto)
+        public async Task<ActionResult<GeneralResponse<SpecificationDTO>>> Create([FromBody] CreateSpecificationDTO dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new GeneralResponse<string> { Success = false, Message = "Invalid data." });
@@ -69,7 +69,12 @@ namespace TechpertsSolutions.Controllers
             if (created == null)
                 return BadRequest(new GeneralResponse<string> { Success = false, Message = "Invalid Product ID." });
 
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, new GeneralResponse<SpecificationDTO>
+            {
+                Success = true,
+                Message = "Specification created successfully.",
+                Data = created
+            });
         }
 
         [HttpPut]

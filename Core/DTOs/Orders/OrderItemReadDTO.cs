@@ -13,6 +13,7 @@ namespace Core.DTOs.Orders
         public string ProductName { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-        public decimal ItemTotal => Quantity * UnitPrice;
+        public string ImageUrl { get; set; } = string.Empty;
+        public decimal ItemTotal { get; set; }
     }
 }

@@ -10,5 +10,7 @@ namespace Core.Interfaces.Services
     public interface IOrderHistoryService
     {
         Task<OrderHistoryReadDTO> GetHistoryByIdAsync(string id);
+        Task<OrderHistoryReadDTO> GetHistoryByCustomerIdAsync(string customerId);
+        Task<IEnumerable<OrderHistoryReadDTO>> GetAllOrderHistoriesAsync();
     }
 }

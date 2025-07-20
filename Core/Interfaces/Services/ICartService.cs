@@ -13,6 +13,6 @@ namespace Core.Interfaces.Services
         Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto);
         Task<string> RemoveItemAsync(string customerId, string productId);
         Task<string> ClearCartAsync(string customerId);
-        Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId);
+        Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? salesManagerId = null, string? serviceUsageId = null);
     }
 }
