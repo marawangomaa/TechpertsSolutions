@@ -27,6 +27,7 @@ namespace TechpertsSolutions
             builder.Services.AddControllers()
                 .AddJsonOptions(opt => {
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             builder.Services.AddEndpointsApiExplorer();
 
@@ -35,7 +36,7 @@ namespace TechpertsSolutions
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
                 c.CustomSchemaIds(type => type.FullName); // <-- Fix for duplicate class names
-                // c.SchemaFilter<EnumSchemaFilter>(); // Temporarily disabled
+                c.SchemaFilter<EnumSchemaFilter>(); // Enable enum string values in Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",

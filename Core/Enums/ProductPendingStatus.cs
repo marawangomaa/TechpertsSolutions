@@ -8,9 +8,13 @@ namespace Core.Enums
 {
     public enum ProductPendingStatus
     {
+        [StringValue("None")]
         None = 0,
+        [StringValue("Pending")]
         Pending = 1,
+        [StringValue("Approved")]
         Approved = 2,
+        [StringValue("Rejected")]
         Rejected = 4
     }
 }
