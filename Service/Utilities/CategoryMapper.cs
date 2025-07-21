@@ -12,7 +12,9 @@ namespace Service.Utilities
             return new CategoryDTO
             {
                 Id = category.Id,
-                Name = category.Name
+                Name = category.Name,
+                Image = category.Image,
+                Description = category.Description,
             };
         }
 

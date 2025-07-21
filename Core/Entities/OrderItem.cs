@@ -16,6 +16,6 @@ namespace TechpertsSolutions.Core.Entities
         public Order? Order { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-        public int ItemTotal { get; set; }
+        public decimal ItemTotal { get; set; }
     }
 }

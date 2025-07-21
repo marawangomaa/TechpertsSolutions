@@ -70,6 +70,7 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
@@ -79,6 +80,16 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IOrderHistoryService, OrderHistoryService>();
+            builder.Services.AddScoped<IPCAssemblyService, PCAssemblyService>();
+            builder.Services.AddScoped<ISalesManagerService, SalesManagerService>();
+            builder.Services.AddScoped<IServiceUsageService, ServiceUsageService>();
+            builder.Services.AddScoped<IStockControlManagerService, StockControlManagerService>();
+            builder.Services.AddScoped<ITechCompanyService, TechCompanyService>();
+            builder.Services.AddScoped<ITechManagerService, TechManagerService>();
+            builder.Services.AddScoped<IWarrantyService, WarrantyService>();
+            builder.Services.AddScoped<IWishListService, WishListService>();
+
+
 
             //  EF + Identity
             builder.Services.AddDbContext<TechpertsContext>(options =>

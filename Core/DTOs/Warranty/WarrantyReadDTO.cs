@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs.Category
+namespace Core.DTOs.Warranty
 {
-    public class CategoryDTO
+    public class WarrantyReadDTO
     {
         public string Id { get; set; }
-        public string Name { get; set; } = string.Empty;
         public string Description { get; set; }
-        public string Image { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string ProductId { get; set; }
     }
 }
