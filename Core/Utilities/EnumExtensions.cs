@@ -20,5 +20,20 @@ namespace Core.Utilities
                                  .FirstOrDefault() as StringValueAttribute;
             return attribute?.Value ?? enumVal.ToString();
         }
+
+        // Parses an enum value from its StringValue attribute or enum name
+        public static TEnum ParseFromStringValue<TEnum>(string value) where TEnum : struct, Enum
+        {
+            foreach (var field in typeof(TEnum).GetFields())
+            {
+                var attribute = Attribute.GetCustomAttribute(field,
+                    typeof(StringValueAttribute)) as StringValueAttribute;
+                if (attribute != null && attribute.Value == value)
+                    return (TEnum)field.GetValue(null);
+                if (field.Name == value)
+                    return (TEnum)field.GetValue(null);
+            }
+            throw new ArgumentException($"No matching enum value for '{value}' in {typeof(TEnum).Name}");
+        }
     }
 }

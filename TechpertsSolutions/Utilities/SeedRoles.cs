@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Core.Enums;
+using Core.Utilities;
+using Microsoft.AspNetCore.Identity;
 using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Utilities
@@ -9,10 +11,10 @@ namespace TechpertsSolutions.Utilities
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();
 
-            string[] roles = { "Admin", "Customer", "SaleManager", "StockControlManager", "TechCompany", "TechManager" };
-
-            foreach (var roleName in roles)
+            foreach (RoleType role in Enum.GetValues(typeof(RoleType)))
             {
+                var roleName = role.GetStringValue();
+
                 if (!await roleManager.RoleExistsAsync(roleName))
                 {
                     await roleManager.CreateAsync(new AppRole { Name = roleName });

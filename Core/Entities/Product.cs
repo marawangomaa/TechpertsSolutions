@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Core.Utilities;
 
 namespace TechpertsSolutions.Core.Entities
 {
@@ -19,6 +20,27 @@ namespace TechpertsSolutions.Core.Entities
         public string? ImageUrl { get; set; }
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
+        private ProductCategory? _categoryEnum;
+        private string _categoryEnumError;
+        public ProductCategory? CategoryEnum
+        {
+            get
+            {
+                if (_categoryEnum != null) return _categoryEnum;
+                try
+                {
+                    _categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(Category?.Name);
+                    _categoryEnumError = null;
+                }
+                catch (System.ArgumentException)
+                {
+                    _categoryEnum = null;
+                    _categoryEnumError = $"Unknown category: '{Category?.Name}'";
+                }
+                return _categoryEnum;
+            }
+        }
+        public string CategoryEnumError => _categoryEnumError;
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;

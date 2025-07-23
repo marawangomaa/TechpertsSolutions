@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.Utilities;
 
 namespace Core.DTOs.Product
 {
@@ -22,6 +23,27 @@ namespace Core.DTOs.Product
         public string? TechManagerId { get; set; }
         public string? StockControlManagerId { get; set; }
         public string CategoryName { get; set; } = null!;
+        private ProductCategory? _categoryEnum;
+        private string _categoryEnumError;
+        public ProductCategory? CategoryEnum
+        {
+            get
+            {
+                if (_categoryEnum != null) return _categoryEnum;
+                try
+                {
+                    _categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(CategoryName);
+                    _categoryEnumError = null;
+                }
+                catch (System.ArgumentException)
+                {
+                    _categoryEnum = null;
+                    _categoryEnumError = $"Unknown category: '{CategoryName}'";
+                }
+                return _categoryEnum;
+            }
+        }
+        public string CategoryEnumError => _categoryEnumError;
         public string? SubCategoryName { get; set; }
         public string? ImageUrl { get; set; }
         public string TechManagerName { get; set; } = null!;

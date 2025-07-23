@@ -3,6 +3,7 @@ using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -151,12 +152,12 @@ namespace TechpertsSolutions
             {
                 var services = scope.ServiceProvider;
                 await SeedRoles.SeedRolesAsync(services);
+                await SeedCategories.SeedCategoriesAsync(services);
             }
-
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+               app.UseSwagger();
+               app.UseSwaggerUI();
             }
             app.UseDeveloperExceptionPage();
 
