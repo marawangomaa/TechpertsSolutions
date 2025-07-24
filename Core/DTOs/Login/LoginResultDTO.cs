@@ -12,5 +12,7 @@
         public string? StockControlManagerId { get; set; }
         public string? AdminId { get; set; }
         public string? TechCompanyId { get; set; }
+        public string? CartId { get; set; }
+        public string? WishListId { get; set; }
     }
 }

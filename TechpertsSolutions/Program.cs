@@ -70,8 +70,41 @@ namespace TechpertsSolutions
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<IRoleService, RoleService>();
+            builder.Services.AddScoped<IAuthService, AuthService>(provider =>
+            {
+                return new AuthService(
+                    provider.GetRequiredService<UserManager<AppUser>>(),
+                    provider.GetRequiredService<RoleManager<AppRole>>(),
+                    provider.GetRequiredService<IRepository<Cart>>(),
+                    provider.GetRequiredService<IRepository<Admin>>(),
+                    provider.GetRequiredService<IRepository<Customer>>(),
+                    provider.GetRequiredService<IRepository<SalesManager>>(),
+                    provider.GetRequiredService<IRepository<StockControlManager>>(),
+                    provider.GetRequiredService<IRepository<TechCompany>>(),
+                    provider.GetRequiredService<IRepository<TechManager>>(),
+                    provider.GetRequiredService<TechpertsContext>(),
+                    provider.GetRequiredService<IConfiguration>(),
+                    provider.GetRequiredService<ICustomerService>(),
+                    provider.GetRequiredService<IWishListService>()
+                );
+            });
+            builder.Services.AddScoped<IRoleService, RoleService>(provider =>
+            {
+                return new RoleService(
+                    provider.GetRequiredService<RoleManager<AppRole>>(),
+                    provider.GetRequiredService<UserManager<AppUser>>(),
+                    provider.GetRequiredService<IRepository<Admin>>(),
+                    provider.GetRequiredService<IRepository<Customer>>(),
+                    provider.GetRequiredService<IRepository<SalesManager>>(),
+                    provider.GetRequiredService<IRepository<StockControlManager>>(),
+                    provider.GetRequiredService<IRepository<TechCompany>>(),
+                    provider.GetRequiredService<IRepository<TechManager>>(),
+                    provider.GetRequiredService<IRepository<Cart>>(),
+                    provider.GetRequiredService<IRepository<TechpertsSolutions.Core.Entities.WishList>>(),
+                    provider.GetRequiredService<TechpertsContext>(),
+                    provider.GetRequiredService<ICustomerService>()
+                );
+            });
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();

@@ -27,7 +27,7 @@ namespace Service.Utilities
             };
         }
 
-        public static LoginResultDTO MapToLoginResultDTO(AppUser user, string token, List<string> roles)
+        public static LoginResultDTO MapToLoginResultDTO(AppUser user, string token, List<string> roles, string? cartId = null, string? wishListId = null)
         {
             if (user == null) return null;
 
@@ -36,7 +36,9 @@ namespace Service.Utilities
                 Token = token,
                 UserId = user.Id,
                 UserName = user.UserName,
-                RoleName = roles
+                RoleName = roles,
+                CartId = cartId,
+                WishListId = wishListId
             };
         }
 

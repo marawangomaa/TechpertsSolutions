@@ -471,5 +471,132 @@ namespace Service
                 };
             }
         }
+
+        public async Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(string customerId, List<string> productIds, string? promoCode = null)
+        {
+            if (string.IsNullOrWhiteSpace(customerId) || productIds == null || !productIds.Any())
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "❌ Customer ID and product selection are required.",
+                    Data = null
+                };
+            }
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.CustomerId == customerId,
+                includeProperties: "CartItems.Product,Customer"
+            );
+
+            if (cart == null)
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "❌ Cart not found for this customer.",
+                    Data = null
+                };
+            }
+
+            var selectedItems = cart.CartItems?.Where(ci => productIds.Contains(ci.ProductId)).ToList();
+            if (selectedItems == null || !selectedItems.Any())
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = "❌ None of the selected products are in the cart.",
+                    Data = null
+                };
+            }
+
+            // Validate stock for selected items
+            var stockValidationErrors = new List<string>();
+            foreach (var cartItem in selectedItems)
+            {
+                if (cartItem.Product == null)
+                {
+                    stockValidationErrors.Add($"Product with ID {cartItem.ProductId} not found.");
+                    continue;
+                }
+                if (cartItem.Quantity <= 0)
+                {
+                    stockValidationErrors.Add($"Invalid quantity ({cartItem.Quantity}) for product '{cartItem.Product.Name}'.");
+                    continue;
+                }
+                if (cartItem.Product.Stock < cartItem.Quantity)
+                {
+                    stockValidationErrors.Add($"Not enough stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}.");
+                }
+            }
+            if (stockValidationErrors.Any())
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = $"❌ Stock validation failed:\n{string.Join("\n", stockValidationErrors)}",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var newOrder = new Order
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CustomerId = customerId,
+                    CartId = cart.Id,
+                    OrderDate = DateTime.UtcNow,
+                    Status = "Pending",
+                    OrderItems = new List<OrderItem>(),
+                    DeliveryId = Guid.NewGuid().ToString(),
+                    SalesManagerId = Guid.NewGuid().ToString(),
+                    ServiceUsageId = Guid.NewGuid().ToString()
+                };
+                decimal totalAmount = 0;
+                foreach (var cartItem in selectedItems)
+                {
+                    var orderItem = new OrderItem
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        OrderId = newOrder.Id,
+                        ProductId = cartItem.ProductId,
+                        Quantity = cartItem.Quantity,
+                        UnitPrice = cartItem.Product.Price,
+                        ItemTotal = (int)(cartItem.Quantity * cartItem.Product.Price)
+                    };
+                    newOrder.OrderItems.Add(orderItem);
+                    totalAmount += orderItem.ItemTotal;
+                    cartItem.Product.Stock -= cartItem.Quantity;
+                    productRepo.Update(cartItem.Product);
+                }
+                // Apply promo code logic here if needed (future extensibility)
+                newOrder.TotalAmount = totalAmount;
+                await orderRepo.AddAsync(newOrder);
+                await orderRepo.SaveChangesAsync();
+                // Remove selected items from cart
+                foreach (var cartItem in selectedItems)
+                {
+                    cart.CartItems.Remove(cartItem);
+                    cartItemRepo.Remove(cartItem);
+                }
+                await cartItemRepo.SaveChangesAsync();
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = true,
+                    Message = $"✅ Partial order placed successfully! Order ID: {newOrder.Id}, Total Amount: ${totalAmount:F2}",
+                    Data = CartMapper.MapToOrderReadDTO(newOrder)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<OrderReadDTO>
+                {
+                    Success = false,
+                    Message = $"❌ Error creating partial order: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
     }
 }

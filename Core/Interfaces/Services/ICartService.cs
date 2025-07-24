@@ -14,5 +14,6 @@ namespace Core.Interfaces.Services
         Task<string> RemoveItemAsync(string customerId, string productId);
         Task<string> ClearCartAsync(string customerId);
         Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? salesManagerId = null, string? serviceUsageId = null);
+        Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(string customerId, List<string> productIds, string? promoCode = null);
     }
 }

@@ -10,10 +10,11 @@ namespace TechpertsSolutions.Controllers
     public class WishListController : ControllerBase
     {
         private readonly IWishListService _wishListService;
-
-        public WishListController(IWishListService wishListService)
+        private readonly ICartService _cartService;
+        public WishListController(IWishListService wishListService, ICartService cartService)
         {
             _wishListService = wishListService;
+            _cartService = cartService;
         }
 
         [HttpPost]
@@ -49,6 +50,13 @@ namespace TechpertsSolutions.Controllers
         {
             var result = await _wishListService.RemoveItemAsync(wishListId, itemId);
             return result.Success ? Ok(result) : NotFound(result);
+        }
+
+        [HttpPost("{wishListId}/move-to-cart")]
+        public async Task<IActionResult> MoveAllToCart(string wishListId, [FromQuery] string customerId)
+        {
+            var result = await _wishListService.MoveAllToCartAsync(customerId, _cartService);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

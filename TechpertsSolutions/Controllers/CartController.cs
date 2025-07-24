@@ -5,6 +5,7 @@ using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Threading.Tasks;
 using Core.Interfaces.Services;
+using System.Linq;
 
 namespace TechpertsSolutions.Controllers 
 {
@@ -385,6 +386,15 @@ namespace TechpertsSolutions.Controllers
                     return BadRequest(result); // 400 for other validation/business logic errors
                 }
             }
+        }
+
+        [HttpPost("{customerId}/partial-checkout")]
+        public async Task<IActionResult> PartialCheckout(string customerId, [FromBody] PartialCheckoutDTO dto)
+        {
+            if (dto == null || dto.ProductIds == null || !dto.ProductIds.Any())
+                return BadRequest(new { Success = false, Message = "No products selected for partial checkout." });
+            var result = await cartService.PartialCheckoutAsync(customerId, dto.ProductIds, dto.PromoCode);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
     }
 }

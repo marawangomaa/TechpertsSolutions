@@ -39,6 +39,7 @@ namespace Service
         private readonly IRepository<TechCompany> techCompanyRepo;
         private readonly IRepository<TechManager> techManagerRepo;
         private readonly ICustomerService customerService;
+        private readonly IWishListService wishListService;
         private readonly IConfiguration configuration;
         private readonly TechpertsContext context;
 
@@ -53,7 +54,8 @@ namespace Service
             IRepository<TechManager> _techMangerRepo,
             TechpertsContext _context,
             IConfiguration _configuration,
-            ICustomerService _customerService)
+            ICustomerService _customerService,
+            IWishListService _wishListService)
         {
             userManager = _userManager;
             roleManager = _roleManager;
@@ -67,6 +69,7 @@ namespace Service
             context = _context;
             configuration = _configuration;
             customerService = _customerService;
+            wishListService = _wishListService;
         }
 
         public async Task<GeneralResponse<string>> DeleteAccountAsync(DeleteAccountDTO dto, string userId)
@@ -214,6 +217,15 @@ namespace Service
                         var customer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
                         if (customer == null) return FailRoleWarning("Customer", user.Id);
                         loginResultDTO.CustomerId = customer.Id;
+                        // Fetch CartId
+                        var cart = await cartRepo.GetFirstOrDefaultAsync(c => c.CustomerId == customer.Id);
+                        if (cart != null)
+                            loginResultDTO.CartId = cart.Id;
+                        // Fetch WishListId
+                        var wishListsResponse = await wishListService.GetByCustomerIdAsync(customer.Id);
+                        var wishList = wishListsResponse.Data?.FirstOrDefault();
+                        if (wishList != null)
+                            loginResultDTO.WishListId = wishList.Id;
                         break;
 
                     case "SaleManager":

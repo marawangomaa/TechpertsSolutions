@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
-namespace Core.Entities
+namespace TechpertsSolutions.Core.Entities
 {
     public class WishList : BaseEntity
     {

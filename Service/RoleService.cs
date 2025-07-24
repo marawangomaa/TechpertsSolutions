@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
+using Core.Entities;
 
 namespace Service
 {
@@ -26,6 +27,7 @@ namespace Service
         private readonly IRepository<TechCompany> techCompanyRepo;
         private readonly IRepository<TechManager> techManagerRepo;
         private readonly IRepository<Cart> cartRepo;
+        private readonly IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo;
         private readonly TechpertsContext context;
         private readonly ICustomerService customerService;
 
@@ -39,6 +41,7 @@ namespace Service
             IRepository<TechCompany> techCompanyRepo,
             IRepository<TechManager> techManagerRepo,
             IRepository<Cart> cartRepo,
+            IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo,
             TechpertsContext context,
             ICustomerService customerService)
         {
@@ -51,6 +54,7 @@ namespace Service
             this.techCompanyRepo = techCompanyRepo;
             this.techManagerRepo = techManagerRepo;
             this.cartRepo = cartRepo;
+            this.wishListRepo = wishListRepo;
             this.context = context;
             this.customerService = customerService;
         }
@@ -166,8 +170,16 @@ namespace Service
                         await customerRepo.AddAsync(newCustomer);
                         await context.SaveChangesAsync();
 
-                        var newCart = new Cart { CustomerId = newCustomer.Id, CreatedAt = DateTime.UtcNow };
+                        // Reload the customer to ensure Id is set
+                        var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == userId);
+
+                        var newCart = new Cart { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
                         await cartRepo.AddAsync(newCart);
+
+                        // Create WishList for the new customer (using repo)
+                        var newWishList = new TechpertsSolutions.Core.Entities.WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
+                        await wishListRepo.AddAsync(newWishList);
+                        await wishListRepo.SaveChangesAsync();
                     }
                     break;
 
