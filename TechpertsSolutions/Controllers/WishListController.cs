@@ -58,5 +58,14 @@ namespace TechpertsSolutions.Controllers
             var result = await _wishListService.MoveAllToCartAsync(customerId, _cartService);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+
+        [HttpPost("{wishListId}/move-selected-to-cart")]
+        public async Task<IActionResult> MoveSelectedToCart(string wishListId, [FromQuery] string customerId, [FromBody] List<string> wishListItemIds)
+        {
+            if (wishListItemIds == null || !wishListItemIds.Any())
+                return BadRequest(new { Success = false, Message = "No wishlist items selected." });
+            var result = await _wishListService.MoveSelectedToCartAsync(customerId, wishListItemIds, _cartService);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }
