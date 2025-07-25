@@ -26,7 +26,7 @@ namespace Service
         {
             try
             {
-                var customers = await _customerRepository.GetAllWithIncludesAsync(c=>c.User);
+                var customers = await _customerRepository.GetAllWithIncludesAsync(c => c.User, c => c.Cart, c => c.WishList);
                 return new GeneralResponse<IEnumerable<CustomerDTO>>
                 {
                     Success = true,
@@ -303,7 +303,7 @@ namespace Service
 
             try
             {
-                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, c => c.User);
+                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, c => c.User, c => c.Cart, c => c.WishList);
                 if (customer == null)
                 {
                     return new GeneralResponse<CustomerDTO>
@@ -314,17 +314,7 @@ namespace Service
                     };
                 }
 
-                var customerDto = new CustomerDTO
-                {
-                    Id = customer.Id,
-                    City = customer.City,
-                    Country = customer.Country,
-                    Email = customer.User?.Email,
-                    UserName = customer.User?.UserName,
-                    FullName = customer.User?.FullName,
-                    PhoneNumber = customer.User?.PhoneNumber,
-                    Address = customer.User?.Address
-                };
+                var customerDto = CustomerMapper.MapToCustomerDTO(customer);
 
                 return new GeneralResponse<CustomerDTO>
                 {

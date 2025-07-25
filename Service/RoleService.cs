@@ -68,67 +68,80 @@ namespace Service
 
         public async Task<GeneralResponse<object>> AssignRoleAsync(string userEmail, RoleType roleName)
         {
-            var user = await userManager.FindByEmailAsync(userEmail);
-            if (user == null)
-                return new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "User not found.",
-                    Data = $"{userEmail} is not registered"
-                };
-
-            var result = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
-            if (!result.Succeeded)
-                return new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Failed to assign role",
-                    Data = string.Join(" ", result.Errors.Select(e => e.Description))
-                };
-
-            var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
-            if (role == null)
-                return new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = $"Role '{roleName}' does not exist.",
-                    Data = $"{roleName} not found"
-                };
-
-            // For Customer, capture the created IDs
-            if (roleName == RoleType.Customer)
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                // AddDomainEntityAsync will create the customer, cart, and wishlist
-                await AddDomainEntityAsync(roleName, user.Id, role.Id);
-                await context.SaveChangesAsync();
+                var user = await userManager.FindByEmailAsync(userEmail);
+                if (user == null)
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "User not found.",
+                        Data = $"{userEmail} is not registered"
+                    };
 
-                // Fetch the created entities
-                var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
-                var cart = (await cartRepo.GetAllAsync()).FirstOrDefault(ct => ct.CustomerId == savedCustomer.Id);
-                var wishList = (await wishListRepo.GetAllAsync()).FirstOrDefault(wl => wl.CustomerId == savedCustomer.Id);
+                var result = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
+                if (!result.Succeeded)
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "Failed to assign role",
+                        Data = string.Join(" ", result.Errors.Select(e => e.Description))
+                    };
 
-                var dto = new CustomerRoleAssignmentResultDTO
+                var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
+                if (role == null)
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = $"Role '{roleName}' does not exist.",
+                        Data = $"{roleName} not found"
+                    };
+
+                if (roleName == RoleType.Customer)
                 {
-                    CustomerId = savedCustomer?.Id,
-                    CartId = cart?.Id,
-                    WishListId = wishList?.Id
-                };
+                    await AddDomainEntityAsync(roleName, user.Id, role.Id);
+                    await context.SaveChangesAsync();
 
-                return new GeneralResponse<object>
+                    var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
+                    var cart = (await cartRepo.GetAllAsync()).FirstOrDefault(ct => ct.CustomerId == savedCustomer.Id);
+                    var wishList = (await wishListRepo.GetAllAsync()).FirstOrDefault(wl => wl.CustomerId == savedCustomer.Id);
+
+                    var dto = new CustomerRoleAssignmentResultDTO
+                    {
+                        CustomerId = savedCustomer?.Id,
+                        CartId = cart?.Id,
+                        WishListId = wishList?.Id
+                    };
+
+                    await transaction.CommitAsync();
+                    return new GeneralResponse<object>
+                    {
+                        Success = true,
+                        Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                        Data = dto
+                    };
+                }
+                else
                 {
-                    Success = true,
-                    Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
-                    Data = dto
-                };
+                    await AddDomainEntityAsync(roleName, user.Id, role.Id);
+                    await context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new GeneralResponse<object>
+                    {
+                        Success = true,
+                        Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                        Data = null
+                    };
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await AddDomainEntityAsync(roleName, user.Id, role.Id);
-                await context.SaveChangesAsync();
+                await transaction.RollbackAsync();
                 return new GeneralResponse<object>
                 {
-                    Success = true,
-                    Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                    Success = false,
+                    Message = $"An error occurred during role assignment: {ex.Message}",
                     Data = null
                 };
             }
@@ -238,36 +251,47 @@ namespace Service
 
         private async Task RemoveDomainEntityAsync(RoleType roleName, string userId)
         {
-            switch (roleName)
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                case RoleType.Customer:
-                    await customerService.CleanupCustomerDataAsync(userId);
-                    break;
+                switch (roleName)
+                {
+                    case RoleType.Customer:
+                        await customerService.CleanupCustomerDataAsync(userId);
+                        break;
 
-                case RoleType.SaleManager:
-                    var sm = (await salesManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                    if (sm != null) salesManagerRepo.Remove(sm);
-                    break;
+                    case RoleType.SaleManager:
+                        var sm = (await salesManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (sm != null) salesManagerRepo.Remove(sm);
+                        break;
 
-                case RoleType.TechManager:
-                    var tm = (await techManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                    if (tm != null) techManagerRepo.Remove(tm);
-                    break;
+                    case RoleType.TechManager:
+                        var tm = (await techManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (tm != null) techManagerRepo.Remove(tm);
+                        break;
 
-                case RoleType.StockControlManager:
-                    var scm = (await stockControlManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                    if (scm != null) stockControlManagerRepo.Remove(scm);
-                    break;
+                    case RoleType.StockControlManager:
+                        var scm = (await stockControlManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (scm != null) stockControlManagerRepo.Remove(scm);
+                        break;
 
-                case RoleType.Admin:
-                    var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                    if (admin != null) adminRepo.Remove(admin);
-                    break;
+                    case RoleType.Admin:
+                        var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (admin != null) adminRepo.Remove(admin);
+                        break;
 
-                case RoleType.TechCompany:
-                    var tc = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                    if (tc != null) techCompanyRepo.Remove(tc);
-                    break;
+                    case RoleType.TechCompany:
+                        var tc = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (tc != null) techCompanyRepo.Remove(tc);
+                        break;
+                }
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
         }
     }
