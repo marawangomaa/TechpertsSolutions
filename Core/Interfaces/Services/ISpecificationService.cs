@@ -12,11 +12,13 @@ namespace Core.Interfaces.Services
 {
     public interface ISpecificationService
     {
-        Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetAllSpecificationsAsync();
-        Task<GeneralResponse<SpecificationDTO>> GetSpecificationByIdAsync(string id);
-        Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId);
-        Task<GeneralResponse<SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO createDto);
+        Task<GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>> GetAllSpecificationsAsync();
+        Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> GetSpecificationByIdAsync(string id);
+        Task<GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId);
+        Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO createDto);
         Task<GeneralResponse<bool>> UpdateSpecificationAsync(UpdateSpecificationDTO updateDto);
         Task<GeneralResponse<bool>> DeleteSpecificationAsync(string id);
+        Task<GeneralResponse<IEnumerable<ProductListItemDTO>>> GetProductsBySpecificationAsync(string key, string value);
+        Task<GeneralResponse<IEnumerable<ProductListItemDTO>>> GetProductsBySpecificationIdAsync(string specificationId);
     }
 }

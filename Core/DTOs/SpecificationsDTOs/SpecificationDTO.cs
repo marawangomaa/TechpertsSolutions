@@ -21,5 +21,7 @@ namespace Core.DTOs.SpecificationsDTOs
         public string ProductId { get; set; } = string.Empty;
 
         public string? ProductName { get; set; }
+
+        public List<Core.DTOs.ProductDTOs.ProductListItemDTO>? Products { get; set; }
     }
 }

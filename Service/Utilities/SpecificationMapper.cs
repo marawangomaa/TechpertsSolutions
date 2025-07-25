@@ -7,16 +7,20 @@ namespace Service.Utilities
 {
     public static class SpecificationMapper
     {
-        public static Core.DTOs.ProductDTOs.SpecificationDTO MapToSpecificationDTO(Specification specification)
+        public static Core.DTOs.SpecificationsDTOs.SpecificationDTO MapToSpecificationDTO(Specification specification)
         {
             if (specification == null) return null;
 
-            return new Core.DTOs.ProductDTOs.SpecificationDTO
+            var dto = new Core.DTOs.SpecificationsDTOs.SpecificationDTO
             {
                 Id = specification.Id,
                 Key = specification.Key,
-                Value = specification.Value
+                Value = specification.Value,
+                ProductId = specification.ProductId,
+                ProductName = specification.Product?.Name,
+                Products = specification.Product != null ? new List<ProductListItemDTO> { ProductMapper.MapToProductListItem(specification.Product) } : new List<ProductListItemDTO>()
             };
+            return dto;
         }
 
         public static Specification MapToSpecification(CreateSpecificationDTO dto)
@@ -42,9 +46,9 @@ namespace Service.Utilities
             return existingSpecification;
         }
 
-        public static IEnumerable<Core.DTOs.ProductDTOs.SpecificationDTO> MapToSpecificationDTOList(IEnumerable<Specification> specifications)
+        public static IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO> MapToSpecificationDTOList(IEnumerable<Specification> specifications)
         {
-            if (specifications == null) return Enumerable.Empty<Core.DTOs.ProductDTOs.SpecificationDTO>();
+            if (specifications == null) return Enumerable.Empty<Core.DTOs.SpecificationsDTOs.SpecificationDTO>();
 
             return specifications.Select(MapToSpecificationDTO).Where(dto => dto != null);
         }

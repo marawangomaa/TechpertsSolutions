@@ -6,7 +6,7 @@ using Service.Utilities;
 using Microsoft.EntityFrameworkCore;
 using TechpertsSolutions.Core.Entities;
 using Core.DTOs.SpecificationsDTOs;
-using SpecificationDTO = Core.DTOs.ProductDTOs.SpecificationDTO;
+using Core.DTOs.ProductDTOs;
 
 namespace Service
 {
@@ -21,12 +21,12 @@ namespace Service
             _productRepo = productRepo;
         }
 
-        public async Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetAllSpecificationsAsync()
+        public async Task<GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>> GetAllSpecificationsAsync()
         {
             try
             {
                 var specs = await _specRepo.GetAllWithIncludesAsync(s => s.Product);
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = true,
                     Message = "Specifications retrieved successfully.",
@@ -35,7 +35,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving specifications.",
@@ -44,12 +44,12 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<SpecificationDTO>> GetSpecificationByIdAsync(string id)
+        public async Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> GetSpecificationByIdAsync(string id)
         {
             // Input validation
             if (string.IsNullOrWhiteSpace(id))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Specification ID cannot be null or empty.",
@@ -59,7 +59,7 @@ namespace Service
 
             if (!Guid.TryParse(id, out _))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Invalid Specification ID format. Expected GUID format.",
@@ -72,7 +72,7 @@ namespace Service
                 var spec = await _specRepo.GetByIdWithIncludesAsync(id, s => s.Product);
                 if (spec == null)
                 {
-                    return new GeneralResponse<SpecificationDTO>
+                    return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                     {
                         Success = false,
                         Message = $"Specification with ID '{id}' not found.",
@@ -80,7 +80,7 @@ namespace Service
                     };
                 }
 
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = true,
                     Message = "Specification retrieved successfully.",
@@ -89,7 +89,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the specification.",
@@ -98,12 +98,12 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId)
+        public async Task<GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId)
         {
             // Input validation
             if (string.IsNullOrWhiteSpace(productId))
             {
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
@@ -113,7 +113,7 @@ namespace Service
 
             if (!Guid.TryParse(productId, out _))
             {
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
@@ -126,7 +126,7 @@ namespace Service
                 var productExists = await _productRepo.AnyAsync(p => p.Id == productId);
                 if (!productExists)
                 {
-                    return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                    return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                     {
                         Success = false,
                         Message = $"Product with ID '{productId}' not found.",
@@ -139,7 +139,7 @@ namespace Service
                     s => s.Product
                 );
 
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = true,
                     Message = "Product specifications retrieved successfully.",
@@ -148,7 +148,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<IEnumerable<SpecificationDTO>>
+                return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving product specifications.",
@@ -157,12 +157,12 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO dto)
+        public async Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO dto)
         {
             // Input validation
             if (dto == null)
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Specification data cannot be null.",
@@ -172,7 +172,7 @@ namespace Service
 
             if (string.IsNullOrWhiteSpace(dto.Key))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Specification key is required.",
@@ -182,7 +182,7 @@ namespace Service
 
             if (string.IsNullOrWhiteSpace(dto.Value))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Specification value is required.",
@@ -192,7 +192,7 @@ namespace Service
 
             if (string.IsNullOrWhiteSpace(dto.ProductId))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Product ID is required.",
@@ -202,7 +202,7 @@ namespace Service
 
             if (!Guid.TryParse(dto.ProductId, out _))
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
@@ -215,7 +215,7 @@ namespace Service
                 var productExists = await _productRepo.AnyAsync(p => p.Id == dto.ProductId);
                 if (!productExists)
                 {
-                    return new GeneralResponse<SpecificationDTO>
+                    return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                     {
                         Success = false,
                         Message = $"Product with ID '{dto.ProductId}' not found.",
@@ -228,7 +228,7 @@ namespace Service
                 await _specRepo.AddAsync(spec);
                 await _specRepo.SaveChangesAsync();
 
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = true,
                     Message = "Specification created successfully.",
@@ -237,7 +237,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<SpecificationDTO>
+                return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
                 {
                     Success = false,
                     Message = "An unexpected error occurred while creating the specification.",
@@ -419,6 +419,99 @@ namespace Service
                     Success = false,
                     Message = "An unexpected error occurred while deleting the specification.",
                     Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<ProductListItemDTO>>> GetProductsBySpecificationAsync(string key, string value)
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = false,
+                    Message = "Key and value must be provided.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var specs = await _specRepo.FindWithIncludesAsync(
+                    s => s.Key == key && s.Value == value,
+                    s => s.Product
+                );
+                var products = specs
+                    .Where(s => s.Product != null)
+                    .Select(s => s.Product)
+                    .Distinct()
+                    .Select(ProductMapper.MapToProductListItem)
+                    .ToList();
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = true,
+                    Message = $"Products with specification {key}={value} retrieved successfully.",
+                    Data = products
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving products by specification.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<ProductListItemDTO>>> GetProductsBySpecificationIdAsync(string specificationId)
+        {
+            if (string.IsNullOrWhiteSpace(specificationId))
+            {
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = false,
+                    Message = "Specification ID must be provided.",
+                    Data = null
+                };
+            }
+            if (!Guid.TryParse(specificationId, out _))
+            {
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = false,
+                    Message = "Invalid Specification ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+            try
+            {
+                var spec = await _specRepo.GetByIdWithIncludesAsync(specificationId, s => s.Product);
+                if (spec == null || spec.Product == null)
+                {
+                    return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                    {
+                        Success = false,
+                        Message = $"Specification with ID '{specificationId}' not found or has no product.",
+                        Data = new List<ProductListItemDTO>()
+                    };
+                }
+                var productList = new List<ProductListItemDTO> { ProductMapper.MapToProductListItem(spec.Product) };
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = true,
+                    Message = "Product for the given specification ID retrieved successfully.",
+                    Data = productList
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<ProductListItemDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving product by specification ID.",
+                    Data = null
                 };
             }
         }
