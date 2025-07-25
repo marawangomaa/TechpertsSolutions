@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Orders;
+﻿using Core.DTOs.OrderDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

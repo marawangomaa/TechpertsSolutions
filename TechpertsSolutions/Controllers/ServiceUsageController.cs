@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ServiceUsage;
+﻿using Core.DTOs.ServiceUsageDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

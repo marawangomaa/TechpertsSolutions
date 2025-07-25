@@ -1,10 +1,10 @@
-﻿using Core.DTOs.Maintenance;
-using TechpertsSolutions.Core.DTOs;
+﻿using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.DTOs.MaintenanceDTOs;
 
 namespace Core.Interfaces.Services
 {

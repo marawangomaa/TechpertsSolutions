@@ -1,4 +1,4 @@
-﻿using Core.DTOs.TechManager;
+﻿using Core.DTOs.TechManagerDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

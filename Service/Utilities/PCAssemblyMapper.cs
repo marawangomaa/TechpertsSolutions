@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssembly;
+﻿using Core.DTOs.PCAssemblyDTOs;
 using Core.Entities;
 using System;
 using System.Collections.Generic;

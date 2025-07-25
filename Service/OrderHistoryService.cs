@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Orders;
+﻿using Core.DTOs.OrderDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;

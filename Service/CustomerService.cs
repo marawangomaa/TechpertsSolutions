@@ -1,10 +1,11 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs;
+using Core.Interfaces;
 using Core.Interfaces.Services;
-using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
-using TechpertsSolutions.Core.DTOs.Customer;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Core.DTOs;
 
 namespace Service
 {

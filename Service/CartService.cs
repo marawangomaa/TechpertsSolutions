@@ -1,6 +1,6 @@
 ﻿// Service.CartService.cs
-using Core.DTOs.Cart;
-using Core.DTOs.Orders;
+using Core.DTOs.CartDTOs;
+using Core.DTOs.OrderDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;

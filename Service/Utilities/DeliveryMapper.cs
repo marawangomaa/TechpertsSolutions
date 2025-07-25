@@ -1,4 +1,4 @@
-using Core.DTOs.Delivery;
+using Core.DTOs.DeliveryDTOs;
 using Core.Entities;
 using TechpertsSolutions.Core.Entities;
 

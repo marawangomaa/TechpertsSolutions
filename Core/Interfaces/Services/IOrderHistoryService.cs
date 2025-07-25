@@ -1,10 +1,10 @@
-﻿using Core.DTOs.Orders;
-using TechpertsSolutions.Core.DTOs;
+﻿using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.DTOs.OrderDTOs;
 
 namespace Core.Interfaces.Services
 {

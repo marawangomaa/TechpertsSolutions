@@ -1,5 +1,4 @@
 ﻿using Azure.Core;
-using Core.DTOs.Login;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -20,10 +19,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
-using TechpertsSolutions.Core.DTOs.Login;
-using TechpertsSolutions.Core.DTOs.Register;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Core.DTOs.LoginDTOs;
+using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Repository.Data;
+using Core.DTOs.LoginDTOs;
 
 namespace Service
 {

@@ -1,5 +1,5 @@
 ﻿// Controllers.CartController.cs (Assuming this file path)
-using Core.DTOs.Cart;
+using Core.DTOs.CartDTOs;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using System;

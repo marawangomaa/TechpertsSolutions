@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Admin;
+﻿using Core.DTOs.AdminDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

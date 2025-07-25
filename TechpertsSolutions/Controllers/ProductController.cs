@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Product;
+﻿using Core.DTOs.ProductDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;

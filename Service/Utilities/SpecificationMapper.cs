@@ -1,22 +1,21 @@
-using Core.DTOs.Specifications;
+using Core.DTOs.ProductDTOs;
 using Core.Entities;
 using TechpertsSolutions.Core.Entities;
+using Core.DTOs.SpecificationsDTOs;
 
 namespace Service.Utilities
 {
     public static class SpecificationMapper
     {
-        public static SpecificationDTO MapToSpecificationDTO(Specification specification)
+        public static Core.DTOs.ProductDTOs.SpecificationDTO MapToSpecificationDTO(Specification specification)
         {
             if (specification == null) return null;
 
-            return new SpecificationDTO
+            return new Core.DTOs.ProductDTOs.SpecificationDTO
             {
                 Id = specification.Id,
                 Key = specification.Key,
-                Value = specification.Value,
-                ProductId = specification.ProductId,
-                ProductName = specification.Product?.Name
+                Value = specification.Value
             };
         }
 
@@ -43,9 +42,9 @@ namespace Service.Utilities
             return existingSpecification;
         }
 
-        public static IEnumerable<SpecificationDTO> MapToSpecificationDTOList(IEnumerable<Specification> specifications)
+        public static IEnumerable<Core.DTOs.ProductDTOs.SpecificationDTO> MapToSpecificationDTOList(IEnumerable<Specification> specifications)
         {
-            if (specifications == null) return Enumerable.Empty<SpecificationDTO>();
+            if (specifications == null) return Enumerable.Empty<Core.DTOs.ProductDTOs.SpecificationDTO>();
 
             return specifications.Select(MapToSpecificationDTO).Where(dto => dto != null);
         }

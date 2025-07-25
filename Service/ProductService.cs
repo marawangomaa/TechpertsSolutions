@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Product;
+﻿using Core.DTOs.ProductDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Enums;
 using Core.Entities;

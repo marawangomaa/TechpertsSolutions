@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssembly;
+﻿using Core.DTOs.PCAssemblyDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

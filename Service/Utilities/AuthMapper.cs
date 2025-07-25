@@ -1,5 +1,6 @@
 using TechpertsSolutions.Core.DTOs;
-using TechpertsSolutions.Core.DTOs.Login;
+using TechpertsSolutions.Core.DTOs.LoginDTOs;
+using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using System.Collections.Generic;
 

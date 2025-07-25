@@ -1,4 +1,4 @@
-﻿using Core.DTOs.StockControlManager;
+﻿using Core.DTOs.StockControlManagerDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;

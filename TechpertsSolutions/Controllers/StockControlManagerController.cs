@@ -1,4 +1,4 @@
-﻿using Core.DTOs.StockControlManager;
+﻿using Core.DTOs.StockControlManagerDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

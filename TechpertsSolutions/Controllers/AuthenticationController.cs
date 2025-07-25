@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Login;
+﻿using Core.DTOs.LoginDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;       
@@ -10,8 +10,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using TechpertsSolutions.Core.DTOs;
-using TechpertsSolutions.Core.DTOs.Login;
-using TechpertsSolutions.Core.DTOs.Register;
+using TechpertsSolutions.Core.DTOs.LoginDTOs;
+using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.SalesManager;
+﻿using Core.DTOs.SalesManagerDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using System;

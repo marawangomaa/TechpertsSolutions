@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssembly;
+﻿using Core.DTOs.PCAssemblyDTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.StockControlManager;
+﻿using Core.DTOs.StockControlManagerDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

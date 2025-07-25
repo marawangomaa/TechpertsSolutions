@@ -1,4 +1,4 @@
-using Core.DTOs.SubCategory;
+using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.WishList;
+﻿using Core.DTOs.WishListDTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -46,7 +46,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProductId = i.ProductId,
-                    CartId = i.CartId
+                    //CartId = i.CartId
                 }).ToList() ?? new List<WishListItem>()
             };
 
@@ -100,7 +100,7 @@ namespace Service
             {
                 Id = Guid.NewGuid().ToString(),
                 ProductId = dto.ProductId,
-                CartId = dto.CartId
+                //CartId = dto.CartId
             });
 
             _wishListRepo.Update(wishList);
@@ -143,7 +143,7 @@ namespace Service
             foreach (var wishItem in itemsToMove)
             {
                 // Use cart service to add item (prevents duplicates)
-                await cartService.AddItemAsync(customerId, new Core.DTOs.Cart.CartItemDTO
+                await cartService.AddItemAsync(customerId, new Core.DTOs.CartDTOs.CartItemDTO
                 {
                     ProductId = wishItem.ProductId,
                     Quantity = 1

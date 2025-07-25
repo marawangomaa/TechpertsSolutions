@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces.Services;
-using Core.DTOs.SubCategory;
+using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Microsoft.Extensions.Logging;
 using System;

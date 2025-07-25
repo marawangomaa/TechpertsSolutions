@@ -1,4 +1,4 @@
-using Core.DTOs.Orders;
+using Core.DTOs.OrderDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities

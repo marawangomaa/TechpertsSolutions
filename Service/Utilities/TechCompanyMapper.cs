@@ -1,4 +1,4 @@
-﻿using Core.DTOs.TechCompany;
+﻿using Core.DTOs.TechCompanyDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,11 +1,11 @@
-﻿using Core.DTOs.Admin;
-using TechpertsSolutions.Core.DTOs;
+﻿using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Core.DTOs.AdminDTOs;
 
 namespace Core.Interfaces.Services
 {

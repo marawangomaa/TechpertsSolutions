@@ -1,4 +1,4 @@
-﻿using Core.DTOs.SalesManager;
+﻿using Core.DTOs.SalesManagerDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

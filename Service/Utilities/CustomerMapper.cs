@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs.Customer;
+﻿using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities

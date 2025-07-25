@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Admin;
+﻿using Core.DTOs.AdminDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;

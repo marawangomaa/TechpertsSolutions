@@ -1,6 +1,6 @@
 ﻿// Service.Utilities.CartMapper.cs
-using Core.DTOs.Cart;
-using Core.DTOs.Orders;
+using Core.DTOs.CartDTOs;
+using Core.DTOs.OrderDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Category;
+﻿using Core.DTOs.CategoryDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;

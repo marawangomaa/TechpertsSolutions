@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ServiceUsage;
+﻿using Core.DTOs.ServiceUsageDTOs;
 using Core.Entities;
 using System;
 using System.Collections.Generic;

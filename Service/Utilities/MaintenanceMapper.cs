@@ -1,4 +1,4 @@
-using Core.DTOs.Maintenance;
+using Core.DTOs.MaintenanceDTOs;
 using Core.Entities;
 using TechpertsSolutions.Core.Entities;
 

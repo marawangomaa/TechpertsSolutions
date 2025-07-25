@@ -1,4 +1,4 @@
-using Core.DTOs.Product;
+using Core.DTOs.ProductDTOs;
 using Core.Entities;
 using TechpertsSolutions.Core.Entities;
 using System.Linq;

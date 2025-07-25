@@ -1,11 +1,11 @@
-﻿using Core.DTOs.Product;
-using TechpertsSolutions.Core.DTOs;
+﻿using TechpertsSolutions.Core.DTOs;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.DTOs.ProductDTOs;
 
 namespace Core.Interfaces.Services
 {

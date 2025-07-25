@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Category;
+﻿using Core.DTOs.CategoryDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

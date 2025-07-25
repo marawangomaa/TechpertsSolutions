@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Admin;
+﻿using Core.DTOs.AdminDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

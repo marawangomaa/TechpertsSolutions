@@ -1,4 +1,4 @@
-﻿using Core.DTOs.Delivery;
+﻿using Core.DTOs.DeliveryDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;

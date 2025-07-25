@@ -1,4 +1,4 @@
-﻿using Core.DTOs.WishList;
+﻿using Core.DTOs.WishListDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

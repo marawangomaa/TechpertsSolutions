@@ -1,6 +1,6 @@
 ﻿// Core.Interfaces.ICartService.cs
-using Core.DTOs.Cart;
-using Core.DTOs.Orders;
+using Core.DTOs.CartDTOs;
+using Core.DTOs.OrderDTOs;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs; // Ensure this using directive is present
 

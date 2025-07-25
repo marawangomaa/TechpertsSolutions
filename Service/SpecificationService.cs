@@ -1,12 +1,12 @@
-﻿using Core.DTOs.Specifications;
-using TechpertsSolutions.Core.DTOs;
+﻿using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
 using Microsoft.EntityFrameworkCore;
-using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
+using Core.DTOs.SpecificationsDTOs;
+using SpecificationDTO = Core.DTOs.ProductDTOs.SpecificationDTO;
 
 namespace Service
 {
