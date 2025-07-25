@@ -102,5 +102,27 @@ namespace TechpertsSolutions.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("products-by-specification")]
+        public async Task<IActionResult> GetProductsBySpecification([FromQuery] string key, [FromQuery] string value)
+        {
+            var response = await _specificationService.GetProductsBySpecificationAsync(key, value);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("products-by-specification-id/{specificationId}")]
+        public async Task<IActionResult> GetProductsBySpecificationId(string specificationId)
+        {
+            var response = await _specificationService.GetProductsBySpecificationIdAsync(specificationId);
+            if (!response.Success)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
     }
 }
