@@ -16,5 +16,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<WishListReadDTO>> AddItemAsync(string wishListId, WishListItemCreateDTO dto);
         Task<GeneralResponse<bool>> RemoveItemAsync(string wishListId, string itemId);
         Task<GeneralResponse<bool>> MoveAllToCartAsync(string customerId, ICartService cartService);
+        Task<GeneralResponse<bool>> MoveSelectedToCartAsync(string customerId, List<string> wishListItemIds, ICartService cartService);
     }
 }

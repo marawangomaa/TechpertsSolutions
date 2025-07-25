@@ -157,6 +157,33 @@ namespace Service
             return new GeneralResponse<bool> { Success = true, Message = "All items moved to cart.", Data = true };
         }
 
+        public async Task<GeneralResponse<bool>> MoveSelectedToCartAsync(string customerId, List<string> wishListItemIds, ICartService cartService)
+        {
+            // Get wishlist
+            var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
+            if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
+                return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
+
+            var itemsToMove = wishlist.WishListItems.Where(i => wishListItemIds.Contains(i.Id)).ToList();
+            if (!itemsToMove.Any())
+                return new GeneralResponse<bool> { Success = false, Message = "No selected items found in wishlist.", Data = false };
+
+            foreach (var wishItem in itemsToMove)
+            {
+                await cartService.AddItemAsync(customerId, new Core.DTOs.CartDTOs.CartItemDTO
+                {
+                    ProductId = wishItem.ProductId,
+                    Quantity = 1
+                });
+                wishlist.WishListItems.Remove(wishItem);
+            }
+
+            _wishListRepo.Update(wishlist);
+            await _wishListRepo.SaveChangesAsync();
+
+            return new GeneralResponse<bool> { Success = true, Message = "Selected items moved to cart.", Data = true };
+        }
+
         private WishListReadDTO ToReadDTO(WishList entity)
         {
             return new WishListReadDTO

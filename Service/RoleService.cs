@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using Core.Entities;
@@ -65,11 +66,11 @@ namespace Service
             return RoleMapper.MapToRoleCheckResponse(exists);
         }
 
-        public async Task<GeneralResponse<string>> AssignRoleAsync(string userEmail, RoleType roleName)
+        public async Task<GeneralResponse<object>> AssignRoleAsync(string userEmail, RoleType roleName)
         {
             var user = await userManager.FindByEmailAsync(userEmail);
             if (user == null)
-                return new GeneralResponse<string>
+                return new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "User not found.",
@@ -78,7 +79,7 @@ namespace Service
 
             var result = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
             if (!result.Succeeded)
-                return new GeneralResponse<string>
+                return new GeneralResponse<object>
                 {
                     Success = false,
                     Message = "Failed to assign role",
@@ -87,20 +88,50 @@ namespace Service
 
             var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
             if (role == null)
-                return new GeneralResponse<string>
+                return new GeneralResponse<object>
                 {
                     Success = false,
                     Message = $"Role '{roleName}' does not exist.",
                     Data = $"{roleName} not found"
                 };
 
-            await AddDomainEntityAsync(roleName, user.Id, role.Id);
+            // For Customer, capture the created IDs
+            if (roleName == RoleType.Customer)
+            {
+                // AddDomainEntityAsync will create the customer, cart, and wishlist
+                await AddDomainEntityAsync(roleName, user.Id, role.Id);
+                await context.SaveChangesAsync();
 
-            await context.SaveChangesAsync();
+                // Fetch the created entities
+                var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
+                var cart = (await cartRepo.GetAllAsync()).FirstOrDefault(ct => ct.CustomerId == savedCustomer.Id);
+                var wishList = (await wishListRepo.GetAllAsync()).FirstOrDefault(wl => wl.CustomerId == savedCustomer.Id);
 
-            return RoleMapper.MapToRoleAssignmentResponse(true, 
-                $"Role '{roleName}' assigned to user '{userEmail}' successfully.", 
-                $"Role '{roleName}' assigned to user '{userEmail}' successfully.");
+                var dto = new CustomerRoleAssignmentResultDTO
+                {
+                    CustomerId = savedCustomer?.Id,
+                    CartId = cart?.Id,
+                    WishListId = wishList?.Id
+                };
+
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                    Data = dto
+                };
+            }
+            else
+            {
+                await AddDomainEntityAsync(roleName, user.Id, role.Id);
+                await context.SaveChangesAsync();
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<string>> UnassignRoleAsync(string userEmail, RoleType roleName)

@@ -13,11 +13,13 @@ namespace Service
     {
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<Cart> cartRepo;
+        private readonly IRepository<WishList> _wishListRepo;
 
-        public CustomerService(IRepository<Customer> customerRepository,IRepository<Cart> _cartRepo)
+        public CustomerService(IRepository<Customer> customerRepository, IRepository<Cart> _cartRepo, IRepository<WishList> wishListRepo)
         {
             _customerRepository = customerRepository;
             cartRepo = _cartRepo;
+            _wishListRepo = wishListRepo;
         }
 
         public async Task<GeneralResponse<IEnumerable<CustomerDTO>>> GetAllCustomersAsync()
@@ -249,6 +251,14 @@ namespace Service
                 var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
                 foreach (var cart in customerCarts)
                     cartRepo.Remove(cart);
+
+                // Remove all WishLists for this customer
+                if (_wishListRepo != null)
+                {
+                    var wishLists = await _wishListRepo.FindAsync(w => w.CustomerId == customer.Id);
+                    foreach (var wishList in wishLists)
+                        _wishListRepo.Remove(wishList);
+                }
 
                 return new GeneralResponse<bool>
                 {

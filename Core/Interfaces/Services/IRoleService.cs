@@ -11,7 +11,7 @@ namespace Core.Interfaces.Services
     public interface IRoleService
     {
         Task<GeneralResponse<bool>> CheckRoleAsync(string roleName);
-        Task<GeneralResponse<string>> AssignRoleAsync(string userEmail, RoleType roleName);
+        Task<GeneralResponse<object>> AssignRoleAsync(string userEmail, RoleType roleName);
         Task<GeneralResponse<string>> UnassignRoleAsync(string userEmail, RoleType roleName);
         Task<GeneralResponse<List<string>>> GetAllRolesAsync();
     }
