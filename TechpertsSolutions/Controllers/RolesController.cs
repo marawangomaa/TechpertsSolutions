@@ -23,6 +23,7 @@ namespace TechpertsSolutions.Controllers
         private readonly IRepository<TechCompany> techCompanyRepo;
         private readonly IRepository<TechManager> techManagerRepo;
         private readonly IRepository<Cart> cartRepo;
+        private readonly IRepository<WishList> wishListRepo;
         private readonly RoleManager<AppRole> roleManager;
         private readonly UserManager<AppUser> userManager;
         private readonly TechpertsContext context;
@@ -37,6 +38,7 @@ namespace TechpertsSolutions.Controllers
             IRepository<TechCompany> _techCompanyRepo,
             IRepository<TechManager> _techMangerRepo,
             IRepository<Cart> _cartRepo,
+            IRepository<WishList> _wishListRepo,
             TechpertsContext _context,
             ICustomerService _customerService)
         {
@@ -49,6 +51,7 @@ namespace TechpertsSolutions.Controllers
             techCompanyRepo = _techCompanyRepo;
             techManagerRepo = _techMangerRepo;
             cartRepo = _cartRepo;
+            wishListRepo = _wishListRepo;
             context = _context;
             customerService = _customerService;
         }
@@ -130,6 +133,15 @@ namespace TechpertsSolutions.Controllers
 
                         await cartRepo.AddAsync(newCart);
 
+                        var newWishlist = new WishList 
+                        {
+                            CustomerId = newCustomer.Id,
+                            CreatedAt = DateTime.UtcNow,
+                            WishListItems = new List<WishListItem>()
+                        };
+                        await wishListRepo.AddAsync(newWishlist);
+
+                        await context.SaveChangesAsync();
                     }
                     break;
 

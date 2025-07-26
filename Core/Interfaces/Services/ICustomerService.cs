@@ -15,7 +15,6 @@ namespace Core.Interfaces.Services
     {
         Task<GeneralResponse<IEnumerable<CustomerDTO>>> GetAllCustomersAsync();
         Task<GeneralResponse<CustomerDTO>> GetCustomerByIdAsync(string id);
-        Task<GeneralResponse<CustomerDTO>> GetCustomerByIdAsyn(string id);
         Task<GeneralResponse<CustomerEditDTO>> UpdateCustomerAsync(string id, CustomerEditDTO dto);
         Task<GeneralResponse<bool>> CleanupCustomerDataAsync(string userId);
     }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Repository.Data;
 
 namespace Service
 {
@@ -14,12 +15,17 @@ namespace Service
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<Cart> cartRepo;
         private readonly IRepository<WishList> _wishListRepo;
+        private readonly TechpertsContext context;
 
-        public CustomerService(IRepository<Customer> customerRepository, IRepository<Cart> _cartRepo, IRepository<WishList> wishListRepo)
+        public CustomerService(IRepository<Customer> customerRepository, 
+            IRepository<Cart> _cartRepo, 
+            IRepository<WishList> wishListRepo,
+            TechpertsContext _context)
         {
             _customerRepository = customerRepository;
             cartRepo = _cartRepo;
             _wishListRepo = wishListRepo;
+            context = _context;
         }
 
         public async Task<GeneralResponse<IEnumerable<CustomerDTO>>> GetAllCustomersAsync()
@@ -40,60 +46,6 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving customers.",
-                    Data = null
-                };
-            }
-        }
-
-        public async Task<GeneralResponse<CustomerDTO>> GetCustomerByIdAsyn(string id)
-        {
-            // Input validation
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GeneralResponse<CustomerDTO>
-                {
-                    Success = false,
-                    Message = "Customer ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<CustomerDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            try
-            {
-                var customer = await _customerRepository.GetByIdAsync(id);
-                if (customer == null)
-                {
-                    return new GeneralResponse<CustomerDTO>
-                    {
-                        Success = false,
-                        Message = $"Customer with ID '{id}' not found.",
-                        Data = null
-                    };
-                }
-
-                return new GeneralResponse<CustomerDTO>
-                {
-                    Success = true,
-                    Message = "Customer retrieved successfully.",
-                    Data = CustomerMapper.MapToCustomerDTO(customer)
-                };
-            }
-            catch (Exception ex)
-            {
-                return new GeneralResponse<CustomerDTO>
-                {
-                    Success = false,
-                    Message = "An unexpected error occurred while retrieving the customer.",
                     Data = null
                 };
             }
@@ -245,8 +197,6 @@ namespace Service
                     };
                 }
 
-                _customerRepository.Remove(customer);
-
                 var carts = await cartRepo.GetAllAsync();
                 var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
                 foreach (var cart in customerCarts)
@@ -259,6 +209,10 @@ namespace Service
                     foreach (var wishList in wishLists)
                         _wishListRepo.Remove(wishList);
                 }
+
+                _customerRepository.Remove(customer);
+
+                await context.SaveChangesAsync();
 
                 return new GeneralResponse<bool>
                 {
