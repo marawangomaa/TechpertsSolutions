@@ -5,8 +5,10 @@ namespace Service.Utilities
 {
     public static class CustomerMapper
     {
-        public static CustomerEditDTO MapToCustomerEditDTO(Customer customer)
+        public static CustomerEditDTO? MapToCustomerEditDTO(Customer? customer)
         {
+            if (customer == null) return null;
+            
             var user = customer.User;
             var role = customer.Role;
 
@@ -17,8 +19,10 @@ namespace Service.Utilities
             };
         }
 
-        public static CustomerDTO MapToCustomerDTO(Customer customer)
+        public static CustomerDTO? MapToCustomerDTO(Customer? customer)
         {
+            if (customer == null) return null;
+            
             var user = customer.User;
             var role = customer.Role;
 
@@ -40,8 +44,7 @@ namespace Service.Utilities
                 WishListId = customer.WishList?.Id,
                 PCAssemblyIds = customer.PCAssembly?.Select(p => p.Id).ToList(),
                 OrderIds = customer.Orders?.Select(o => o.Id).ToList(),
-                MaintenanceIds = customer.Maintenances?.Select(m => m.Id).ToList(),
-                DeliveryId = customer.Delivery?.Id
+                MaintenanceIds = customer.Maintenances?.Select(m => m.Id).ToList()
             };
         }
     }

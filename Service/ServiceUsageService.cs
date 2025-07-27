@@ -85,5 +85,244 @@ namespace Service
                 Data = id
             };
         }
+
+        public async Task<GeneralResponse<ServiceUsageReadDTO>> TrackServiceUsageAsync(string customerId, string serviceType, string? techCompanyId = null)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(serviceType))
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = "Service type cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Check if service usage already exists for this customer and service type
+                var existingUsage = await _ServiceRepo.GetFirstOrDefaultAsync(
+                    su => su.ServiceType == serviceType,
+                    includeProperties: "Maintenance,PCAssemblies,Orders"
+                );
+
+                if (existingUsage != null)
+                {
+                    // Increment call count
+                    existingUsage.CallCount++;
+                    _ServiceRepo.Update(existingUsage);
+                    await _ServiceRepo.SaveChangesAsync();
+
+                    return new GeneralResponse<ServiceUsageReadDTO>
+                    {
+                        Success = true,
+                        Message = $"Service usage tracked successfully. Call count: {existingUsage.CallCount}",
+                        Data = ServiceUsageMapper.ToReadDTO(existingUsage)
+                    };
+                }
+
+                // Create new service usage
+                var newServiceUsage = new ServiceUsage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ServiceType = serviceType,
+                    UsedOn = DateTime.UtcNow,
+                    CallCount = 1
+                };
+
+                await _ServiceRepo.AddAsync(newServiceUsage);
+                await _ServiceRepo.SaveChangesAsync();
+
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = true,
+                    Message = "New service usage created and tracked successfully.",
+                    Data = ServiceUsageMapper.ToReadDTO(newServiceUsage)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = $"An error occurred while tracking service usage: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByCustomerAsync(string customerId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var serviceUsages = await _ServiceRepo.FindWithIncludesAsync(
+                    su => su.Orders.Any(o => o.CustomerId == customerId) || 
+                          su.PCAssemblies.Any(pca => pca.CustomerId == customerId) ||
+                          su.Maintenance != null && su.Maintenance.CustomerId == customerId,
+                    su => su.Orders,
+                    su => su.PCAssemblies,
+                    su => su.Maintenance
+                );
+
+                var serviceUsageDtos = serviceUsages
+                    .Where(su => su != null)
+                    .Select(ServiceUsageMapper.ToReadDTO)
+                    .Where(dto => dto != null);
+
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = true,
+                    Message = "Customer service usage retrieved successfully.",
+                    Data = serviceUsageDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = false,
+                    Message = $"An error occurred while retrieving customer service usage: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByTechCompanyAsync(string techCompanyId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = false,
+                    Message = "Tech Company ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var serviceUsages = await _ServiceRepo.FindWithIncludesAsync(
+                    su => su.Maintenance != null && su.Maintenance.TechCompanyId == techCompanyId,
+                    su => su.Maintenance,
+                    su => su.PCAssemblies,
+                    su => su.Orders
+                );
+
+                var serviceUsageDtos = serviceUsages
+                    .Where(su => su != null)
+                    .Select(ServiceUsageMapper.ToReadDTO)
+                    .Where(dto => dto != null);
+
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = true,
+                    Message = "Tech Company service usage retrieved successfully.",
+                    Data = serviceUsageDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
+                {
+                    Success = false,
+                    Message = $"An error occurred while retrieving tech company service usage: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<ServiceUsageReadDTO>> GetOrCreateServiceUsageAsync(string customerId, string serviceType)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(serviceType))
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = "Service type cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Try to find existing service usage
+                var existingUsage = await _ServiceRepo.GetFirstOrDefaultAsync(
+                    su => su.ServiceType == serviceType,
+                    includeProperties: "Maintenance,PCAssemblies,Orders"
+                );
+
+                if (existingUsage != null)
+                {
+                    return new GeneralResponse<ServiceUsageReadDTO>
+                    {
+                        Success = true,
+                        Message = "Existing service usage found.",
+                        Data = ServiceUsageMapper.ToReadDTO(existingUsage)
+                    };
+                }
+
+                // Create new service usage
+                var newServiceUsage = new ServiceUsage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ServiceType = serviceType,
+                    UsedOn = DateTime.UtcNow,
+                    CallCount = 0
+                };
+
+                await _ServiceRepo.AddAsync(newServiceUsage);
+                await _ServiceRepo.SaveChangesAsync();
+
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = true,
+                    Message = "New service usage created successfully.",
+                    Data = ServiceUsageMapper.ToReadDTO(newServiceUsage)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<ServiceUsageReadDTO>
+                {
+                    Success = false,
+                    Message = $"An error occurred while getting or creating service usage: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
     }
 }

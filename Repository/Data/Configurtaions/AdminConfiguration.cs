@@ -8,11 +8,15 @@ namespace TechpertsSolutions.Repository.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<Admin> builder)
         {
-      
             builder.HasOne(a => a.User)
                    .WithOne(u => u.Admin)
                    .HasForeignKey<Admin>(a => a.Id)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete admin when user is deleted
+
+            builder.HasOne(a => a.Role)
+                   .WithMany()
+                   .HasForeignKey(a => a.RoleId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent role deletion if admins use it
         }
     }
 }

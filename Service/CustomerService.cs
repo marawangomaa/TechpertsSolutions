@@ -33,14 +33,15 @@ namespace Service
             try
             {
                 var customers = await _customerRepository.GetAllWithIncludesAsync(c => c.User, c => c.Cart, c => c.WishList);
+                var mappedCustomers = customers.Select(CustomerMapper.MapToCustomerDTO).Where(c => c != null).ToList();
                 return new GeneralResponse<IEnumerable<CustomerDTO>>
                 {
                     Success = true,
                     Message = "Customers retrieved successfully.",
-                    Data = customers.Select(CustomerMapper.MapToCustomerDTO).ToList()
+                    Data = mappedCustomers
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<IEnumerable<CustomerDTO>>
                 {
@@ -150,7 +151,7 @@ namespace Service
                     Data = updatedCustomer
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<CustomerEditDTO>
                 {
@@ -197,31 +198,83 @@ namespace Service
                     };
                 }
 
-                var carts = await cartRepo.GetAllAsync();
-                var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
-                foreach (var cart in customerCarts)
-                    cartRepo.Remove(cart);
-
-                // Remove all WishLists for this customer
-                if (_wishListRepo != null)
+                // Use a transaction to ensure data consistency
+                await using var transaction = await context.Database.BeginTransactionAsync();
+                try
                 {
-                    var wishLists = await _wishListRepo.FindAsync(w => w.CustomerId == customer.Id);
-                    foreach (var wishList in wishLists)
-                        _wishListRepo.Remove(wishList);
+                    // 1. Clean up Cart Items (these are automatically deleted via cascade, but let's be explicit)
+                    var carts = await cartRepo.GetAllAsync();
+                    var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
+                    foreach (var cart in customerCarts)
+                    {
+                        cartRepo.Remove(cart);
+                    }
+
+                    // 2. Clean up WishLists and WishList Items
+                    if (_wishListRepo != null)
+                    {
+                        var wishLists = await _wishListRepo.FindAsync(w => w.CustomerId == customer.Id);
+                        foreach (var wishList in wishLists)
+                        {
+                            _wishListRepo.Remove(wishList);
+                        }
+                    }
+
+                    // 3. Clean up Orders and Order Items
+                    var orders = await context.Orders.Where(o => o.CustomerId == customer.Id).ToListAsync();
+                    foreach (var order in orders)
+                    {
+                        // Order items are automatically deleted via cascade
+                        context.Orders.Remove(order);
+                    }
+
+                    // 4. Clean up PC Assemblies and PC Assembly Items
+                    var pcAssemblies = await context.PCAssemblies.Where(pca => pca.CustomerId == customer.Id).ToListAsync();
+                    foreach (var pcAssembly in pcAssemblies)
+                    {
+                        // PC Assembly items are automatically deleted via cascade
+                        context.PCAssemblies.Remove(pcAssembly);
+                    }
+
+                    // 5. Clean up Maintenances
+                    var maintenances = await context.Maintenances.Where(m => m.CustomerId == customer.Id).ToListAsync();
+                    foreach (var maintenance in maintenances)
+                    {
+                        // Service usages are automatically deleted via cascade
+                        context.Maintenances.Remove(maintenance);
+                    }
+
+                    // 6. Clean up Deliveries (if any are customer-specific)
+                    var deliveries = await context.Deliveries.Where(d => d.CustomerId == customer.Id).ToListAsync();
+                    foreach (var delivery in deliveries)
+                    {
+                        context.Deliveries.Remove(delivery);
+                    }
+
+                    // 7. Finally, remove the customer entity
+                    _customerRepository.Remove(customer);
+
+                    // Save all changes
+                    await context.SaveChangesAsync();
+                    
+                    // Commit the transaction
+                    await transaction.CommitAsync();
+
+                    return new GeneralResponse<bool>
+                    {
+                        Success = true,
+                        Message = "Customer data cleaned up successfully.",
+                        Data = true
+                    };
                 }
-
-                _customerRepository.Remove(customer);
-
-                await context.SaveChangesAsync();
-
-                return new GeneralResponse<bool>
+                catch (Exception)
                 {
-                    Success = true,
-                    Message = "Customer data cleaned up successfully.",
-                    Data = true
-                };
+                    // Rollback the transaction on error
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<bool>
                 {
@@ -269,6 +322,15 @@ namespace Service
                 }
 
                 var customerDto = CustomerMapper.MapToCustomerDTO(customer);
+                if (customerDto == null)
+                {
+                    return new GeneralResponse<CustomerDTO>
+                    {
+                        Success = false,
+                        Message = "Failed to map customer data.",
+                        Data = null
+                    };
+                }
 
                 return new GeneralResponse<CustomerDTO>
                 {
@@ -277,7 +339,7 @@ namespace Service
                     Data = customerDto
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<CustomerDTO>
                 {

@@ -23,6 +23,11 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                    .HasForeignKey(p => p.SubCategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(p => p.TechCompany)
+                   .WithMany(tc => tc.Products)
+                   .HasForeignKey(p => p.TechCompanyId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if it has products
+
             builder.HasMany(p => p.Specifications)
                    .WithOne(s => s.Product)
                    .HasForeignKey(s => s.ProductId)

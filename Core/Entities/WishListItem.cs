@@ -11,8 +11,6 @@ namespace TechpertsSolutions.Core.Entities
     {
         public string ProductId { get; set; }
         public Product? Product { get; set; }
-        public string CartId { get; set; }
-        public Cart? Cart { get; set; }
         public string WishListId { get; set; }
         public WishList? WishList { get; set; }
     }

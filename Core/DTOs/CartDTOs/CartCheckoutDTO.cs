@@ -10,8 +10,6 @@ namespace Core.DTOs.CartDTOs
         
         public string? DeliveryId { get; set; }
         
-        public string? SalesManagerId { get; set; }
-        
         public string? ServiceUsageId { get; set; }
     }
 } 

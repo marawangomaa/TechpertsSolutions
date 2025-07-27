@@ -1,4 +1,6 @@
-﻿namespace TechpertsSolutions.Core.DTOs.LoginDTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TechpertsSolutions.Core.DTOs.LoginDTOs
 {
     public class ForgotPasswordDTO
     {

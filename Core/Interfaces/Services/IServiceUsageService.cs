@@ -15,5 +15,9 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetAllAsync();
         Task<GeneralResponse<ServiceUsageReadDTO>> UpdateAsync(string id, ServiceUsageUpdateDTO dto);
         Task<GeneralResponse<string>> DeleteAsync(string id);
+        Task<GeneralResponse<ServiceUsageReadDTO>> TrackServiceUsageAsync(string customerId, string serviceType, string? techCompanyId = null);
+        Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByCustomerAsync(string customerId);
+        Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByTechCompanyAsync(string techCompanyId);
+        Task<GeneralResponse<ServiceUsageReadDTO>> GetOrCreateServiceUsageAsync(string customerId, string serviceType);
     }
 }

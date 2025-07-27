@@ -5,6 +5,7 @@ using Core.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
@@ -18,10 +19,8 @@ namespace TechpertsSolutions.Controllers
     {
         private readonly IRepository<Admin> adminRepo;
         private readonly IRepository<Customer> customerRepo;
-        private readonly IRepository<SalesManager> salesManagerRepo;
-        private readonly IRepository<StockControlManager> stockControlManagerRepo;
         private readonly IRepository<TechCompany> techCompanyRepo;
-        private readonly IRepository<TechManager> techManagerRepo;
+        private readonly IRepository<DeliveryPerson> deliveryPersonRepo;
         private readonly IRepository<Cart> cartRepo;
         private readonly IRepository<WishList> wishListRepo;
         private readonly RoleManager<AppRole> roleManager;
@@ -33,10 +32,8 @@ namespace TechpertsSolutions.Controllers
             UserManager<AppUser> _userManager,
             IRepository<Admin> _adminRepo,
             IRepository<Customer> _customerRepo,
-            IRepository<SalesManager> _salesManagerRepo,
-            IRepository<StockControlManager> _stockControlMangerRepo,
             IRepository<TechCompany> _techCompanyRepo,
-            IRepository<TechManager> _techMangerRepo,
+            IRepository<DeliveryPerson> _deliveryPersonRepo,
             IRepository<Cart> _cartRepo,
             IRepository<WishList> _wishListRepo,
             TechpertsContext _context,
@@ -46,17 +43,15 @@ namespace TechpertsSolutions.Controllers
             userManager = _userManager;
             adminRepo = _adminRepo;
             customerRepo = _customerRepo;
-            salesManagerRepo = _salesManagerRepo;
-            stockControlManagerRepo = _stockControlMangerRepo;
             techCompanyRepo = _techCompanyRepo;
-            techManagerRepo = _techMangerRepo;
+            deliveryPersonRepo = _deliveryPersonRepo;
             cartRepo = _cartRepo;
             wishListRepo = _wishListRepo;
             context = _context;
             customerService = _customerService;
         }
         [HttpPost("check-role")]
-        public async Task<IActionResult> CheckRole([FromForm] string roleName)
+        public async Task<IActionResult> CheckRole([FromBody] string roleName)
         {
             var exists = await roleManager.RoleExistsAsync(roleName);
 
@@ -101,17 +96,6 @@ namespace TechpertsSolutions.Controllers
             }
             switch (roleName)
             {
-                case RoleType.SaleManager:
-                    if (!await salesManagerRepo.AnyAsync(sm => sm.UserId == user.Id))
-                    {
-                        await salesManagerRepo.AddAsync(new SalesManager
-                        {
-                            UserId = user.Id,
-                            RoleId = role.Id
-                        });
-                    }
-                    break;
-
                 case RoleType.Customer:
                     if (!await customerRepo.AnyAsync(c => c.UserId == user.Id))
                     {
@@ -145,28 +129,6 @@ namespace TechpertsSolutions.Controllers
                     }
                     break;
 
-                case RoleType.TechManager:
-                    if (!await techManagerRepo.AnyAsync(t => t.UserId == user.Id))
-                    {
-                        await techManagerRepo.AddAsync(new TechManager
-                        {
-                            UserId = user.Id,
-                            RoleId = role.Id
-                        });
-                    }
-                    break;
-
-                case RoleType.StockControlManager:
-                    if (!await stockControlManagerRepo.AnyAsync(s => s.UserId == user.Id))
-                    {
-                        await stockControlManagerRepo.AddAsync(new StockControlManager
-                        {
-                            UserId = user.Id,
-                            RoleId = role.Id
-                        });
-                    }
-                    break;
-
                 case RoleType.Admin:
                     if (!await adminRepo.AnyAsync(a => a.UserId == user.Id))
                     {
@@ -182,6 +144,17 @@ namespace TechpertsSolutions.Controllers
                     if (!await techCompanyRepo.AnyAsync(tc => tc.UserId == user.Id))
                     {
                         await techCompanyRepo.AddAsync(new TechCompany
+                        {
+                            UserId = user.Id,
+                            RoleId = role.Id
+                        });
+                    }
+                    break;
+
+                case RoleType.DeliveryPerson:
+                    if (!await deliveryPersonRepo.AnyAsync(dp => dp.UserId == user.Id))
+                    {
+                        await deliveryPersonRepo.AddAsync(new DeliveryPerson
                         {
                             UserId = user.Id,
                             RoleId = role.Id
@@ -240,21 +213,6 @@ namespace TechpertsSolutions.Controllers
                     await customerService.CleanupCustomerDataAsync(user.Id); // ✅ Shared logic inserted here
                     break;
 
-                case RoleType.SaleManager:
-                    var salesManager = (await salesManagerRepo.GetAllAsync()).FirstOrDefault(sm => sm.UserId == user.Id);
-                    if (salesManager != null) salesManagerRepo.Remove(salesManager);
-                    break;
-
-                case RoleType.TechManager:
-                    var techManager = (await techManagerRepo.GetAllAsync()).FirstOrDefault(t => t.UserId == user.Id);
-                    if (techManager != null) techManagerRepo.Remove(techManager);
-                    break;
-
-                case RoleType.StockControlManager:
-                    var stockControlManager = (await stockControlManagerRepo.GetAllAsync()).FirstOrDefault(s => s.UserId == user.Id);
-                    if (stockControlManager != null) stockControlManagerRepo.Remove(stockControlManager);
-                    break;
-
                 case RoleType.Admin:
                     var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(a => a.UserId == user.Id);
                     if (admin != null) adminRepo.Remove(admin);
@@ -263,6 +221,11 @@ namespace TechpertsSolutions.Controllers
                 case RoleType.TechCompany:
                     var techCompany = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(tc => tc.UserId == user.Id);
                     if (techCompany != null) techCompanyRepo.Remove(techCompany);
+                    break;
+
+                case RoleType.DeliveryPerson:
+                    var deliveryPerson = (await deliveryPersonRepo.GetAllAsync()).FirstOrDefault(dp => dp.UserId == user.Id);
+                    if (deliveryPerson != null) deliveryPersonRepo.Remove(deliveryPerson);
                     break;
             }
 
@@ -294,6 +257,59 @@ namespace TechpertsSolutions.Controllers
                 Message = "Roles retrieved successfully.",
                 Data = roles
             });
+        }
+
+        [HttpGet("registration-options")]
+        public IActionResult GetRegistrationRoleOptions()
+        {
+            var roleOptions = Enum.GetValues(typeof(RoleType))
+                .Cast<RoleType>()
+                .Select(role => new RoleOptionDTO
+                {
+                    Value = role.ToString(),
+                    DisplayName = role.GetStringValue(),
+                    Description = GetRoleDescription(role)
+                })
+                .ToList();
+
+            return Ok(new GeneralResponse<List<RoleOptionDTO>>
+            {
+                Success = true,
+                Message = "Registration role options retrieved successfully.",
+                Data = roleOptions
+            });
+        }
+
+        [HttpGet("enum-values")]
+        public IActionResult GetRoleEnumValues()
+        {
+            var roleValues = Enum.GetValues(typeof(RoleType))
+                .Cast<RoleType>()
+                .Select(role => new
+                {
+                    Value = role.ToString(),
+                    DisplayName = role.GetStringValue()
+                })
+                .ToList();
+
+            return Ok(new GeneralResponse<dynamic>
+            {
+                Success = true,
+                Message = "Role enum values retrieved successfully.",
+                Data = roleValues
+            });
+        }
+
+        private string GetRoleDescription(RoleType role)
+        {
+            return role switch
+            {
+                RoleType.Customer => "Can browse products, manage cart, place orders, and manage wishlist",
+                RoleType.Admin => "Full system access, user management, and system configuration",
+                RoleType.TechCompany => "Product management, maintenance services, and warranties",
+                RoleType.DeliveryPerson => "Order delivery management and status updates",
+                _ => "Unknown role"
+            };
         }
     }
 }

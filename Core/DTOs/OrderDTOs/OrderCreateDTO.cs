@@ -12,7 +12,6 @@ namespace Core.DTOs.OrderDTOs
         public List<OrderItemCreateDTO> OrderItems { get; set; }
         public string CartId { get; set; }
         public string DeliveryId { get; set; }
-        public string SalesManagerId { get; set; }
         public string ServiceUsageId { get; set; }
     }
 }

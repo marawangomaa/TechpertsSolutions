@@ -2,6 +2,7 @@
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -59,13 +60,74 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        [HttpPost("{wishListId}/move-selected-to-cart")]
-        public async Task<IActionResult> MoveSelectedToCart(string wishListId, [FromQuery] string customerId, [FromBody] List<string> wishListItemIds)
+        [HttpPost("{customerId}/move-selected-to-cart")]
+        public async Task<IActionResult> MoveSelectedToCart(string customerId, [FromBody] List<string> wishListItemIds)
         {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(customerId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
             if (wishListItemIds == null || !wishListItemIds.Any())
-                return BadRequest(new { Success = false, Message = "No wishlist items selected." });
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Wishlist item IDs cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
             var result = await _wishListService.MoveSelectedToCartAsync(customerId, wishListItemIds, _cartService);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPost("{customerId}/move-item-to-cart/{wishListItemId}")]
+        public async Task<IActionResult> MoveItemToCart(string customerId, string wishListItemId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(customerId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            if (string.IsNullOrWhiteSpace(wishListItemId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Wishlist item ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(wishListItemId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Wishlist item ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            var result = await _wishListService.MoveItemToCartAsync(customerId, wishListItemId, _cartService);
+            return Ok(result);
         }
     }
 }

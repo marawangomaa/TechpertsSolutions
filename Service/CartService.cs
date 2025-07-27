@@ -79,6 +79,86 @@ namespace Service
             return CartMapper.MapToCartReadDTO(cart);
         }
 
+        public async Task<GeneralResponse<CartReadDTO>> GetOrCreateCartAsync(string customerId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var customer = await customerRepo.GetByIdAsync(customerId);
+                if (customer == null)
+                {
+                    return new GeneralResponse<CartReadDTO>
+                    {
+                        Success = false,
+                        Message = "Customer not found.",
+                        Data = null
+                    };
+                }
+
+                var cart = await cartRepo.GetFirstOrDefaultAsync(
+                    c => c.CustomerId == customerId,
+                    includeProperties: "CartItems.Product" // Include Product details for CartItems
+                );
+
+                if (cart == null)
+                {
+                    // Create a new cart if one doesn't exist for the customer
+                    cart = new Cart
+                    {
+                        CustomerId = customerId,
+                        CreatedAt = DateTime.UtcNow,
+                        CartItems = new List<CartItem>()
+                    };
+
+                    await cartRepo.AddAsync(cart);
+                    await cartRepo.SaveChangesAsync();
+
+                    return new GeneralResponse<CartReadDTO>
+                    {
+                        Success = true,
+                        Message = "New cart created successfully.",
+                        Data = CartMapper.MapToCartReadDTO(cart)
+                    };
+                }
+
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = true,
+                    Message = "Cart retrieved successfully.",
+                    Data = CartMapper.MapToCartReadDTO(cart)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = $"An error occurred while getting or creating cart: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
      
         public async Task<string> AddItemAsync(string customerId, CartItemDTO itemDto)
         {
@@ -284,116 +364,40 @@ namespace Service
         }
 
       
-        public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? salesManagerId = null, string? serviceUsageId = null)
+        public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? serviceUsageId = null)
         {
-            // Input validation
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Customer ID cannot be null or empty.",
+                    Message = "❌ Customer ID is required.",
                     Data = null
                 };
             }
 
-            if (!Guid.TryParse(customerId, out _))
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Invalid Customer ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            // Validate optional parameters if provided
-            if (!string.IsNullOrWhiteSpace(deliveryId) && !Guid.TryParse(deliveryId, out _))
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Invalid Delivery ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            if (!string.IsNullOrWhiteSpace(salesManagerId) && !Guid.TryParse(salesManagerId, out _))
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Invalid Sales Manager ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            if (!string.IsNullOrWhiteSpace(serviceUsageId) && !Guid.TryParse(serviceUsageId, out _))
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Invalid Service Usage ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            // Get cart with all necessary includes
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
                 includeProperties: "CartItems.Product,Customer"
             );
 
-            if (cart == null)
+            if (cart == null || cart.CartItems == null || !cart.CartItems.Any())
             {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Cart not found for this customer.",
+                    Message = "❌ Cart is empty or not found.",
                     Data = null
                 };
             }
 
-            if (cart.CartItems == null || !cart.CartItems.Any())
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Cart is empty. Please add items before placing an order.",
-                    Data = null
-                };
-            }
-
-            // Validate customer exists
-            if (cart.Customer == null)
-            {
-                return new GeneralResponse<OrderReadDTO>
-                {
-                    Success = false,
-                    Message = "❌ Customer information not found.",
-                    Data = null
-                };
-            }
-
-            // 1. Validate stock for all items in the cart
+            // 1. Validate stock availability
             var stockValidationErrors = new List<string>();
             foreach (var cartItem in cart.CartItems)
             {
-                if (cartItem.Product == null)
-                {
-                    stockValidationErrors.Add($"Product with ID {cartItem.ProductId} not found.");
-                    continue;
-                }
-
-                if (cartItem.Quantity <= 0)
-                {
-                    stockValidationErrors.Add($"Invalid quantity ({cartItem.Quantity}) for product '{cartItem.Product.Name}'.");
-                    continue;
-                }
-
                 if (cartItem.Product.Stock < cartItem.Quantity)
                 {
-                    stockValidationErrors.Add($"Not enough stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}.");
+                    stockValidationErrors.Add($"❌ {cartItem.Product.Name}: Insufficient stock. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}");
                 }
             }
 
@@ -418,9 +422,8 @@ namespace Service
                     OrderDate = DateTime.UtcNow,
                     Status = "Pending",
                     OrderItems = new List<OrderItem>(),
-                    DeliveryId = deliveryId ?? Guid.NewGuid().ToString(), // Use provided or generate default
-                    SalesManagerId = salesManagerId ?? Guid.NewGuid().ToString(), // Use provided or generate default
-                    ServiceUsageId = serviceUsageId ?? Guid.NewGuid().ToString() // Use provided or generate default
+                    DeliveryId = deliveryId, // Optional - can be null
+                    ServiceUsageId = serviceUsageId // Optional - can be null
                 };
 
                 decimal totalAmount = 0;
@@ -550,7 +553,6 @@ namespace Service
                     Status = "Pending",
                     OrderItems = new List<OrderItem>(),
                     DeliveryId = Guid.NewGuid().ToString(),
-                    SalesManagerId = Guid.NewGuid().ToString(),
                     ServiceUsageId = Guid.NewGuid().ToString()
                 };
                 decimal totalAmount = 0;

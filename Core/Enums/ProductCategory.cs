@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Enums.Attributes;
 
 namespace Core.Enums
 {
@@ -29,6 +25,10 @@ namespace Core.Enums
         [StringValue("Monitor")]
         Monitor,
         [StringValue("Accessories")]
-        Accessories
+        Accessories,
+        [StringValue("PreBuildPC")]
+        PreBuildPC,
+        [StringValue("Laptop")]
+        Laptop
     }
 }

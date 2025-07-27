@@ -16,17 +16,15 @@ namespace Repository.Data.Configurtaions
             builder.HasMany(d => d.TechCompanies)
                     .WithMany(t => t.Deliveries);
 
+            builder.HasOne(d => d.Customer)
+                   .WithMany()
+                   .HasForeignKey(d => d.CustomerId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have deliveries
 
-            builder.HasMany(d => d.Orders)
-                    .WithOne(o => o.Delivery)
-                    .HasForeignKey(o => o.DeliveryId);
-
-            builder.HasMany(d => d.Customers)
-                   .WithOne(c => c.Delivery)
-                   .HasForeignKey(c => c.DeliveryId);
-
-
-
+            builder.HasOne(d => d.DeliveryPerson)
+                   .WithMany(dp => dp.Deliveries)
+                   .HasForeignKey(d => d.DeliveryPersonId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery person is deleted
         }
     }
 }

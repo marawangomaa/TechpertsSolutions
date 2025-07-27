@@ -15,12 +15,10 @@ namespace TechpertsSolutions.Core.Entities
         public string CustomerId { get; set; }
         public Customer? Customer { get; set; }
         public string CartId { get; set; }
-        public Cart? _Cart { get; set; }
-        public string DeliveryId { get; set; }
+        public Cart? Cart { get; set; }
+        public string? DeliveryId { get; set; } // Made optional
         public Delivery? Delivery { get; set; }
-        public string SalesManagerId { get; set; }
-        public string ServiceUsageId { get; set; }
-        public SalesManager SalesManager { get; set; }
+        public string? ServiceUsageId { get; set; }
         public string? OrderHistoryId { get; set; }
         public List<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
         public OrderHistory? OrderHistory { get; set; }

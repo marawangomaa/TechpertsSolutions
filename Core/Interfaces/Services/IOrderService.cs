@@ -14,5 +14,8 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<OrderReadDTO>> GetOrderByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetAllOrdersAsync();
         Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId);
+        Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetOrderHistoryByCustomerIdAsync(string customerId);
+        Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, string newStatus);
+        Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(string status);
     }
 }

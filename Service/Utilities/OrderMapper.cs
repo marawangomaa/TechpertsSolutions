@@ -59,7 +59,6 @@ namespace Service.Utilities
                 Status = "Pending",
                 CartId = dto.CartId,
                 DeliveryId = dto.DeliveryId,
-                SalesManagerId = dto.SalesManagerId,
                 ServiceUsageId = dto.ServiceUsageId,
                 OrderHistoryId = null, // Will be set by the service
                 OrderItems = dto.OrderItems.Select(item => new OrderItem

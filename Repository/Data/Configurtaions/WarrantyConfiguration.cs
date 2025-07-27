@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(w => w.Product)
                    .WithMany(p => p.Warranties)
                    .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete warranty when product is deleted
         }
     }
 }

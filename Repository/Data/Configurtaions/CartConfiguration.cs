@@ -18,17 +18,21 @@ namespace Repository.Data.Configurtaions
                    .WithOne(ct => ct.Cart)
                    .HasForeignKey<Cart>(c => c.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete cart when customer is deleted
+
+            // Ensure each customer can only have one cart
+            builder.HasIndex(c => c.CustomerId)
+                   .IsUnique();
+
+            builder.HasMany(c => c.CartItems)
+                   .WithOne(ci => ci.Cart)
+                   .HasForeignKey(ci => ci.CartId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete cart items when cart is deleted
 
             builder.HasMany(c => c.PCAssemblyItems)
                    .WithOne(pai => pai.Cart)
-                   .OnDelete(DeleteBehavior.NoAction);
-
-            // One-to-one relationship with Order
-            builder.HasOne(c => c.Order)
-                   .WithOne(o => o._Cart)
-                   .HasForeignKey<Order>(o => o.CartId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(pai => pai.CartId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly items when cart is deleted
         }
     }
 }

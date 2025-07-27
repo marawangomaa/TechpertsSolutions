@@ -86,6 +86,76 @@ namespace Service
             };
         }
 
+        public async Task<GeneralResponse<WishListReadDTO>> GetOrCreateWishListAsync(string customerId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Try to get existing wishlist
+                var existingWishList = await _wishListRepo.GetFirstOrDefaultAsync(
+                    w => w.CustomerId == customerId,
+                    includeProperties: "WishListItems"
+                );
+
+                if (existingWishList != null)
+                {
+                    return new GeneralResponse<WishListReadDTO>
+                    {
+                        Success = true,
+                        Message = "Wishlist retrieved successfully.",
+                        Data = ToReadDTO(existingWishList)
+                    };
+                }
+
+                // Create a new wishlist if one doesn't exist
+                var newWishList = new WishList
+                {
+                    CustomerId = customerId,
+                    CreatedAt = DateTime.UtcNow,
+                    WishListItems = new List<WishListItem>()
+                };
+
+                await _wishListRepo.AddAsync(newWishList);
+                await _wishListRepo.SaveChangesAsync();
+
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = true,
+                    Message = "New wishlist created successfully.",
+                    Data = ToReadDTO(newWishList)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = $"An error occurred while getting or creating wishlist: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
         public async Task<GeneralResponse<WishListReadDTO>> AddItemAsync(string wishListId, WishListItemCreateDTO dto)
         {
             var wishList = await _wishListRepo.GetByIdWithIncludesAsync(wishListId, w => w.WishListItems);
@@ -184,6 +254,32 @@ namespace Service
             return new GeneralResponse<bool> { Success = true, Message = "Selected items moved to cart.", Data = true };
         }
 
+        public async Task<GeneralResponse<bool>> MoveItemToCartAsync(string customerId, string wishListItemId, ICartService cartService)
+        {
+            // Get wishlist
+            var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
+            if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
+                return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
+
+            var wishItem = wishlist.WishListItems.FirstOrDefault(i => i.Id == wishListItemId);
+            if (wishItem == null)
+                return new GeneralResponse<bool> { Success = false, Message = "Wishlist item not found.", Data = false };
+
+            // Add to cart
+            await cartService.AddItemAsync(customerId, new Core.DTOs.CartDTOs.CartItemDTO
+            {
+                ProductId = wishItem.ProductId,
+                Quantity = 1
+            });
+
+            // Remove from wishlist
+            wishlist.WishListItems.Remove(wishItem);
+            _wishListRepo.Update(wishlist);
+            await _wishListRepo.SaveChangesAsync();
+
+            return new GeneralResponse<bool> { Success = true, Message = "Item moved to cart successfully.", Data = true };
+        }
+
         private WishListReadDTO ToReadDTO(WishList entity)
         {
             return new WishListReadDTO
@@ -195,7 +291,7 @@ namespace Service
                 {
                     Id = i.Id,
                     ProductId = i.ProductId,
-                    CartId = i.CartId
+                    WishListId = i.WishListId
                 }).ToList() ?? new List<WishListItemReadDTO>()
             };
         }

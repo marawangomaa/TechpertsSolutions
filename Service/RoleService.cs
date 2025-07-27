@@ -23,10 +23,8 @@ namespace Service
         private readonly UserManager<AppUser> userManager;
         private readonly IRepository<Admin> adminRepo;
         private readonly IRepository<Customer> customerRepo;
-        private readonly IRepository<SalesManager> salesManagerRepo;
-        private readonly IRepository<StockControlManager> stockControlManagerRepo;
         private readonly IRepository<TechCompany> techCompanyRepo;
-        private readonly IRepository<TechManager> techManagerRepo;
+        private readonly IRepository<DeliveryPerson> deliveryPersonRepo;
         private readonly IRepository<Cart> cartRepo;
         private readonly IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo;
         private readonly TechpertsContext context;
@@ -37,10 +35,8 @@ namespace Service
             UserManager<AppUser> userManager,
             IRepository<Admin> adminRepo,
             IRepository<Customer> customerRepo,
-            IRepository<SalesManager> salesManagerRepo,
-            IRepository<StockControlManager> stockControlManagerRepo,
             IRepository<TechCompany> techCompanyRepo,
-            IRepository<TechManager> techManagerRepo,
+            IRepository<DeliveryPerson> deliveryPersonRepo,
             IRepository<Cart> cartRepo,
             IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo,
             TechpertsContext context,
@@ -50,10 +46,8 @@ namespace Service
             this.userManager = userManager;
             this.adminRepo = adminRepo;
             this.customerRepo = customerRepo;
-            this.salesManagerRepo = salesManagerRepo;
-            this.stockControlManagerRepo = stockControlManagerRepo;
             this.techCompanyRepo = techCompanyRepo;
-            this.techManagerRepo = techManagerRepo;
+            this.deliveryPersonRepo = deliveryPersonRepo;
             this.cartRepo = cartRepo;
             this.wishListRepo = wishListRepo;
             this.context = context;
@@ -102,38 +96,21 @@ namespace Service
                 {
                     await AddDomainEntityAsync(roleName, user.Id, role.Id);
                     await context.SaveChangesAsync();
-
-                    var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
-                    var cart = (await cartRepo.GetAllAsync()).FirstOrDefault(ct => ct.CustomerId == savedCustomer.Id);
-                    var wishList = (await wishListRepo.GetAllAsync()).FirstOrDefault(wl => wl.CustomerId == savedCustomer.Id);
-
-                    var dto = new CustomerRoleAssignmentResultDTO
-                    {
-                        CustomerId = savedCustomer?.Id,
-                        CartId = cart?.Id,
-                        WishListId = wishList?.Id
-                    };
-
-                    await transaction.CommitAsync();
-                    return new GeneralResponse<object>
-                    {
-                        Success = true,
-                        Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
-                        Data = dto
-                    };
                 }
                 else
                 {
                     await AddDomainEntityAsync(roleName, user.Id, role.Id);
-                    await context.SaveChangesAsync();
-                    await transaction.CommitAsync();
-                    return new GeneralResponse<object>
-                    {
-                        Success = true,
-                        Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
-                        Data = null
-                    };
                 }
+
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
+                    Data = $"Role '{roleName}' assigned to user '{userEmail}' successfully."
+                };
             }
             catch (Exception ex)
             {
@@ -141,8 +118,8 @@ namespace Service
                 return new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"An error occurred during role assignment: {ex.Message}",
-                    Data = null
+                    Message = "An error occurred while assigning the role.",
+                    Data = ex.Message
                 };
             }
         }
@@ -202,11 +179,6 @@ namespace Service
         {
             switch (roleName)
             {
-                case RoleType.SaleManager:
-                    if (!await salesManagerRepo.AnyAsync(sm => sm.UserId == userId))
-                        await salesManagerRepo.AddAsync(new SalesManager { UserId = userId, RoleId = roleId });
-                    break;
-
                 case RoleType.Customer:
                     if (!await customerRepo.AnyAsync(c => c.UserId == userId))
                     {
@@ -227,16 +199,6 @@ namespace Service
                     }
                     break;
 
-                case RoleType.TechManager:
-                    if (!await techManagerRepo.AnyAsync(t => t.UserId == userId))
-                        await techManagerRepo.AddAsync(new TechManager { UserId = userId, RoleId = roleId });
-                    break;
-
-                case RoleType.StockControlManager:
-                    if (!await stockControlManagerRepo.AnyAsync(s => s.UserId == userId))
-                        await stockControlManagerRepo.AddAsync(new StockControlManager { UserId = userId, RoleId = roleId });
-                    break;
-
                 case RoleType.Admin:
                     if (!await adminRepo.AnyAsync(a => a.UserId == userId))
                         await adminRepo.AddAsync(new Admin { UserId = userId, RoleId = roleId });
@@ -245,6 +207,11 @@ namespace Service
                 case RoleType.TechCompany:
                     if (!await techCompanyRepo.AnyAsync(tc => tc.UserId == userId))
                         await techCompanyRepo.AddAsync(new TechCompany { UserId = userId, RoleId = roleId });
+                    break;
+
+                case RoleType.DeliveryPerson:
+                    if (!await deliveryPersonRepo.AnyAsync(dp => dp.UserId == userId))
+                        await deliveryPersonRepo.AddAsync(new DeliveryPerson { UserId = userId, RoleId = roleId });
                     break;
             }
         }
@@ -260,21 +227,6 @@ namespace Service
                         await customerService.CleanupCustomerDataAsync(userId);
                         break;
 
-                    case RoleType.SaleManager:
-                        var sm = (await salesManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                        if (sm != null) salesManagerRepo.Remove(sm);
-                        break;
-
-                    case RoleType.TechManager:
-                        var tm = (await techManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                        if (tm != null) techManagerRepo.Remove(tm);
-                        break;
-
-                    case RoleType.StockControlManager:
-                        var scm = (await stockControlManagerRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                        if (scm != null) stockControlManagerRepo.Remove(scm);
-                        break;
-
                     case RoleType.Admin:
                         var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
                         if (admin != null) adminRepo.Remove(admin);
@@ -283,6 +235,11 @@ namespace Service
                     case RoleType.TechCompany:
                         var tc = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
                         if (tc != null) techCompanyRepo.Remove(tc);
+                        break;
+
+                    case RoleType.DeliveryPerson:
+                        var dp = (await deliveryPersonRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        if (dp != null) deliveryPersonRepo.Remove(dp);
                         break;
                 }
                 await context.SaveChangesAsync();

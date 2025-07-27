@@ -41,8 +41,7 @@ namespace Service.Utilities
                 Id = Guid.NewGuid().ToString(),
                 CustomerId = dto.CustomerId,
                 TechCompanyId = dto.TechCompanyId,
-                WarrantyId = dto.WarrantyId,
-                ServiceUsageId = dto.ServiceUsageId
+                WarrantyId = dto.WarrantyId
             };
         }
 
@@ -53,7 +52,6 @@ namespace Service.Utilities
             existingMaintenance.CustomerId = dto.CustomerId;
             existingMaintenance.TechCompanyId = dto.TechCompanyId;
             existingMaintenance.WarrantyId = dto.WarrantyId;
-            existingMaintenance.ServiceUsageId = dto.ServiceUsageId;
             return existingMaintenance;
         }
 
@@ -93,12 +91,12 @@ namespace Service.Utilities
                     Price = maintenance.Warranty.Product.Price
                 },
 
-                ServiceUsage = maintenance.serviceUsage == null ? null : new MaintenanceServiceUsageDTO
+                ServiceUsage = maintenance.ServiceUsages?.FirstOrDefault() == null ? null : new MaintenanceServiceUsageDTO
                 {
-                    Id = maintenance.serviceUsage.Id,
-                    ServiceType = maintenance.serviceUsage.ServiceType,
-                    UsedOn = maintenance.serviceUsage.UsedOn,
-                    CallCount = maintenance.serviceUsage.CallCount
+                    Id = maintenance.ServiceUsages.FirstOrDefault().Id,
+                    ServiceType = maintenance.ServiceUsages.FirstOrDefault().ServiceType,
+                    UsedOn = maintenance.ServiceUsages.FirstOrDefault().UsedOn,
+                    CallCount = maintenance.ServiceUsages.FirstOrDefault().CallCount
                 }
             };
         }

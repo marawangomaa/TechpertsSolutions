@@ -11,6 +11,5 @@ namespace Core.DTOs.MaintenanceDTOs
         public string CustomerId { get; set; } = null!;
         public string TechCompanyId { get; set; } = null!;
         public string WarrantyId { get; set; } = null!;
-        public string ServiceUsageId { get; set; } = null!;
     }
 }

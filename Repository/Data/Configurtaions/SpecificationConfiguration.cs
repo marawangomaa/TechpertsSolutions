@@ -14,7 +14,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(s => s.Product)
                    .WithMany(p => p.Specifications)
                    .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete specification when product is deleted
         }
     }
 }

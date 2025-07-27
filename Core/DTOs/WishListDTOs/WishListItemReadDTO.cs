@@ -10,6 +10,6 @@ namespace Core.DTOs.WishListDTOs
     {
         public string Id { get; set; }
         public string ProductId { get; set; }
-        public string? CartId { get; set; }
+        public string WishListId { get; set; }
     }
 }

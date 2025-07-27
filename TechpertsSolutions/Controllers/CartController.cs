@@ -6,6 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Core.Interfaces.Services;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TechpertsSolutions.Controllers 
 {
@@ -61,7 +62,7 @@ namespace TechpertsSolutions.Controllers
                     {
                         Success = false,
                         Message = $"Customer with ID {customerId} not found.",
-                        Data = null
+                        Data = "Customer not found in database"
                     });
                 }
 
@@ -100,7 +101,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Invalid item data provided. ProductId and Quantity (must be > 0) are required.",
-                    Data = null
+                    Data = "Missing or invalid ProductId or Quantity"
                 });
             }
 
@@ -135,7 +136,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Invalid update data provided. ProductId and Quantity (must be > 0) are required.",
-                    Data = null
+                    Data = "Missing or invalid ProductId or Quantity"
                 });
             }
 
@@ -169,7 +170,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Customer ID and Product ID must not be null or empty.",
-                    Data = null
+                    Data = "Missing CustomerId or ProductId"
                 });
             }
 
@@ -286,19 +287,19 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Checkout details cannot be null.",
+                    Message = "Checkout data is required.",
                     Data = null
                 });
             }
 
-            // Validate the model
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
+            // Validate required fields
+            var errors = new List<string>();
 
+            if (string.IsNullOrWhiteSpace(checkoutDto.CustomerId))
+                errors.Add("Customer ID is required.");
+
+            if (errors.Any())
+            {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
@@ -339,16 +340,6 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (!string.IsNullOrWhiteSpace(checkoutDto.SalesManagerId) && !Guid.TryParse(checkoutDto.SalesManagerId, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid Sales Manager ID format. Expected GUID format.",
-                    Data = null
-                });
-            }
-
             if (!string.IsNullOrWhiteSpace(checkoutDto.ServiceUsageId) && !Guid.TryParse(checkoutDto.ServiceUsageId, out _))
             {
                 return BadRequest(new GeneralResponse<string>
@@ -362,7 +353,6 @@ namespace TechpertsSolutions.Controllers
             var result = await cartService.PlaceOrderAsync(
                 checkoutDto.CustomerId,
                 checkoutDto.DeliveryId,
-                checkoutDto.SalesManagerId,
                 checkoutDto.ServiceUsageId
             );
 

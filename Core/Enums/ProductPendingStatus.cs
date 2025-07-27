@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Core.Enums.Attributes;
 
 namespace Core.Enums
 {
     public enum ProductPendingStatus
     {
-        [StringValue("None")]
-        None = 0,
         [StringValue("Pending")]
-        Pending = 1,
+        Pending,
         [StringValue("Approved")]
-        Approved = 2,
+        Approved,
         [StringValue("Rejected")]
-        Rejected = 4
+        Rejected
     }
 }

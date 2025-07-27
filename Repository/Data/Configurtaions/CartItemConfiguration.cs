@@ -14,17 +14,15 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<CartItem> builder)
         {
-
             builder.HasOne(ci => ci.Product)
-            .WithMany(p => p.CartItems)
-            .HasForeignKey(ci => ci.ProductId)
-            .OnDelete(DeleteBehavior.NoAction);
+                   .WithMany(p => p.CartItems)
+                   .HasForeignKey(ci => ci.ProductId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in cart items
 
             builder.HasOne(ci => ci.Cart)
-            .WithMany(c => c.CartItems)
-            .HasForeignKey(ci => ci.CartId)
-            .OnDelete(DeleteBehavior.NoAction);
-
+                   .WithMany(c => c.CartItems)
+                   .HasForeignKey(ci => ci.CartId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete cart item when cart is deleted
         }
     }
 }

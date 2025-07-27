@@ -172,13 +172,12 @@ namespace Service
                 var customer = await _customerRepo.GetByIdAsync(dto.CustomerId);
                 var techCompany = await _techCompanyRepo.GetByIdAsync(dto.TechCompanyId);
                 var warranty = await _warrantyRepo.GetByIdAsync(dto.WarrantyId);
-                var serviceUsage = await _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId);
 
                 var maintenanceDto = MaintenanceMapper.MapToMaintenanceDTO(entity, 
                     customer?.User?.FullName ?? "Unknown",
                     techCompany?.User?.FullName ?? "Unknown",
                     warranty?.Product?.Name ?? "Unknown",
-                    serviceUsage?.ServiceType ?? "Unknown",
+                    "N/A", // Service type is no longer directly associated
                     warranty?.StartDate ?? DateTime.MinValue,
                     warranty?.EndDate ?? DateTime.MinValue);
 
@@ -289,12 +288,11 @@ namespace Service
                 var customerTask = _customerRepo.GetByIdAsync(dto.CustomerId);
                 var techCompanyTask = _techCompanyRepo.GetByIdAsync(dto.TechCompanyId);
                 var warrantyTask = _warrantyRepo.GetByIdAsync(dto.WarrantyId);
-                var serviceUsageTask = _serviceUsageRepo.GetByIdAsync(dto.ServiceUsageId);
 
-                await Task.WhenAll(customerTask, techCompanyTask, warrantyTask, serviceUsageTask);
+                await Task.WhenAll(customerTask, techCompanyTask, warrantyTask);
 
                 if (customerTask.Result == null || techCompanyTask.Result == null ||
-                    warrantyTask.Result == null || serviceUsageTask.Result == null)
+                    warrantyTask.Result == null)
                 {
                     return new GeneralResponse<bool>
                     {
@@ -380,6 +378,238 @@ namespace Service
                     Success = false,
                     Message = "An unexpected error occurred while deleting the maintenance.",
                     Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetByTechCompanyIdAsync(string techCompanyId)
+        {
+            if (string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return new GeneralResponse<IEnumerable<MaintenanceDTO>>
+                {
+                    Success = false,
+                    Message = "Tech Company ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var maintenances = await _maintenanceRepo.FindWithIncludesAsync(
+                    m => m.TechCompanyId == techCompanyId,
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
+
+                return new GeneralResponse<IEnumerable<MaintenanceDTO>>
+                {
+                    Success = true,
+                    Message = "Maintenances for tech company retrieved successfully.",
+                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<MaintenanceDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving maintenances for tech company.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<MaintenanceDTO>> AcceptMaintenanceRequestAsync(string maintenanceId, string techCompanyId)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "Maintenance ID and Tech Company ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                if (maintenance == null)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "Maintenance request not found.",
+                        Data = null
+                    };
+                }
+
+                if (maintenance.TechCompanyId != null)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "This maintenance request has already been assigned to a tech company.",
+                        Data = null
+                    };
+                }
+
+                maintenance.TechCompanyId = techCompanyId;
+                maintenance.Status = "InProgress";
+                _maintenanceRepo.Update(maintenance);
+                await _maintenanceRepo.SaveChangesAsync();
+
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = true,
+                    Message = "Maintenance request accepted successfully.",
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while accepting maintenance request.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<MaintenanceDTO>> CompleteMaintenanceAsync(string maintenanceId, string techCompanyId, string notes)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "Maintenance ID and Tech Company ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                if (maintenance == null)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "Maintenance request not found.",
+                        Data = null
+                    };
+                }
+
+                if (maintenance.TechCompanyId != techCompanyId)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "This maintenance request is not assigned to you.",
+                        Data = null
+                    };
+                }
+
+                maintenance.Status = "Completed";
+                maintenance.Notes = notes;
+                maintenance.CompletedDate = DateTime.UtcNow;
+                _maintenanceRepo.Update(maintenance);
+                await _maintenanceRepo.SaveChangesAsync();
+
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = true,
+                    Message = "Maintenance completed successfully.",
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while completing maintenance.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAvailableMaintenanceRequestsAsync()
+        {
+            try
+            {
+                var maintenances = await _maintenanceRepo.FindWithIncludesAsync(
+                    m => m.TechCompanyId == null && m.Status == "Pending",
+                    m => m.Customer,
+                    m => m.Warranty
+                );
+
+                return new GeneralResponse<IEnumerable<MaintenanceDTO>>
+                {
+                    Success = true,
+                    Message = "Available maintenance requests retrieved successfully.",
+                    Data = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<MaintenanceDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving available maintenance requests.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<MaintenanceDTO>> UpdateMaintenanceStatusAsync(string maintenanceId, string newStatus)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(newStatus))
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "Maintenance ID and new status cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                if (maintenance == null)
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = "Maintenance request not found.",
+                        Data = null
+                    };
+                }
+
+                maintenance.Status = newStatus;
+                _maintenanceRepo.Update(maintenance);
+                await _maintenanceRepo.SaveChangesAsync();
+
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = true,
+                    Message = $"Maintenance status updated to '{newStatus}' successfully.",
+                    Data = MaintenanceMapper.MapToMaintenanceDTO(maintenance)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<MaintenanceDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating maintenance status.",
+                    Data = null
                 };
             }
         }

@@ -14,24 +14,23 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<PCAssemblyItem> builder)
         {
-
-            builder.HasOne(pi => pi.PCAssembly)
+            builder.HasOne(pci => pci.PCAssembly)
                    .WithMany(pc => pc.PCAssemblyItems)
-                   .HasForeignKey(pai => pai.PCAssemblyId)
+                   .HasForeignKey(pci => pci.PCAssemblyId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly item when PC assembly is deleted
 
-            builder.HasOne(pi => pi.Cart)
+            builder.HasOne(pci => pci.Cart)
                    .WithMany(c => c.PCAssemblyItems)
-                   .HasForeignKey(pai => pai.CartId)
+                   .HasForeignKey(pci => pci.CartId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly item when cart is deleted
 
-            builder.HasOne(pi => pi.Product)
+            builder.HasOne(pci => pci.Product)
                    .WithMany(p => p.PCAssemblyItems)
-                   .HasForeignKey(pai => pai.ProductId)
+                   .HasForeignKey(pci => pci.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in PC assembly items
         }
     }
 }

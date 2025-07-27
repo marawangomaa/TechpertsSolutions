@@ -14,7 +14,9 @@ namespace Repository.Data.Configurtaions
         public void Configure(EntityTypeBuilder<OrderHistory> builder)
         {
             builder.HasMany(oh => oh.Orders)
-                   .WithOne(o => o.OrderHistory);
+                   .WithOne(o => o.OrderHistory)
+                   .HasForeignKey(o => o.OrderHistoryId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if order history is deleted
         }
     }
 }

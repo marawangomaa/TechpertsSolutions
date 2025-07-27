@@ -15,8 +15,27 @@ namespace Repository.Data.Configurtaions
         {
             builder.HasOne(t => t.User)
                     .WithOne(u => u.TechCompany)
-                        .HasForeignKey<TechCompany>(u => u.UserId).IsRequired()
-                        .OnDelete(DeleteBehavior.NoAction);
+                    .HasForeignKey<TechCompany>(t => t.UserId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Cascade); // Delete tech company when user is deleted
+
+            builder.HasOne(t => t.Role)
+                    .WithMany()
+                    .HasForeignKey(t => t.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevent role deletion if tech companies use it
+
+            builder.HasMany(t => t.Maintenances)
+                    .WithOne(m => m.TechCompany)
+                    .HasForeignKey(m => m.TechCompanyId)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if it has maintenances
+
+            builder.HasMany(t => t.Products)
+                    .WithOne(p => p.TechCompany)
+                    .HasForeignKey(p => p.TechCompanyId)
+                    .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if it has products
+
+            builder.HasMany(t => t.Deliveries)
+                    .WithMany(d => d.TechCompanies);
         }
     }
 }

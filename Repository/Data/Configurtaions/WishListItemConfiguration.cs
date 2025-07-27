@@ -14,24 +14,17 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
-
-            builder.HasOne(wi => wi.WishList)
-                   .WithMany(w => w.WishListItems)
-                   .HasForeignKey(wi => wi.WishListId)
+            builder.HasOne(wli => wli.WishList)
+                   .WithMany(wl => wl.WishListItems)
+                   .HasForeignKey(wli => wli.WishListId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist item when wishlist is deleted
 
-            builder.HasOne(wi => wi.Product)
+            builder.HasOne(wli => wli.Product)
                    .WithMany(p => p.WishListItems)
-                   .HasForeignKey(wi => wi.ProductId)
+                   .HasForeignKey(wli => wli.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasOne(wi => wi.Cart)
-                   .WithMany(c => c.WishListItems)
-                   .HasForeignKey(wi => wi.CartId)
-                   .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in wishlist items
         }
     }
 }

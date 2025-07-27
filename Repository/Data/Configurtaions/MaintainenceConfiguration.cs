@@ -14,20 +14,27 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<Maintenance> builder)
         {
-            builder.HasOne(n => n.Customer)
+            builder.HasOne(m => m.Customer)
                    .WithMany(c => c.Maintenances)
-                    .HasForeignKey(m => m.CustomerId).IsRequired()
-                    .OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(m => m.CustomerId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have maintenances
 
-            builder.HasOne(n => n.TechCompany)
-                    .WithMany(c => c.Maintenances)
-                        .HasForeignKey(m => m.TechCompanyId).IsRequired()
-                        .OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(m => m.TechCompany)
+                   .WithMany(tc => tc.Maintenances)
+                   .HasForeignKey(m => m.TechCompanyId)
+                   .IsRequired()
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if they have maintenances
 
             builder.HasOne(m => m.Warranty)
-                    .WithOne(w => w.Maintenance)
-                        .HasForeignKey<Maintenance>(n => n.WarrantyId)
-                        .OnDelete(DeleteBehavior.NoAction);
+                   .WithMany()
+                   .HasForeignKey(m => m.WarrantyId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if warranty is deleted
+
+            builder.HasMany(m => m.ServiceUsages)
+                   .WithOne(su => su.Maintenance)
+                   .HasForeignKey(su => su.MaintenanceId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete service usages when maintenance is deleted
         }
     }
 }

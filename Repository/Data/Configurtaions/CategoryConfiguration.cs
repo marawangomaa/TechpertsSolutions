@@ -14,14 +14,14 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasMany(c => c.SubCategories)
-             .WithOne(sc => sc.Category)
-             .HasForeignKey(sc => sc.CategoryId)
-             .OnDelete(DeleteBehavior.NoAction);
+                   .WithOne(sc => sc.Category)
+                   .HasForeignKey(sc => sc.CategoryId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete subcategories when category is deleted
 
             builder.HasMany(c => c.Products)
                    .WithOne(p => p.Category)
                    .HasForeignKey(p => p.CategoryId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent category deletion if it has products
         }
     }
 }

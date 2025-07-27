@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
-namespace TechpertsSolutions.Repository.Data.Configurtaions
+namespace Repository.Data.Configurtaions
 {
     public class OrderConfiguration : IEntityTypeConfiguration<Order>
     {
@@ -18,30 +18,32 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                   .WithMany(c => c.Orders)
                   .HasForeignKey(o => o.CustomerId)
                   .IsRequired()
-                  .OnDelete(DeleteBehavior.NoAction);
-            builder.HasOne(o => o.Delivery)
-                   .WithMany(d => d.Orders)
-                   .HasForeignKey(o => o.DeliveryId)
-                   .IsRequired()  // optional if Order can exist without Delivery
-                   .OnDelete(DeleteBehavior.NoAction);  // or Cascade/SetNull if needed
-
-            builder.HasOne(o => o.SalesManager)
-                   .WithMany(s => s.Orders)
-                   .HasForeignKey(o => o.SalesManagerId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                  .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have orders
 
             builder.HasMany(o => o.OrderItems)
-            .WithOne(oi => oi.Order);
+                   .WithOne(oi => oi.Order)
+                   .HasForeignKey(oi => oi.OrderId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete order items when order is deleted
 
             builder.HasOne(o => o.OrderHistory)
-            .WithMany(oh => oh.Orders);
+                   .WithMany(oh => oh.Orders)
+                   .HasForeignKey(o => o.OrderHistoryId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if order history is deleted
 
             builder.HasOne(o => o.ServiceUsage)
-            .WithMany(su => su.Orders);
+                   .WithMany(su => su.Orders)
+                   .HasForeignKey(o => o.ServiceUsageId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if service usage is deleted
 
-            builder.HasOne(o => o._Cart)
-            .WithOne(c => c.Order);
+            builder.HasOne(o => o.Cart)
+                   .WithOne(c => c.Order)
+                   .HasForeignKey<Order>(o => o.CartId)
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent cart deletion if it has an order
+
+            builder.HasOne(o => o.Delivery)
+                   .WithMany()
+                   .HasForeignKey(o => o.DeliveryId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery is deleted
         }
     }
-
 }

@@ -34,7 +34,7 @@ namespace TechpertsSolutions.Controllers
                          "1. Add items to cart: POST /api/cart/{customerId}/items\n" +
                          "2. Checkout from cart: POST /api/cart/{customerId}/checkout\n" +
                          "Or use advanced checkout: POST /api/cart/checkout",
-                Data = null
+                Data = "Use cart checkout flow instead"
             });
         }
 
@@ -47,7 +47,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Order ID cannot be null or empty.",
-                    Data = null
+                    Data = "Missing Order ID"
                 });
             }
 
@@ -57,7 +57,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Invalid Order ID format. Expected GUID format.",
-                    Data = null
+                    Data = "Invalid GUID format"
                 });
             }
 
@@ -89,7 +89,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = "Missing Customer ID"
                 });
             }
 
@@ -99,7 +99,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = "Invalid GUID format"
                 });
             }
 
@@ -108,6 +108,29 @@ namespace TechpertsSolutions.Controllers
             {
                 return NotFound(response);
             }
+            return Ok(response);
+        }
+
+        [HttpGet("customer/{customerId}/history")]
+        public async Task<IActionResult> GetOrderHistoryByCustomerId(string customerId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(customerId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            var response = await _service.GetOrderHistoryByCustomerIdAsync(customerId);
             return Ok(response);
         }
     }

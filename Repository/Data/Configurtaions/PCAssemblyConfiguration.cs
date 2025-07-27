@@ -17,13 +17,18 @@ namespace Repository.Data.Configurtaions
                    .WithMany(c => c.PCAssembly)
                    .HasForeignKey(pc => pc.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly when customer is deleted
 
             builder.HasOne(pc => pc.ServiceUsage)
                    .WithMany(su => su.PCAssemblies)
                    .HasForeignKey(pc => pc.ServiceUsageId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Restrict); // Prevent service usage deletion if it has PC assemblies
+
+            builder.HasMany(pc => pc.PCAssemblyItems)
+                   .WithOne(pci => pci.PCAssembly)
+                   .HasForeignKey(pci => pci.PCAssemblyId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly items when PC assembly is deleted
         }
     }
 }

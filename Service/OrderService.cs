@@ -261,5 +261,171 @@ namespace Service
 
             return newHistory;
         }
+
+        public async Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetOrderHistoryByCustomerIdAsync(string customerId)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var orderHistories = await _orderHistoryRepo.FindWithIncludesAsync(
+                    oh => oh.Orders.Any(o => o.CustomerId == customerId),
+                    oh => oh.Orders,
+                    oh => oh.Orders.Select(o => o.OrderItems),
+                    oh => oh.Orders.Select(o => o.Customer));
+
+                var orderHistoryDtos = orderHistories
+                    .Where(oh => oh != null)
+                    .Select(OrderHistoryMapper.MapToOrderHistoryReadDTO)
+                    .Where(dto => dto != null);
+
+                return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+                {
+                    Success = true,
+                    Message = "Customer order history retrieved successfully.",
+                    Data = orderHistoryDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving customer order history.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, string newStatus)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = false
+                };
+            }
+
+            if (!Guid.TryParse(orderId, out _))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Invalid Order ID format. Expected GUID format.",
+                    Data = false
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(newStatus))
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "New status cannot be null or empty.",
+                    Data = false
+                };
+            }
+
+            try
+            {
+                var order = await _orderRepo.GetByIdAsync(orderId);
+                if (order == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Order not found.",
+                        Data = false
+                    };
+                }
+
+                order.Status = newStatus;
+                _orderRepo.Update(order);
+                await _orderRepo.SaveChangesAsync();
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = $"Order status updated successfully to '{newStatus}'.",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating order status.",
+                    Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(string status)
+        {
+            // Input validation
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "Status cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var orders = await _orderRepo.FindWithIncludesAsync(
+                    o => o.Status == status,
+                    o => o.OrderItems,
+                    o => o.Customer,
+                    o => o.OrderHistory);
+
+                var orderDtos = orders
+                    .Where(o => o != null)
+                    .Select(OrderMapper.ToReadDTO)
+                    .Where(dto => dto != null);
+
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = true,
+                    Message = $"Orders with status '{status}' retrieved successfully.",
+                    Data = orderDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<OrderReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving orders by status.",
+                    Data = null
+                };
+            }
+        }
     }
 }

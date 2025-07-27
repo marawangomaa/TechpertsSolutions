@@ -13,10 +13,19 @@ namespace Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<WishList> builder)
         {
-            builder.HasOne(wi => wi.Customer)
+            builder.HasOne(wl => wl.Customer)
                    .WithOne(c => c.WishList)
-                   .HasForeignKey<WishList>(wi => wi.CustomerId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey<WishList>(wl => wl.CustomerId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist when customer is deleted
+
+            // Ensure each customer can only have one wishlist
+            builder.HasIndex(wl => wl.CustomerId)
+                   .IsUnique();
+
+            builder.HasMany(wl => wl.WishListItems)
+                   .WithOne(wli => wli.WishList)
+                   .HasForeignKey(wli => wli.WishListId)
+                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist items when wishlist is deleted
         }
     }
 }

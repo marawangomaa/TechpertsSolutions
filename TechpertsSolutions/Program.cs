@@ -1,5 +1,7 @@
 ﻿using Core.Interfaces;
 using Core.Interfaces.Services;
+using Core.Enums;
+using Core.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +40,17 @@ namespace TechpertsSolutions
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
                 c.CustomSchemaIds(type => type.FullName); // <-- Fix for duplicate class names
                 c.SchemaFilter<EnumSchemaFilter>(); // Enable enum string values in Swagger
+                
+                // Configure enum handling
+                c.MapType<RoleType>(() => new OpenApiSchema 
+                { 
+                    Type = "string",
+                    Enum = Enum.GetValues<RoleType>().Select(e => new Microsoft.OpenApi.Any.OpenApiString(e.GetStringValue())).Cast<Microsoft.OpenApi.Any.IOpenApiAny>().ToList()
+                });
+                
+                // Configure form data handling
+                c.OperationFilter<FormDataOperationFilter>();
+                
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -70,35 +83,33 @@ namespace TechpertsSolutions
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IAuthService, AuthService>(provider =>
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IAuthService>(provider =>
             {
                 return new AuthService(
                     provider.GetRequiredService<UserManager<AppUser>>(),
                     provider.GetRequiredService<RoleManager<AppRole>>(),
-                    provider.GetRequiredService<IRepository<Cart>>(),
                     provider.GetRequiredService<IRepository<Admin>>(),
                     provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<SalesManager>>(),
-                    provider.GetRequiredService<IRepository<StockControlManager>>(),
+                    provider.GetRequiredService<IRepository<Cart>>(),
                     provider.GetRequiredService<IRepository<TechCompany>>(),
-                    provider.GetRequiredService<IRepository<TechManager>>(),
-                    provider.GetRequiredService<TechpertsContext>(),
-                    provider.GetRequiredService<IConfiguration>(),
+                    provider.GetRequiredService<IRepository<DeliveryPerson>>(),
                     provider.GetRequiredService<ICustomerService>(),
-                    provider.GetRequiredService<IWishListService>()
+                    provider.GetRequiredService<IWishListService>(),
+                    provider.GetRequiredService<IEmailService>(),
+                    provider.GetRequiredService<IConfiguration>(),
+                    provider.GetRequiredService<TechpertsContext>()
                 );
             });
-            builder.Services.AddScoped<IRoleService, RoleService>(provider =>
+            builder.Services.AddScoped<IRoleService>(provider =>
             {
                 return new RoleService(
                     provider.GetRequiredService<RoleManager<AppRole>>(),
                     provider.GetRequiredService<UserManager<AppUser>>(),
                     provider.GetRequiredService<IRepository<Admin>>(),
                     provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<SalesManager>>(),
-                    provider.GetRequiredService<IRepository<StockControlManager>>(),
                     provider.GetRequiredService<IRepository<TechCompany>>(),
-                    provider.GetRequiredService<IRepository<TechManager>>(),
+                    provider.GetRequiredService<IRepository<DeliveryPerson>>(),
                     provider.GetRequiredService<IRepository<Cart>>(),
                     provider.GetRequiredService<IRepository<TechpertsSolutions.Core.Entities.WishList>>(),
                     provider.GetRequiredService<TechpertsContext>(),
@@ -108,6 +119,7 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+            builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
             builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
@@ -115,11 +127,9 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IOrderHistoryService, OrderHistoryService>();
             builder.Services.AddScoped<IPCAssemblyService, PCAssemblyService>();
-            builder.Services.AddScoped<ISalesManagerService, SalesManagerService>();
             builder.Services.AddScoped<IServiceUsageService, ServiceUsageService>();
-            builder.Services.AddScoped<IStockControlManagerService, StockControlManagerService>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<ITechCompanyService, TechCompanyService>();
-            builder.Services.AddScoped<ITechManagerService, TechManagerService>();
             builder.Services.AddScoped<IWarrantyService, WarrantyService>();
             builder.Services.AddScoped<IWishListService, WishListService>();
 
@@ -186,6 +196,7 @@ namespace TechpertsSolutions
                 var services = scope.ServiceProvider;
                 await SeedRoles.SeedRolesAsync(services);
                 await SeedCategories.SeedCategoriesAsync(services);
+                SeedEnums.LogEnumValues();
             }
             if (app.Environment.IsDevelopment())
             {

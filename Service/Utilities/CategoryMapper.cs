@@ -5,7 +5,7 @@ namespace Service.Utilities
 {
     public static class CategoryMapper
     {
-        public static CategoryDTO MapToCategoryDTO(Category category)
+        public static CategoryDTO? MapToCategoryDTO(Category? category)
         {
             if (category == null) return null;
 
@@ -18,7 +18,7 @@ namespace Service.Utilities
             };
         }
 
-        public static Category MapToCategory(CategoryCreateDTO dto)
+        public static Category? MapToCategory(CategoryCreateDTO? dto)
         {
             if (dto == null) return null;
 
@@ -28,7 +28,7 @@ namespace Service.Utilities
             };
         }
 
-        public static Category MapToCategory(CategoryUpdateDTO dto, Category existingCategory)
+        public static Category? MapToCategory(CategoryUpdateDTO? dto, Category? existingCategory)
         {
             if (dto == null || existingCategory == null) return null;
 
@@ -36,11 +36,11 @@ namespace Service.Utilities
             return existingCategory;
         }
 
-        public static IEnumerable<CategoryDTO> MapToCategoryDTOList(IEnumerable<Category> categories)
+        public static IEnumerable<CategoryDTO> MapToCategoryDTOList(IEnumerable<Category>? categories)
         {
             if (categories == null) return Enumerable.Empty<CategoryDTO>();
 
-            return categories.Select(MapToCategoryDTO).Where(dto => dto != null);
+            return categories.Select(MapToCategoryDTO).Where(dto => dto != null)!;
         }
     }
 } 

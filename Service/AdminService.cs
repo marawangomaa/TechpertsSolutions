@@ -34,7 +34,7 @@ namespace Service
                     Data = admins.Select(AdminMapper.AdminReadDTOMapper).ToList()
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<IEnumerable<AdminReadDTO>>
                 {
@@ -88,7 +88,7 @@ namespace Service
                     Data = AdminMapper.AdminReadDTOMapper(admin)
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<AdminReadDTO>
                 {

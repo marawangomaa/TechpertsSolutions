@@ -20,8 +20,5 @@ namespace TechpertsSolutions.Core.Entities
         public List<PCAssembly>? PCAssembly { get; set; } = new List<PCAssembly>();
         public List<Order>? Orders { get; set; } = new List<Order>();
         public List<Maintenance>? Maintenances { get; set; } = new List<Maintenance>();
-        public string? DeliveryId { get; set; }
-        public Delivery? Delivery { get; set; }
     }
-    
 }

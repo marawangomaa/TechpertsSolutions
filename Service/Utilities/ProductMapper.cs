@@ -2,14 +2,30 @@ using Core.DTOs.ProductDTOs;
 using Core.Entities;
 using TechpertsSolutions.Core.Entities;
 using System.Linq;
+using Core.Utilities;
+using Core.Enums;
 
 namespace Service.Utilities
 {
     public static class ProductMapper
     {
-        public static ProductDTO MapToProductDTO(Product product)
+        public static ProductDTO? MapToProductDTO(Product? product)
         {
             if (product == null) return null;
+
+            // Convert category name to enum
+            ProductCategory? categoryEnum = null;
+            try
+            {
+                if (!string.IsNullOrEmpty(product.Category?.Name))
+                {
+                    categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(product.Category.Name);
+                }
+            }
+            catch
+            {
+                // If conversion fails, leave as null
+            }
 
             return new ProductDTO
             {
@@ -20,15 +36,14 @@ namespace Service.Utilities
                 Stock = product.Stock,
                 CategoryId = product.CategoryId,
                 SubCategoryId = product.SubCategoryId,
-                TechManagerId = product.TechManagerId,
-                StockControlManagerId = product.StockControlManagerId,
-                CategoryName = product.Category?.Name,
+                CategoryName = product.Category?.Name ?? string.Empty,
                 SubCategoryName = product.SubCategory?.Name,
-                TechManagerName = product.TechManager?.User?.FullName,
-                StockControlManagerName = product.StockControlManager?.User?.FullName,
+                CategoryEnum = categoryEnum,
                 ImageUrl = product.ImageUrl,
                 Status = product.status,
                 DiscountPrice = product.DiscountPrice,
+                TechCompanyId = product.TechCompanyId, // Assuming same as TechManager for now
+                TechCompanyName = product.TechCompany?.User?.UserName ?? string.Empty,
                 Specifications = product.Specifications?.Select(s => new SpecificationDTO
                 {
                     Id = s.Id,
@@ -45,7 +60,7 @@ namespace Service.Utilities
             };
         }
 
-        public static Product MapToProduct(ProductCreateDTO dto)
+        public static Product? MapToProduct(ProductCreateDTO? dto)
         {
             if (dto == null) return null;
 
@@ -55,13 +70,9 @@ namespace Service.Utilities
                 Price = dto.Price,
                 Description = dto.Description,
                 Stock = dto.Stock,
-                CategoryId = dto.CategoryId,
-                SubCategoryId = dto.SubCategoryId,
-                TechManagerId = dto.TechManagerId,
-                StockControlManagerId = dto.StockControlManagerId,
                 ImageUrl = dto.ImageUrl,
-                status = dto.Status,
                 DiscountPrice = dto.DiscountPrice,
+                TechCompanyId = dto.TechCompanyId, 
                 Specifications = dto.Specifications?.Select(s => new Specification
                 {
                     Key = s.Key,
@@ -76,9 +87,23 @@ namespace Service.Utilities
             };
         }
 
-        public static ProductCardDTO MapToProductCardDTO(Product product)
+        public static ProductCardDTO? MapToProductCardDTO(Product? product)
         {
             if (product == null) return null;
+
+            // Convert category name to enum
+            ProductCategory? categoryEnum = null;
+            try
+            {
+                if (!string.IsNullOrEmpty(product.Category?.Name))
+                {
+                    categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(product.Category.Name);
+                }
+            }
+            catch
+            {
+                // If conversion fails, leave as null
+            }
 
             return new ProductCardDTO
             {
@@ -87,7 +112,8 @@ namespace Service.Utilities
                 Price = product.Price,
                 ImageUrl = product.ImageUrl,
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name,
+                CategoryName = product.Category?.Name ?? string.Empty,
+                CategoryEnum = categoryEnum,
                 SubCategoryId = product.SubCategoryId,
                 SubCategoryName = product.SubCategory?.Name,
                 DiscountPrice = product.DiscountPrice,
@@ -95,7 +121,7 @@ namespace Service.Utilities
             };
         }
 
-        public static ProductListItemDTO MapToProductListItem(Product product)
+        public static ProductListItemDTO? MapToProductListItem(Product? product)
         {
             if (product == null) return null;
 

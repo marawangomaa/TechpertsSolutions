@@ -24,7 +24,11 @@ namespace Service
         {
             try
             {
-                var deliveries = await _deliveryrepo.GetAllAsync();
+                var deliveries = await _deliveryrepo.GetAllWithIncludesAsync(
+                    d => d.DeliveryPerson, 
+                    d => d.Customer, 
+                    d => d.TechCompanies
+                );
                 return new GeneralResponse<IEnumerable<DeliveryDTO>>
                 {
                     Success = true,
@@ -68,7 +72,11 @@ namespace Service
 
             try
             {
-                var delivery = await _deliveryrepo.GetByIdAsync(id);
+                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id, 
+                    d => d.DeliveryPerson, 
+                    d => d.Customer, 
+                    d => d.TechCompanies
+                );
                 if (delivery == null)
                 {
                     return new GeneralResponse<DeliveryDTO>
@@ -97,11 +105,11 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<DeliveryDTO>> AddAsync()
+        public async Task<GeneralResponse<DeliveryDTO>> AddAsync(DeliveryCreateDTO dto)
         {
             try
             {
-                var entity = DeliveryMapper.MapToDelivery();
+                var entity = DeliveryMapper.MapToDelivery(dto);
 
                 await _deliveryrepo.AddAsync(entity);
                 await _deliveryrepo.SaveChangesAsync();
@@ -119,6 +127,53 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while creating the delivery.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryDTO>> UpdateAsync(string id, DeliveryUpdateDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "Delivery ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var entity = await _deliveryrepo.GetByIdAsync(id);
+                if (entity == null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = $"Delivery with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                DeliveryMapper.UpdateDelivery(entity, dto);
+                _deliveryrepo.Update(entity);
+                await _deliveryrepo.SaveChangesAsync();
+
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = true,
+                    Message = "Delivery updated successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTO(entity)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating the delivery.",
                     Data = null
                 };
             }
@@ -206,8 +261,13 @@ namespace Service
 
             try
             {
-                var entity = await _deliveryrepo.GetByIdAsync(id);
-                if (entity == null)
+                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id,
+                    d => d.DeliveryPerson,
+                    d => d.Customer,
+                    d => d.TechCompanies
+                );
+
+                if (delivery == null)
                 {
                     return new GeneralResponse<DeliveryDetailsDTO>
                     {
@@ -221,7 +281,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Delivery details retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDetailsDTO(entity)
+                    Data = DeliveryMapper.MapToDeliveryDetailsDTO(delivery)
                 };
             }
             catch (Exception ex)
@@ -230,6 +290,320 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving delivery details.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByDeliveryPersonIdAsync(string deliveryPersonId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryPersonId))
+            {
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = false,
+                    Message = "Delivery Person ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
+                    d => d.DeliveryPersonId == deliveryPersonId,
+                    d => d.DeliveryPerson,
+                    d => d.Customer
+                );
+
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = true,
+                    Message = "Deliveries for delivery person retrieved successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving deliveries for delivery person.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByStatusAsync(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+            {
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = false,
+                    Message = "Status cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
+                    d => d.DeliveryStatus == status,
+                    d => d.DeliveryPerson,
+                    d => d.Customer
+                );
+
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = true,
+                    Message = $"Deliveries with status '{status}' retrieved successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving deliveries by status.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToPersonAsync(string deliveryId, string deliveryPersonId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "Delivery not found.",
+                        Data = null
+                    };
+                }
+
+                delivery.DeliveryPersonId = deliveryPersonId;
+                delivery.DeliveryStatus = "Assigned";
+                _deliveryrepo.Update(delivery);
+                await _deliveryrepo.SaveChangesAsync();
+
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = true,
+                    Message = "Delivery assigned to delivery person successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while assigning delivery.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryDTO>> UpdateDeliveryStatusAsync(string deliveryId, string newStatus)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(newStatus))
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "Delivery ID and new status cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "Delivery not found.",
+                        Data = null
+                    };
+                }
+
+                delivery.DeliveryStatus = newStatus;
+                _deliveryrepo.Update(delivery);
+                await _deliveryrepo.SaveChangesAsync();
+
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = true,
+                    Message = $"Delivery status updated to '{newStatus}' successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating delivery status.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryDTO>> CompleteDeliveryAsync(string deliveryId, string deliveryPersonId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "Delivery not found.",
+                        Data = null
+                    };
+                }
+
+                if (delivery.DeliveryPersonId != deliveryPersonId)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "This delivery is not assigned to you.",
+                        Data = null
+                    };
+                }
+
+                delivery.DeliveryStatus = "Delivered";
+                delivery.ActualDeliveryDate = DateTime.UtcNow;
+                _deliveryrepo.Update(delivery);
+                await _deliveryrepo.SaveChangesAsync();
+
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = true,
+                    Message = "Delivery completed successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while completing delivery.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAvailableDeliveriesAsync()
+        {
+            try
+            {
+                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
+                    d => d.DeliveryStatus == "Pending" && d.DeliveryPersonId == null,
+                    d => d.Customer
+                );
+
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = true,
+                    Message = "Available deliveries retrieved successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving available deliveries.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId)
+        {
+            if (string.IsNullOrWhiteSpace(deliveryId) || string.IsNullOrWhiteSpace(deliveryPersonId))
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "Delivery ID and Delivery Person ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var delivery = await _deliveryrepo.GetByIdAsync(deliveryId);
+                if (delivery == null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "Delivery not found.",
+                        Data = null
+                    };
+                }
+
+                if (delivery.DeliveryStatus != "Pending" || delivery.DeliveryPersonId != null)
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = "This delivery is not available for acceptance.",
+                        Data = null
+                    };
+                }
+
+                delivery.DeliveryPersonId = deliveryPersonId;
+                delivery.DeliveryStatus = "InTransit";
+                _deliveryrepo.Update(delivery);
+                await _deliveryrepo.SaveChangesAsync();
+
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = true,
+                    Message = "Delivery accepted successfully.",
+                    Data = DeliveryMapper.MapToDeliveryDTO(delivery)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while accepting delivery.",
                     Data = null
                 };
             }

@@ -15,7 +15,5 @@ namespace TechpertsSolutions.Core.Entities
 
         public string ProductId { get; set; }
         public Product? Product { get; set; }
-
-        public Maintenance? Maintenance { get; set; }
     }
 }

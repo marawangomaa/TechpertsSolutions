@@ -128,7 +128,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(typeof(GeneralResponse<SubCategoryDTO>), 201)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
-        public async Task<IActionResult> CreateSubCategory([FromBody] CreateSubCategoryDTO createDto)
+        public async Task<IActionResult> CreateSubCategory([FromForm] CreateSubCategoryDTO createDto)
         {
             if (!ModelState.IsValid)
             {
@@ -137,7 +137,8 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Validation failed: " + string.Join("; ", errors)
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = "Invalid form data"
                 });
             }
 
@@ -160,7 +161,8 @@ namespace TechpertsSolutions.Controllers
                 return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "An error occurred while creating the subcategory."
+                    Message = "An error occurred while creating the subcategory.",
+                    Data = ex.Message
                 });
             }
         }
@@ -177,14 +179,15 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
-        public async Task<IActionResult> UpdateSubCategory(string id, [FromBody] UpdateSubCategoryDTO updateDto)
+        public async Task<IActionResult> UpdateSubCategory(string id, [FromForm] UpdateSubCategoryDTO updateDto)
         {
             if (id != updateDto.Id)
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "ID in URL does not match ID in body."
+                    Message = "ID in URL does not match ID in body.",
+                    Data = "Route ID: " + id + ", Body ID: " + updateDto.Id
                 });
             }
 
@@ -194,7 +197,8 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Validation failed: " + string.Join("; ", errors)
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = "Invalid form data"
                 });
             }
 
@@ -213,7 +217,8 @@ namespace TechpertsSolutions.Controllers
                 return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "An error occurred while updating the subcategory."
+                    Message = "An error occurred while updating the subcategory.",
+                    Data = ex.Message
                 });
             }
         }

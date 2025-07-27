@@ -20,38 +20,13 @@ namespace TechpertsSolutions.Core.Entities
         public string? ImageUrl { get; set; }
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
-        private ProductCategory? _categoryEnum;
-        private string _categoryEnumError;
-        public ProductCategory? CategoryEnum
-        {
-            get
-            {
-                if (_categoryEnum != null) return _categoryEnum;
-                try
-                {
-                    _categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(Category?.Name);
-                    _categoryEnumError = null;
-                }
-                catch (System.ArgumentException)
-                {
-                    _categoryEnum = null;
-                    _categoryEnumError = $"Unknown category: '{Category?.Name}'";
-                }
-                return _categoryEnum;
-            }
-        }
-        public string CategoryEnumError => _categoryEnumError;
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
+        public string? TechCompanyId { get; set; }
+        public TechCompany? TechCompany { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;
         public List<Specification>? Specifications { get; set; } = new List<Specification>();
         public List<Warranty>? Warranties { get; set; } = new List<Warranty>();
-
-        public string TechManagerId { get; set; }
-        public TechManager? TechManager { get; set; }
-
-        public string StockControlManagerId { get; set; }
-        public StockControlManager? StockControlManager { get; set; }
         public List<CartItem>? CartItems { get; set; } = new List<CartItem>();
         public List<WishListItem>? WishListItems { get; set; } = new List<WishListItem>();
         public List<PCAssemblyItem>? PCAssemblyItems { get; set; } = new List<PCAssemblyItem>();

@@ -62,7 +62,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("Create")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GeneralResponse<CategoryDTO>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<CategoryDTO>))]
-        public async Task<IActionResult> Create([FromBody] CategoryCreateDTO categoryCreateDto)
+        public async Task<IActionResult> Create([FromForm] CategoryCreateDTO categoryCreateDto)
         {
             if (!ModelState.IsValid)
             {
@@ -70,7 +70,8 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "Validation failed: " + string.Join("; ", errors)
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = null
                 });
             }
 
@@ -92,14 +93,15 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
-        public async Task<IActionResult> Update(string Id, [FromBody] CategoryUpdateDTO categoryUpdateDto)
+        public async Task<IActionResult> Update(string Id, [FromForm] CategoryUpdateDTO categoryUpdateDto)
         {
             if (Id != categoryUpdateDto.Id)
             {
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Route ID and body ID do not match."
+                    Message = "Route ID and body ID do not match.",
+                    Data = "Route ID: " + Id + ", Body ID: " + categoryUpdateDto.Id
                 });
             }
 
@@ -109,7 +111,8 @@ namespace TechpertsSolutions.Controllers
                 return BadRequest(new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = "Validation failed: " + string.Join("; ", errors)
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = "Invalid form data"
                 });
             }
 

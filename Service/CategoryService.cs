@@ -37,14 +37,15 @@ namespace Service
                 );
 
                 // Use CategoryMapper for mapping
+                var mappedCategories = CategoryMapper.MapToCategoryDTOList(categories);
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
                     Success = true,
                     Message = "Categories retrieved successfully.",
-                    Data = CategoryMapper.MapToCategoryDTOList(categories)
+                    Data = mappedCategories ?? Enumerable.Empty<CategoryDTO>()
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
@@ -98,14 +99,25 @@ namespace Service
                 }
 
                 // Use CategoryMapper for mapping
+                var mappedCategory = CategoryMapper.MapToCategoryDTO(category);
+                if (mappedCategory == null)
+                {
+                    return new GeneralResponse<CategoryDTO>
+                    {
+                        Success = false,
+                        Message = "Failed to map category data.",
+                        Data = null
+                    };
+                }
+                
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category retrieved successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(category)
+                    Data = mappedCategory
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<CategoryDTO>
                 {
@@ -156,7 +168,7 @@ namespace Service
                     Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<CategoryDTO>
                 {
@@ -237,7 +249,7 @@ namespace Service
                     Data = true
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<bool>
                 {
@@ -330,7 +342,7 @@ namespace Service
                     Data = true
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<bool>
                 {

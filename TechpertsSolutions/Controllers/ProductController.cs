@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.ProductDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
+using Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 
@@ -24,13 +25,13 @@ namespace TechpertsSolutions.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] ProductPendingStatus? status = null,
-            [FromQuery] string? categoryId = null,
-            [FromQuery] string? subCategoryId = null,
+            [FromQuery] ProductCategory? categoryEnum = null,
+            [FromQuery] string? subCategoryName = null,
             [FromQuery] string? search = null,
             [FromQuery] string? sortBy = "name",
             [FromQuery] bool sortDesc = false)
         {
-            var response = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryId, subCategoryId, search, sortBy, sortDesc);
+            var response = await _productService.GetAllAsync(pageNumber, pageSize, status, categoryEnum, subCategoryName, search, sortBy, sortDesc);
             if (!response.Success)
             {
                 return BadRequest(response);
@@ -59,9 +60,47 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingProducts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool sortDesc = false)
+        {
+            var response = await _productService.GetPendingProductsAsync(pageNumber, pageSize, sortBy, sortDesc);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("status/{status}")]
+        public async Task<IActionResult> GetProductsByStatus(ProductPendingStatus status)
+        {
+            var response = await _productService.GetAllAsync(1, 100, status);
+            return Ok(response);
+        }
+
+        [HttpGet("category/{categoryEnum}")]
+        public async Task<IActionResult> GetProductsByCategory(
+            [FromRoute] ProductCategory categoryEnum,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool sortDesc = false)
+        {
+            var response = await _productService.GetProductsByCategoryAsync(categoryEnum, pageNumber, pageSize, sortBy, sortDesc);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
         [HttpPost]
         // [Authorize(Roles = "Admin,TechManager")]
-        public async Task<IActionResult> AddProduct([FromForm] ProductCreateDTO dto, IFormFile? img)
+        public async Task<IActionResult> AddProduct([FromBody] ProductCreateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
         {
             if (!ModelState.IsValid)
             {
@@ -75,20 +114,7 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                if (img != null)
-                {
-                    // Ensure uploads directory exists
-                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "products");
-                    Directory.CreateDirectory(uploadsDir);
-                    
-                    var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                    var savePath = Path.Combine(uploadsDir, fileName);
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await img.CopyToAsync(stream);
-                    dto.ImageUrl = $"/uploads/products/{fileName}";
-                }
-
-                var response = await _productService.AddAsync(dto);
+                var response = await _productService.AddAsync(dto, categorySelect, statusSelect);
                 if (!response.Success)
                 {
                     return BadRequest(response);
@@ -108,7 +134,7 @@ namespace TechpertsSolutions.Controllers
 
         [HttpPut("{id}")]
         //[Authorize(Roles = "Admin,TechManager")]
-        public async Task<IActionResult> UpdateProduct(string id, [FromForm] ProductUpdateDTO dto, IFormFile? img)
+        public async Task<IActionResult> UpdateProduct(string id, [FromBody] ProductUpdateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
         {
             if (!ModelState.IsValid)
             {
@@ -132,22 +158,7 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                if (img != null)
-                {
-                    // Ensure uploads directory exists
-                    var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "products");
-                    Directory.CreateDirectory(uploadsDir);
-                    
-                    var fileName = $"{Guid.NewGuid()}_{img.FileName}";
-                    var savePath = Path.Combine(uploadsDir, fileName);
-                    using var stream = new FileStream(savePath, FileMode.Create);
-                    await img.CopyToAsync(stream);
-                    dto.ImageUrl = $"/uploads/products/{fileName}";
-                }
-
-                // Set the ID from the route parameter to ensure consistency
-                dto.Id = id;
-                var response = await _productService.UpdateAsync(id, dto);
+                var response = await _productService.UpdateAsync(id, dto, categorySelect, statusSelect);
                 if (!response.Success)
                 {
                     return NotFound(response);
