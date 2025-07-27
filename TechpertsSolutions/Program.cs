@@ -17,6 +17,7 @@ using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;
+using Core.Entities;
 
 namespace TechpertsSolutions
 {
@@ -126,7 +127,13 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ISpecificationService, SpecificationService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IOrderHistoryService, OrderHistoryService>();
-            builder.Services.AddScoped<IPCAssemblyService, PCAssemblyService>();
+            builder.Services.AddScoped<IPCAssemblyService>(provider =>
+            {
+                return new PCAssemblyService(
+                    provider.GetRequiredService<IRepository<PCAssembly>>(),
+                    provider.GetRequiredService<IRepository<Product>>()
+                );
+            });
             builder.Services.AddScoped<IServiceUsageService, ServiceUsageService>();
             builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<ITechCompanyService, TechCompanyService>();
