@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -44,6 +45,11 @@ namespace Repository.Data.Configurtaions
                    .WithMany()
                    .HasForeignKey(o => o.DeliveryId)
                    .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery is deleted
+
+            // Configure the Status enum
+            builder.Property(o => o.Status)
+                   .HasConversion<string>()
+                   .HasMaxLength(20);
         }
     }
 }

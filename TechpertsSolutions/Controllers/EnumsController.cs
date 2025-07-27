@@ -73,6 +73,27 @@ namespace TechpertsSolutions.Controllers
             });
         }
 
+        [HttpGet("order-status")]
+        public IActionResult GetOrderStatusOptions()
+        {
+            var statusOptions = Enum.GetValues(typeof(OrderStatus))
+                .Cast<OrderStatus>()
+                .Select(status => new EnumOptionDTO
+                {
+                    Value = status.ToString(),
+                    DisplayName = status.GetStringValue(),
+                    Description = GetOrderStatusDescription(status)
+                })
+                .ToList();
+
+            return Ok(new GeneralResponse<List<EnumOptionDTO>>
+            {
+                Success = true,
+                Message = "Order status options retrieved successfully.",
+                Data = statusOptions
+            });
+        }
+
         [HttpGet("all")]
         public IActionResult GetAllEnumOptions()
         {
@@ -93,6 +114,10 @@ namespace TechpertsSolutions.Controllers
                 RoleType = Enum.GetValues(typeof(RoleType))
                     .Cast<RoleType>()
                     .Select(role => new { Value = role.ToString(), DisplayName = role.GetStringValue() })
+                    .ToList(),
+                OrderStatus = Enum.GetValues(typeof(OrderStatus))
+                    .Cast<OrderStatus>()
+                    .Select(status => new { Value = status.ToString(), DisplayName = status.GetStringValue() })
                     .ToList()
             };
 
@@ -144,6 +169,17 @@ namespace TechpertsSolutions.Controllers
                 ProductCategory.PreBuildPC => "Pre-built desktop computers",
                 ProductCategory.Laptop => "Portable computers and laptops",
                 _ => "Unknown category"
+            };
+        }
+
+        private string GetOrderStatusDescription(OrderStatus status)
+        {
+            return status switch
+            {
+                OrderStatus.Pending => "Order is pending and waiting to be processed",
+                OrderStatus.InProgress => "Order is currently being processed and prepared",
+                OrderStatus.Delivered => "Order has been successfully delivered to the customer",
+                _ => "Unknown order status"
             };
         }
     }

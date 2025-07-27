@@ -1,6 +1,7 @@
 ﻿// Service.Utilities.CartMapper.cs
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +90,7 @@ namespace Service.Utilities
                 CustomerId = order.CustomerId ?? string.Empty,
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
-                Status = order.Status ?? "Unknown",
+                Status = order.Status,
                 OrderItems = order.OrderItems != null
                     ? order.OrderItems.Where(item => item != null)
                                      .Select(MapToOrderItemReadDTO)

@@ -1,8 +1,10 @@
 ﻿using Core.DTOs.OrderDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Core.Utilities;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
@@ -316,7 +318,7 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, string newStatus)
+        public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
         {
             // Input validation
             if (string.IsNullOrWhiteSpace(orderId))
@@ -335,16 +337,6 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Order ID format. Expected GUID format.",
-                    Data = false
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(newStatus))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "New status cannot be null or empty.",
                     Data = false
                 };
             }
@@ -369,7 +361,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = $"Order status updated successfully to '{newStatus}'.",
+                    Message = $"Order status updated successfully to '{newStatus.GetStringValue()}'.",
                     Data = true
                 };
             }
@@ -384,19 +376,8 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(string status)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(OrderStatus status)
         {
-            // Input validation
-            if (string.IsNullOrWhiteSpace(status))
-            {
-                return new GeneralResponse<IEnumerable<OrderReadDTO>>
-                {
-                    Success = false,
-                    Message = "Status cannot be null or empty.",
-                    Data = null
-                };
-            }
-
             try
             {
                 var orders = await _orderRepo.FindWithIncludesAsync(
@@ -413,7 +394,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
-                    Message = $"Orders with status '{status}' retrieved successfully.",
+                    Message = $"Orders with status '{status.GetStringValue()}' retrieved successfully.",
                     Data = orderDtos
                 };
             }

@@ -1,4 +1,5 @@
 ﻿using TechpertsSolutions.Core.DTOs;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetAllOrdersAsync();
         Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId);
         Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetOrderHistoryByCustomerIdAsync(string customerId);
-        Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, string newStatus);
-        Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(string status);
+        Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus);
+        Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByStatusAsync(OrderStatus status);
     }
 }

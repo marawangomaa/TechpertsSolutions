@@ -1,5 +1,8 @@
 ﻿using Core.DTOs.AdminDTOs;
+using Core.DTOs.OrderDTOs;
+using Core.Enums;
 using Core.Interfaces.Services;
+using Core.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
@@ -129,10 +132,15 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Gets all orders filtered by their status using the OrderStatus enum
+        /// </summary>
+        /// <param name="status">The status to filter by (Pending, InProgress, Delivered)</param>
+        /// <returns>List of orders with the specified status</returns>
         [HttpGet("orders/status/{status}")]
-        public async Task<IActionResult> GetOrdersByStatus(string status)
+        public async Task<IActionResult> GetOrdersByStatus(OrderStatus status)
         {
-            if (string.IsNullOrWhiteSpace(status))
+            if (string.IsNullOrWhiteSpace(status.GetStringValue()))
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
@@ -140,12 +148,26 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid input"
                 });
 
-            var response = await _orderService.GetOrdersByStatusAsync(status);
+            if (!Enum.TryParse<OrderStatus>(status.GetStringValue(), true, out var orderStatus))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid order status. Valid values are: Pending, InProgress, Delivered",
+                    Data = "Invalid status"
+                });
+
+            var response = await _orderService.GetOrdersByStatusAsync(orderStatus);
             return Ok(response);
         }
 
+        /// <summary>
+        /// Updates the status of an order using the OrderStatus enum
+        /// </summary>
+        /// <param name="orderId">The unique identifier of the order</param>
+        /// <param name="statusUpdate">The new status for the order</param>
+        /// <returns>Success response with updated order information</returns>
         [HttpPut("orders/{orderId}/status")]
-        public async Task<IActionResult> UpdateOrderStatus(string orderId, [FromBody] string newStatus)
+        public async Task<IActionResult> UpdateOrderStatus(string orderId, OrderStatus statusUpdate)
         {
             if (string.IsNullOrWhiteSpace(orderId))
                 return BadRequest(new GeneralResponse<string>
@@ -163,15 +185,99 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid GUID format"
                 });
 
-            if (string.IsNullOrWhiteSpace(newStatus))
+            if (statusUpdate == null)
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "New status cannot be null or empty.",
+                    Message = "Status update data cannot be null.",
                     Data = "Invalid input"
                 });
 
-            var response = await _orderService.UpdateOrderStatusAsync(orderId, newStatus);
+            var response = await _orderService.UpdateOrderStatusAsync(orderId, statusUpdate);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Marks an order as in progress
+        /// </summary>
+        /// <param name="orderId">The unique identifier of the order</param>
+        /// <returns>Success response with updated order information</returns>
+        [HttpPut("orders/{orderId}/mark-in-progress")]
+        public async Task<IActionResult> MarkOrderInProgress(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(orderId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Order ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            var response = await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.InProgress);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Marks an order as delivered
+        /// </summary>
+        /// <param name="orderId">The unique identifier of the order</param>
+        /// <returns>Success response with updated order information</returns>
+        [HttpPut("orders/{orderId}/mark-delivered")]
+        public async Task<IActionResult> MarkOrderDelivered(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(orderId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Order ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            var response = await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Delivered);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Marks an order as pending
+        /// </summary>
+        /// <param name="orderId">The unique identifier of the order</param>
+        /// <returns>Success response with updated order information</returns>
+        [HttpPut("orders/{orderId}/mark-pending")]
+        public async Task<IActionResult> MarkOrderPending(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+
+            if (!Guid.TryParse(orderId, out _))
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Order ID format. Must be a valid GUID.",
+                    Data = "Invalid GUID format"
+                });
+
+            var response = await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Pending);
             return Ok(response);
         }
 
@@ -183,8 +289,8 @@ namespace TechpertsSolutions.Controllers
             {
                 var pendingProducts = await _productService.GetPendingProductsAsync();
                 var allOrders = await _orderService.GetAllOrdersAsync();
-                var pendingOrders = await _orderService.GetOrdersByStatusAsync("Pending");
-                var deliveredOrders = await _orderService.GetOrdersByStatusAsync("Delivered");
+                var pendingOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.Pending);
+                var deliveredOrders = await _orderService.GetOrdersByStatusAsync(OrderStatus.Delivered);
 
                 var stats = new
                 {

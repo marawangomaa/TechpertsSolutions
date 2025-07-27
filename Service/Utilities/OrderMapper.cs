@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.OrderDTOs;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Service.Utilities
                 Id = order.Id ?? string.Empty,
                 CustomerId = order.CustomerId ?? string.Empty,
                 OrderDate = order.OrderDate,
-                Status = order.Status ?? "Unknown",
+                Status = order.Status,
                 TotalAmount = order.TotalAmount,
                 OrderItems = order.OrderItems != null 
                     ? order.OrderItems.Select(ToItemReadDTO).ToList() 
@@ -56,7 +57,7 @@ namespace Service.Utilities
                 Id = Guid.NewGuid().ToString(),
                 CustomerId = dto.CustomerId,
                 OrderDate = DateTime.UtcNow,
-                Status = "Pending",
+                Status = OrderStatus.Pending,
                 CartId = dto.CartId,
                 DeliveryId = dto.DeliveryId,
                 ServiceUsageId = dto.ServiceUsageId,

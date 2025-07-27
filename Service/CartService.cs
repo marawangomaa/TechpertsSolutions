@@ -1,6 +1,7 @@
 ﻿// Service.CartService.cs
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -420,7 +421,7 @@ namespace Service
                     CustomerId = customerId,
                     CartId = cart.Id,
                     OrderDate = DateTime.UtcNow,
-                    Status = "Pending",
+                    Status = OrderStatus.Pending,
                     OrderItems = new List<OrderItem>(),
                     DeliveryId = deliveryId, // Optional - can be null
                     ServiceUsageId = serviceUsageId // Optional - can be null
@@ -550,7 +551,7 @@ namespace Service
                     CustomerId = customerId,
                     CartId = cart.Id,
                     OrderDate = DateTime.UtcNow,
-                    Status = "Pending",
+                    Status = OrderStatus.Pending,
                     OrderItems = new List<OrderItem>(),
                     DeliveryId = Guid.NewGuid().ToString(),
                     ServiceUsageId = Guid.NewGuid().ToString()
