@@ -12,5 +12,6 @@
         public string? DeliveryPersonId { get; set; }
         public string? CartId { get; set; }
         public string? WishListId { get; set; }
+        public string? PCAssemblyId { get; set; }
     }
 }

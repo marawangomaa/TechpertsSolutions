@@ -28,6 +28,7 @@ namespace Service
         private readonly IRepository<DeliveryPerson> deliveryPersonRepo;
         private readonly ICustomerService customerService;
         private readonly IWishListService wishListService;
+        private readonly IPCAssemblyService pcAssemblyService;
         private readonly IEmailService emailService;
         private readonly IConfiguration configuration;
         private readonly TechpertsContext context;
@@ -42,6 +43,7 @@ namespace Service
             IRepository<DeliveryPerson> deliveryPersonRepo,
             ICustomerService customerService,
             IWishListService wishListService,
+            IPCAssemblyService pcAssemblyService,
             IEmailService emailService,
             IConfiguration configuration,
             TechpertsContext context)
@@ -55,6 +57,7 @@ namespace Service
             this.deliveryPersonRepo = deliveryPersonRepo;
             this.customerService = customerService;
             this.wishListService = wishListService;
+            this.pcAssemblyService = pcAssemblyService;
             this.emailService = emailService;
             this.configuration = configuration;
             this.context = context;
@@ -155,7 +158,8 @@ namespace Service
                     Token = token,
                     UserId = user.Id,
                     UserName = user.UserName,
-                    RoleName = roles
+                    RoleName = roles,
+                    PCAssemblyId = null // Will be set below if customer has PC assemblies
                 };
 
                 foreach (var role in roles)
@@ -175,6 +179,11 @@ namespace Service
                             var wishList = wishListsResponse.Data?.FirstOrDefault();
                             if (wishList != null)
                                 loginResultDTO.WishListId = wishList.Id;
+                            // Fetch PCAssemblyId (get the most recent one)
+                            var pcAssembliesResponse = await pcAssemblyService.GetByCustomerIdAsync(customer.Id);
+                            var latestPCAssembly = pcAssembliesResponse.Data?.OrderByDescending(pc => pc.CreatedAt).FirstOrDefault();
+                            if (latestPCAssembly != null)
+                                loginResultDTO.PCAssemblyId = latestPCAssembly.Id;
                             break;
 
                         case "Admin":
@@ -460,7 +469,8 @@ namespace Service
                     UserName = user.UserName,
                     RoleName = roles,
                     CustomerId = roleName == RoleType.Customer ? entityId : null,
-                    CartId = cartId
+                    CartId = cartId,
+                    PCAssemblyId = null // New customers won't have PC assemblies yet
                 };
 
                 return new GeneralResponse<string>

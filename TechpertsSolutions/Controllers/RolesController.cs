@@ -1,4 +1,5 @@
-﻿using Core.Enums;
+﻿using Core.DTOs.RoleDTOs;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
@@ -63,16 +64,16 @@ namespace TechpertsSolutions.Controllers
             });
         }
         [HttpPost("assign")]
-        public async Task<IActionResult> AssignRole([FromForm] string userEmail, RoleType roleName)
+        public async Task<IActionResult> AssignRole([FromBody] RoleDTO dto, RoleType roleName)
         {
-            var user = await userManager.FindByEmailAsync(userEmail);
+            var user = await userManager.FindByEmailAsync(dto.userEmail);
 
             if (user == null)
                 return NotFound(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "User not found.",
-                    Data = $"{userEmail} is not registered"
+                    Data = $"{dto.userEmail} is not registered"
                 });
             var result = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
             if (!result.Succeeded)
@@ -167,22 +168,22 @@ namespace TechpertsSolutions.Controllers
             return Ok(new GeneralResponse<string>
             {
                 Success = true,
-                Message = $"Role '{roleName}' assigned to user '{userEmail}' successfully.",
-                Data = $"Role '{roleName}' assigned to user '{userEmail}' successfully."
+                Message = $"Role '{roleName}' assigned to user '{dto.userEmail}' successfully.",
+                Data = $"Role '{roleName}' assigned to user '{dto.userEmail}' successfully."
             });
         }
 
         [HttpPost("unassign")]
-        public async Task<IActionResult> UnassignRole([FromForm] string userEmail, RoleType roleName)
+        public async Task<IActionResult> UnassignRole([FromBody] RoleDTO dto, RoleType roleName)
         {
-            var user = await userManager.FindByEmailAsync(userEmail);
+            var user = await userManager.FindByEmailAsync(dto.userEmail);
             if (user == null)
             {
                 return NotFound(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "User not found.",
-                    Data = userEmail
+                    Data = dto.userEmail
                 });
             }
 
@@ -192,7 +193,7 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = $"User is not assigned to role '{roleName}'.",
-                    Data = $"{userEmail} is not assigned as {roleName}"
+                    Data = $"{dto.userEmail} is not assigned as {roleName}"
                 });
             }
 
@@ -234,8 +235,8 @@ namespace TechpertsSolutions.Controllers
             return Ok(new GeneralResponse<string>
             {
                 Success = true,
-                Message = $"Role '{roleName}' unassigned and domain entity removed for user '{userEmail}'.",
-                Data = $"Role {roleName} no longer assigned to {userEmail}"
+                Message = $"Role '{roleName}' unassigned and domain entity removed for user '{dto.userEmail}'.",
+                Data = $"Role {roleName} no longer assigned to {dto.userEmail}"
             });
         }
         [HttpGet("all")]

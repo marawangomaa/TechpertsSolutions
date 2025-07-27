@@ -97,6 +97,7 @@ namespace TechpertsSolutions
                     provider.GetRequiredService<IRepository<DeliveryPerson>>(),
                     provider.GetRequiredService<ICustomerService>(),
                     provider.GetRequiredService<IWishListService>(),
+                    provider.GetRequiredService<IPCAssemblyService>(),
                     provider.GetRequiredService<IEmailService>(),
                     provider.GetRequiredService<IConfiguration>(),
                     provider.GetRequiredService<TechpertsContext>()
