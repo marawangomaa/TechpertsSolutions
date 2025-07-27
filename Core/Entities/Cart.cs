@@ -14,7 +14,6 @@ namespace TechpertsSolutions.Core.Entities
         public Customer Customer { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<CartItem>? CartItems { get; set; } = new List<CartItem>(); 
-        public List<PCAssemblyItem>? PCAssemblyItems { get; set; } = new List<PCAssemblyItem>(); 
         public Order? Order { get; set; }
     }
 }

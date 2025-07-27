@@ -20,12 +20,6 @@ namespace Repository.Data.Configurtaions
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly item when PC assembly is deleted
 
-            builder.HasOne(pci => pci.Cart)
-                   .WithMany(c => c.PCAssemblyItems)
-                   .HasForeignKey(pci => pci.CartId)
-                   .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly item when cart is deleted
-
             builder.HasOne(pci => pci.Product)
                    .WithMany(p => p.PCAssemblyItems)
                    .HasForeignKey(pci => pci.ProductId)

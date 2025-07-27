@@ -15,8 +15,6 @@ namespace TechpertsSolutions.Core.Entities
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public decimal Total { get; set; }
-        public string CartId { get; set; }
-        public Cart? Cart { get; set; }
         public string PCAssemblyId { get; set; }
         public PCAssembly? PCAssembly { get; set; }
         public bool IsAssembled { get; set; } = true;

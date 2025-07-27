@@ -28,11 +28,6 @@ namespace Repository.Data.Configurtaions
                    .WithOne(ci => ci.Cart)
                    .HasForeignKey(ci => ci.CartId)
                    .OnDelete(DeleteBehavior.Cascade); // Delete cart items when cart is deleted
-
-            builder.HasMany(c => c.PCAssemblyItems)
-                   .WithOne(pai => pai.Cart)
-                   .HasForeignKey(pai => pai.CartId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly items when cart is deleted
         }
     }
 }

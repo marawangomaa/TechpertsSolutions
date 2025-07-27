@@ -15,5 +15,12 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<PCAssemblyReadDTO>>> GetAllAsync();
         Task<GeneralResponse<PCAssemblyReadDTO>> UpdatePCAssemblyAsync(string id, PCAssemblyUpdateDTO dto);
         Task<GeneralResponse<IEnumerable<PCAssemblyReadDTO>>> GetByCustomerIdAsync(string customerId);
+        
+        // New methods for PC Build functionality
+        Task<GeneralResponse<PCAssemblyReadDTO>> AddComponentToAssemblyAsync(string assemblyId, PCAssemblyItemCreateDTO item);
+        Task<GeneralResponse<PCAssemblyReadDTO>> RemoveComponentFromAssemblyAsync(string assemblyId, string itemId);
+        Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(string assemblyId);
+        Task<GeneralResponse<PCBuildTotalDTO>> CalculateBuildTotalAsync(string assemblyId);
+        Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleComponentsAsync(string productId);
     }
 }
