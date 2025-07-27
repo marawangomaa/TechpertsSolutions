@@ -1,4 +1,6 @@
 using Core.DTOs.CategoryDTOs;
+using Core.DTOs.ProductDTOs;
+using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -15,6 +17,8 @@ namespace Service.Utilities
                 Name = category.Name,
                 Image = category.Image,
                 Description = category.Description,
+                products = category.Products?.Select(p => ProductMapper.MapToProductListItem(p)).Where(p => p != null).ToList() ?? new List<ProductListItemDTO>(),
+                SubCategories = category.SubCategories?.Select(sc => SubCategoryMapper.MapToSubCategoryDTO(sc)).Where(sc => sc != null).ToList() ?? new List<SubCategoryDTO>()
             };
         }
 

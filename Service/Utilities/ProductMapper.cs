@@ -87,6 +87,20 @@ namespace Service.Utilities
             };
         }
 
+        public static Product? MapToProduct(ProductUpdateDTO? dto, Product? existingProduct)
+        {
+            if (dto == null || existingProduct == null) return null;
+
+            existingProduct.Name = dto.Name;
+            existingProduct.Price = dto.Price;
+            existingProduct.DiscountPrice = dto.DiscountPrice;
+            existingProduct.Description = dto.Description;
+            existingProduct.Stock = dto.Stock;
+            existingProduct.ImageUrl = dto.ImageUrl;
+
+            return existingProduct;
+        }
+
         public static ProductCardDTO? MapToProductCardDTO(Product? product)
         {
             if (product == null) return null;

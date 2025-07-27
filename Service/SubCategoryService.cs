@@ -36,8 +36,11 @@ namespace Service
         {
             try
             {
-                // Include Category to get CategoryName for DTO mapping
-                var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(sc => sc.Category);
+                // Include Category and Products to get complete data for DTO mapping
+                var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
+                    sc => sc.Category,
+                    sc => sc.Products
+                );
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
                 {
@@ -83,8 +86,12 @@ namespace Service
 
             try
             {
-                // Include Category to get CategoryName for DTO mapping
-                var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(id, sc => sc.Category);
+                // Include Category and Products to get complete data for DTO mapping
+                var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
+                    id, 
+                    sc => sc.Category,
+                    sc => sc.Products
+                );
                 
                 if (subCategory == null)
                 {
@@ -179,7 +186,11 @@ namespace Service
                 await _subCategoryRepository.SaveChangesAsync();
 
                 // Fetch the created subcategory with its category for the DTO response
-                var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(subCategory.Id, sc => sc.Category);
+                var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
+                    subCategory.Id, 
+                    sc => sc.Category,
+                    sc => sc.Products
+                );
                 
                 return new GeneralResponse<SubCategoryDTO>
                 {
@@ -420,10 +431,11 @@ namespace Service
                     };
                 }
 
-                // Find subcategories by CategoryId and include the Category for DTO mapping
+                // Find subcategories by CategoryId and include the Category and Products for DTO mapping
                 var subCategories = await _subCategoryRepository.FindWithIncludesAsync(
                     sc => sc.CategoryId == categoryId,
-                    sc => sc.Category
+                    sc => sc.Category,
+                    sc => sc.Products
                 );
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>

@@ -23,7 +23,7 @@ namespace Core.Interfaces.Services
 
         Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto, ProductCategory category, ProductPendingStatus status);
-        Task<GeneralResponse<bool>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status);
+        Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status);
         Task<GeneralResponse<bool>> DeleteAsync(string id);
         Task<GeneralResponse<bool>> ApproveProductAsync(string productId);
         Task<GeneralResponse<bool>> RejectProductAsync(string productId, string reason);

@@ -160,12 +160,19 @@ namespace Service
                 await _categoryRepository.AddAsync(category); // Add entity via repository
                 await _categoryRepository.SaveChangesAsync(); // Save changes
 
+                // Fetch the created category with includes for complete response
+                var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
+                    category.Id,
+                    c => c.SubCategories,
+                    c => c.Products
+                );
+
                 // Use CategoryMapper for mapping
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category created successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(category)
+                    Data = CategoryMapper.MapToCategoryDTO(createdCategory)
                 };
             }
             catch (Exception)
@@ -180,46 +187,46 @@ namespace Service
         }
 
         // Updates an existing category from a DTO.
-        public async Task<GeneralResponse<bool>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDto)
+        public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDto)
         {
             // Input validation
             if (categoryUpdateDto == null)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
                     Message = "Update data cannot be null.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (string.IsNullOrWhiteSpace(categoryUpdateDto.Id))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
                     Message = "Category ID is required.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (!Guid.TryParse(categoryUpdateDto.Id, out _))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
                     Message = "Invalid Category ID format. Expected GUID format.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (string.IsNullOrWhiteSpace(categoryUpdateDto.Name))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
                     Message = "Category name is required.",
-                    Data = false
+                    Data = null
                 };
             }
 
@@ -228,11 +235,11 @@ namespace Service
                 var category = await _categoryRepository.GetByIdAsync(categoryUpdateDto.Id);
                 if (category == null)
                 {
-                    return new GeneralResponse<bool>
+                    return new GeneralResponse<CategoryDTO>
                     {
                         Success = false,
                         Message = $"Category with ID '{categoryUpdateDto.Id}' not found.",
-                        Data = false
+                        Data = null
                     };
                 }
 
@@ -241,21 +248,28 @@ namespace Service
 
                 _categoryRepository.Update(category); // Mark entity as updated
                 await _categoryRepository.SaveChangesAsync(); // Save changes
+
+                // Fetch the updated category with includes for complete response
+                var updatedCategory = await _categoryRepository.GetByIdWithIncludesAsync(
+                    category.Id,
+                    c => c.SubCategories,
+                    c => c.Products
+                );
                 
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category updated successfully.",
-                    Data = true
+                    Data = CategoryMapper.MapToCategoryDTO(updatedCategory)
                 };
             }
             catch (Exception)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
                     Message = "An unexpected error occurred while updating the category.",
-                    Data = false
+                    Data = null
                 };
             }
         }

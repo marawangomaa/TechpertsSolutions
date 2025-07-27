@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.ProductDTOs;
+using Core.DTOs.SubCategoryDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Core.DTOs.CategoryDTOs
         public string Description { get; set; }
         public string Image { get; set; }
         public List<ProductListItemDTO> products { get; set; } = new List<ProductListItemDTO>();
+        public List<SubCategoryDTO> SubCategories { get; set; } = new List<SubCategoryDTO>();
     }
 }

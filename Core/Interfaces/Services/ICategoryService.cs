@@ -13,7 +13,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync();
         Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string Id);
         Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryDTO);
-        Task<GeneralResponse<bool>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDTO);
+        Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDTO);
         Task<GeneralResponse<bool>> DeleteCategoryAsync(string Id);
     }
 }

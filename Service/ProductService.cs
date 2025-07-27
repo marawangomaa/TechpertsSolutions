@@ -303,66 +303,66 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<bool>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status)
+        public async Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status)
         {
             // Input validation
             if (string.IsNullOrWhiteSpace(id))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (!Guid.TryParse(id, out _))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (dto == null)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Update data cannot be null.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product name is required.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (dto.Price <= 0)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product price must be greater than 0.",
-                    Data = false
+                    Data = null
                 };
             }
 
             if (dto.Stock < 0)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product stock cannot be negative.",
-                    Data = false
+                    Data = null
                 };
             }
 
@@ -373,11 +373,11 @@ namespace Service
 
                 if (product == null)
                 {
-                    return new GeneralResponse<bool>
+                    return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
                         Message = $"Product with ID '{id}' not found.",
-                        Data = false
+                        Data = null
                     };
                 }
 
@@ -386,37 +386,32 @@ namespace Service
                 var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
                 if (categoryEntity == null)
                 {
-                    return new GeneralResponse<bool>
+                    return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
                         Message = $"Category '{categoryName}' not found.",
-                        Data = false
+                        Data = null
                     };
                 }
 
-                // 2. Resolve SubCategory from Name
+                // 2. Resolve SubCategory from Name (if provided)
                 SubCategory? subCategory = null;
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
                     subCategory = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName && sc.CategoryId == categoryEntity.Id);
                     if (subCategory == null)
                     {
-                        return new GeneralResponse<bool>
+                        return new GeneralResponse<ProductDTO>
                         {
                             Success = false,
                             Message = $"SubCategory '{dto.SubCategoryName}' not found in category '{categoryName}'.",
-                            Data = false
+                            Data = null
                         };
                     }
                 }
 
-                // Update fields
-                product.Name = dto.Name;
-                product.Price = dto.Price;
-                product.DiscountPrice = dto.DiscountPrice;
-                product.Description = dto.Description;
-                product.Stock = dto.Stock;
-                product.ImageUrl = dto.ImageUrl;
+                // 3. Update Product Properties
+                ProductMapper.MapToProduct(dto, product);
                 product.status = status;
                 product.CategoryId = categoryEntity.Id;
                 product.SubCategoryId = subCategory?.Id;
@@ -426,20 +421,30 @@ namespace Service
                 // Update Specifications & Warranties [same logic as before]
                 await _productRepo.SaveChangesAsync();
 
-                return new GeneralResponse<bool>
+                // Fetch the updated product with all includes for complete response
+                var updatedProduct = await _productRepo.GetByIdWithIncludesAsync(
+                    product.Id, 
+                    p => p.Category, 
+                    p => p.SubCategory, 
+                    p => p.Warranties, 
+                    p => p.Specifications, 
+                    p => p.TechCompany
+                );
+
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = true,
                     Message = "Product updated successfully.",
-                    Data = true
+                    Data = ProductMapper.MapToProductDTO(updatedProduct)
                 };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool>
+                return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = $"Unexpected error: {ex.Message}",
-                    Data = false
+                    Data = null
                 };
             }
         }
