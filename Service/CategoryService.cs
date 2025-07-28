@@ -172,12 +172,12 @@ namespace Service
                     Data = CategoryMapper.MapToCategoryDTO(createdCategory)
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = $"An unexpected error occurred while creating the category.=> {e}",
+                    Message = $"An unexpected error occurred while creating the category.",
                     Data = null
                 };
             }
