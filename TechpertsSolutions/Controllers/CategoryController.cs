@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -138,6 +139,58 @@ namespace TechpertsSolutions.Controllers
             if (!response.Success)
             {
                 return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{categoryId}/upload-image")]
+        public async Task<IActionResult> UploadCategoryImage(string categoryId, IFormFile imageFile)
+        {
+            if (string.IsNullOrWhiteSpace(categoryId) || !Guid.TryParse(categoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid category ID.",
+                    Data = categoryId
+                });
+            }
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "No image file provided.",
+                    Data = null
+                });
+            }
+
+            var response = await _categoryService.UploadCategoryImageAsync(imageFile, categoryId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{categoryId}/delete-image")]
+        public async Task<IActionResult> DeleteCategoryImage(string categoryId)
+        {
+            if (string.IsNullOrWhiteSpace(categoryId) || !Guid.TryParse(categoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid category ID.",
+                    Data = categoryId
+                });
+            }
+
+            var response = await _categoryService.DeleteCategoryImageAsync(categoryId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
             }
             return Ok(response);
         }

@@ -24,8 +24,6 @@ namespace Core.DTOs.ProductDTOs
         [Required(ErrorMessage = "Product stock is required")]
         [Range(0, int.MaxValue, ErrorMessage = "Product stock cannot be negative")]
         public int Stock { get; set; }
-        
-        public string? ImageUrl { get; set; }
 
         public string? SubCategoryName { get; set; }
 

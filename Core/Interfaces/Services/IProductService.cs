@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.ProductDTOs;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace Core.Interfaces.Services
 {
@@ -39,5 +41,8 @@ namespace Core.Interfaces.Services
             int pageSize = 10,
             string? sortBy = null,
             bool sortDescending = false);
+
+        Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(IFormFile imageFile, string productId);
+        Task<GeneralResponse<bool>> DeleteProductImageAsync(string productId);
     }
 }

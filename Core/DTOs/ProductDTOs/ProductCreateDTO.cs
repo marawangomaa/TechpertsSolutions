@@ -25,8 +25,6 @@ namespace Core.DTOs.ProductDTOs
         [Range(0, int.MaxValue, ErrorMessage = "Product stock cannot be negative")]
         public int Stock { get; set; }
 
-        public string? ImageUrl { get; set; }
-
         public string? SubCategoryName { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Discount price cannot be negative")]

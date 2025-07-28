@@ -140,6 +140,7 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<ITechCompanyService, TechCompanyService>();
             builder.Services.AddScoped<IWarrantyService, WarrantyService>();
             builder.Services.AddScoped<IWishListService, WishListService>();
+            builder.Services.AddScoped<IFileService, FileService>();
 
 
 

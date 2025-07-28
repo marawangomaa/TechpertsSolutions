@@ -4,6 +4,7 @@ using Core.Interfaces.Services;
 using Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -194,6 +195,60 @@ namespace TechpertsSolutions.Controllers
             if (!response.Success)
             {
                 return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{productId}/upload-image")]
+        //[Authorize(Roles = "Admin,TechManager")]
+        public async Task<IActionResult> UploadProductImage(string productId, IFormFile imageFile)
+        {
+            if (string.IsNullOrWhiteSpace(productId) || !Guid.TryParse(productId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product ID.",
+                    Data = productId
+                });
+            }
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "No image file provided.",
+                    Data = null
+                });
+            }
+
+            var response = await _productService.UploadProductImageAsync(imageFile, productId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{productId}/delete-image")]
+        //[Authorize(Roles = "Admin,TechManager")]
+        public async Task<IActionResult> DeleteProductImage(string productId)
+        {
+            if (string.IsNullOrWhiteSpace(productId) || !Guid.TryParse(productId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product ID.",
+                    Data = productId
+                });
+            }
+
+            var response = await _productService.DeleteProductImageAsync(productId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
             }
             return Ok(response);
         }

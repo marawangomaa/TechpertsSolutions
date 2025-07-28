@@ -8,6 +8,8 @@ using Core.Interfaces.Services;
 using Service.Utilities;
 using System.Linq;
 using Core.Utilities;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace Service
 {
@@ -18,18 +20,21 @@ namespace Service
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<Category> _categoryRepo;
         private readonly IRepository<SubCategory> _subCategoryRepo;
+        private readonly IFileService _fileService;
 
         public ProductService(IRepository<Product> productRepo,
             IRepository<Specification> specRepo,
             IRepository<Warranty> warrantyRepo,
             IRepository<Category> categoryRepo,
-            IRepository<SubCategory> subCategoryRepo)
+            IRepository<SubCategory> subCategoryRepo,
+            IFileService fileService)
         {
             _productRepo = productRepo;
             _specRepo = specRepo;
             _warrantyRepo = warrantyRepo;
             _categoryRepo = categoryRepo;
             _subCategoryRepo = subCategoryRepo;
+            _fileService = fileService;
         }
 
         public async Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllAsync(
@@ -808,6 +813,128 @@ namespace Service
                     Success = false,
                     Message = "An unexpected error occurred while retrieving products by category.",
                     Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(IFormFile imageFile, string productId)
+        {
+            try
+            {
+                if (imageFile == null || imageFile.Length == 0)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "No image file provided",
+                        Data = null
+                    };
+                }
+
+                if (!_fileService.IsValidImageFile(imageFile))
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                        Data = null
+                    };
+                }
+
+                // Check if product exists
+                var product = await _productRepo.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "Product not found",
+                        Data = null
+                    };
+                }
+
+                // Upload image
+                var imagePath = await _fileService.UploadImageAsync(imageFile, "products");
+                var imageUrl = _fileService.GetImageUrl(imagePath);
+
+                // Update product with new image path
+                product.ImageUrl = imagePath;
+                _productRepo.Update(product);
+                await _productRepo.SaveChangesAsync();
+
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = true,
+                    Message = "Product image uploaded successfully",
+                    Data = new ImageUploadResponseDTO
+                    {
+                        Success = true,
+                        Message = "Image uploaded successfully",
+                        ImagePath = imagePath,
+                        ImageUrl = imageUrl
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = false,
+                    Message = $"Error uploading product image: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> DeleteProductImageAsync(string productId)
+        {
+            try
+            {
+                var product = await _productRepo.GetByIdAsync(productId);
+                if (product == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Product not found",
+                        Data = false
+                    };
+                }
+
+                if (string.IsNullOrEmpty(product.ImageUrl))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Product has no image to delete",
+                        Data = false
+                    };
+                }
+
+                // Delete image file
+                var deleted = await _fileService.DeleteImageAsync(product.ImageUrl);
+                if (deleted)
+                {
+                    // Update product to remove image reference
+                    product.ImageUrl = null;
+                    _productRepo.Update(product);
+                    await _productRepo.SaveChangesAsync();
+                }
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Product image deleted successfully",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Error deleting product image: {ex.Message}",
+                    Data = false
                 };
             }
         }

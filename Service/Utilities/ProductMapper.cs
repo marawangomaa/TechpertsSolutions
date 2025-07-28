@@ -70,7 +70,7 @@ namespace Service.Utilities
                 Price = dto.Price,
                 Description = dto.Description,
                 Stock = dto.Stock,
-                ImageUrl = dto.ImageUrl,
+                ImageUrl = null, // Image will be handled separately via upload
                 DiscountPrice = dto.DiscountPrice,
                 TechCompanyId = dto.TechCompanyId, 
                 Specifications = dto.Specifications?.Select(s => new Specification
@@ -96,7 +96,7 @@ namespace Service.Utilities
             existingProduct.DiscountPrice = dto.DiscountPrice;
             existingProduct.Description = dto.Description;
             existingProduct.Stock = dto.Stock;
-            existingProduct.ImageUrl = dto.ImageUrl;
+            // ImageUrl is not updated here - use separate upload endpoint
 
             return existingProduct;
         }

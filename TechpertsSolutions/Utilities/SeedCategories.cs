@@ -14,7 +14,7 @@ namespace TechpertsSolutions.Utilities
             var categoryRepo = serviceProvider.GetRequiredService<IRepository<Category>>();
 
             var existingCategories = await categoryRepo.GetAllAsync();
-            var existingNames = existingCategories.Select(c => c.Name).ToHashSet();
+            var existingNames = existingCategories.Where(c => !string.IsNullOrEmpty(c.Name)).Select(c => c.Name).ToHashSet();
 
             var categories = Enum.GetValues(typeof(ProductCategory))
                 .Cast<ProductCategory>()

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace Service
 {
@@ -17,14 +19,17 @@ namespace Service
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<CartItem> _cartItemRepository;
+        private readonly IFileService _fileService;
 
         public CategoryService(IRepository<Category> categoryRepository,
             IRepository<Product> productRepository,
-            IRepository<CartItem> cartItemRepository) 
+            IRepository<CartItem> cartItemRepository,
+            IFileService fileService) 
         {
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
             _cartItemRepository = cartItemRepository;
+            _fileService = fileService;
         }
 
         public async Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync()
@@ -362,6 +367,128 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while deleting the category.",
+                    Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadCategoryImageAsync(IFormFile imageFile, string categoryId)
+        {
+            try
+            {
+                if (imageFile == null || imageFile.Length == 0)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "No image file provided",
+                        Data = null
+                    };
+                }
+
+                if (!_fileService.IsValidImageFile(imageFile))
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                        Data = null
+                    };
+                }
+
+                // Check if category exists
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "Category not found",
+                        Data = null
+                    };
+                }
+
+                // Upload image
+                var imagePath = await _fileService.UploadImageAsync(imageFile, "categories");
+                var imageUrl = _fileService.GetImageUrl(imagePath);
+
+                // Update category with new image path
+                category.Image = imagePath;
+                _categoryRepository.Update(category);
+                await _categoryRepository.SaveChangesAsync();
+
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = true,
+                    Message = "Category image uploaded successfully",
+                    Data = new ImageUploadResponseDTO
+                    {
+                        Success = true,
+                        Message = "Image uploaded successfully",
+                        ImagePath = imagePath,
+                        ImageUrl = imageUrl
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = false,
+                    Message = $"Error uploading category image: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> DeleteCategoryImageAsync(string categoryId)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Category not found",
+                        Data = false
+                    };
+                }
+
+                if (string.IsNullOrEmpty(category.Image))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Category has no image to delete",
+                        Data = false
+                    };
+                }
+
+                // Delete image file
+                var deleted = await _fileService.DeleteImageAsync(category.Image);
+                if (deleted)
+                {
+                    // Update category to remove image reference
+                    category.Image = null;
+                    _categoryRepository.Update(category);
+                    await _categoryRepository.SaveChangesAsync();
+                }
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Category image deleted successfully",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Error deleting category image: {ex.Message}",
                     Data = false
                 };
             }
