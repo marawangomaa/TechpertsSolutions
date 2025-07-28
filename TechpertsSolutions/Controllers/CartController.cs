@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.CartDTOs;
+using Core.DTOs.OrderDTOs;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using System;
@@ -185,6 +186,9 @@ namespace TechpertsSolutions.Controllers
             return isSuccess ? Ok(response) : NotFound(response); // Use NotFound if cart not found
         }
 
+        /// <summary>
+        /// Checkout entire cart - creates order from all cart items
+        /// </summary>
         [HttpPost("{customerId}/checkout")]
         public async Task<IActionResult> Checkout(string customerId)
         {
@@ -210,27 +214,12 @@ namespace TechpertsSolutions.Controllers
 
             var result = await cartService.PlaceOrderAsync(customerId);
 
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                if (result.Message.Contains("not found") || result.Message.Contains("empty"))
-                {
-                    return NotFound(result); 
-                }
-                else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
-                {
-                    return Conflict(result);
-                }
-                else
-                {
-                    return BadRequest(result);
-                }
-            }
+            return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
+        /// <summary>
+        /// Advanced checkout with delivery and service usage options
+        /// </summary>
         [HttpPost("checkout")]
         public async Task<IActionResult> CheckoutWithDetails([FromBody] CartCheckoutDTO checkoutDto)
         {
@@ -255,16 +244,6 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = $"Validation failed: {string.Join(", ", errors)}",
-                    Data = null
-                });
-            }
-
-            if (string.IsNullOrWhiteSpace(checkoutDto.CustomerId))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Customer ID is required.",
                     Data = null
                 });
             }
@@ -305,34 +284,81 @@ namespace TechpertsSolutions.Controllers
                 checkoutDto.ServiceUsageId
             );
 
-            if (result.Success)
-            {
-                return Ok(result);
-            }
-            else
-            {
-                if (result.Message.Contains("not found") || result.Message.Contains("empty"))
-                {
-                    return NotFound(result);
-                }
-                else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
-                {
-                    return Conflict(result);
-                }
-                else
-                {
-                    return BadRequest(result);
-                }
-            }
+            return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
+        /// <summary>
+        /// Partial checkout - checkout only selected products from cart
+        /// </summary>
         [HttpPost("{customerId}/partial-checkout")]
         public async Task<IActionResult> PartialCheckout(string customerId, [FromBody] PartialCheckoutDTO dto)
         {
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID is required.",
+                    Data = null
+                });
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
             if (dto == null || dto.ProductIds == null || !dto.ProductIds.Any())
-                return BadRequest(new { Success = false, Message = "No products selected for partial checkout." });
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Product selection is required for partial checkout.",
+                    Data = null
+                });
+            }
+
+            // Validate all product IDs are valid GUIDs
+            foreach (var productId in dto.ProductIds)
+            {
+                if (!Guid.TryParse(productId, out _))
+                {
+                    return BadRequest(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = $"Invalid Product ID format: {productId}. Expected GUID format.",
+                        Data = null
+                    });
+                }
+            }
+
             var result = await cartService.PartialCheckoutAsync(customerId, dto.ProductIds, dto.PromoCode);
-            return result.Success ? Ok(result) : BadRequest(result);
+
+            return result.Success ? Ok(result) : GetErrorResponse(result);
+        }
+
+        /// <summary>
+        /// Helper method to determine appropriate HTTP status code based on error message
+        /// </summary>
+        private IActionResult GetErrorResponse(GeneralResponse<OrderReadDTO> result)
+        {
+            if (result.Message.Contains("not found") || result.Message.Contains("empty"))
+            {
+                return NotFound(result);
+            }
+            else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
+            {
+                return Conflict(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
         }
     }
 }

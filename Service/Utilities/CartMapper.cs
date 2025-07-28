@@ -46,15 +46,19 @@ namespace Service.Utilities
                 return null;
             }
 
+            var price = item.Product?.Price ?? 0;
+            var quantity = item.Quantity;
+
             return new CartItemReadDTO
             {
                 Id = item.Id ?? string.Empty,
                 ProductId = item.ProductId ?? string.Empty,
                 ProductName = item.Product?.Name ?? "Unknown Product",
-                Price = item.Product?.Price ?? 0, // Ensure Product is loaded for price
-                Quantity = item.Quantity, // New: Map quantity
-                ImageUrl = item.Product?.ImageUrl ?? string.Empty, // New: Map image URL
-                Stock = item.Product?.Stock ?? 0 // New: Map stock quantity
+                Price = price,
+                Quantity = quantity,
+                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
+                Stock = item.Product?.Stock ?? 0
+                // ItemTotal is calculated automatically by the property: Price * Quantity
             };
         }
 

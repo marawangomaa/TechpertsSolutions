@@ -236,43 +236,43 @@ DELETE /api/Cart/{customerId}/items/{productId}
 DELETE /api/Cart/{customerId}/clear
 ```
 
-### Checkout Cart
+### Checkout Cart (Full Checkout)
 ```http
 POST /api/Cart/{customerId}/checkout
 ```
+**Description:** Checkout entire cart - creates order from all cart items and clears the cart.
 
-### Advanced Checkout
+### Advanced Checkout (with Delivery/Service Options)
 ```http
 POST /api/Cart/checkout
 Content-Type: application/json
 
 {
-  "customerId": "string",
-  "shippingAddress": "string",
-  "paymentMethod": "string",
-  "items": [
-    {
-      "productId": "string",
-      "quantity": 0
-    }
-  ]
+  "customerId": "string (required)",
+  "deliveryId": "string (optional)",
+  "serviceUsageId": "string (optional)"
 }
 ```
+**Description:** Checkout with optional delivery and service usage references.
 
-### Partial Checkout
+### Partial Checkout (Selected Items Only)
 ```http
 POST /api/Cart/{customerId}/partial-checkout
 Content-Type: application/json
 
 {
-  "items": [
-    {
-      "productId": "string",
-      "quantity": 0
-    }
-  ]
+  "productIds": ["string", "string"],
+  "promoCode": "string (optional)"
 }
 ```
+**Description:** Checkout only selected products from cart - removes selected items from cart, leaves others.
+
+**Features:**
+- ✅ Transaction-safe operations
+- ✅ Stock validation and updates
+- ✅ Comprehensive error handling
+- ✅ Automatic cart management
+- ✅ Order creation with proper totals
 
 ---
 

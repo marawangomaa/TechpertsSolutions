@@ -118,7 +118,18 @@ namespace TechpertsSolutions
                     provider.GetRequiredService<ICustomerService>()
                 );
             });
-            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<ICartService>(provider =>
+            {
+                return new CartService(
+                    provider.GetRequiredService<IRepository<Cart>>(),
+                    provider.GetRequiredService<IRepository<CartItem>>(),
+                    provider.GetRequiredService<IRepository<Product>>(),
+                    provider.GetRequiredService<IRepository<Customer>>(),
+                    provider.GetRequiredService<IRepository<Order>>(),
+                    provider.GetRequiredService<IRepository<OrderItem>>(),
+                    provider.GetRequiredService<TechpertsContext>()
+                );
+            });
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
