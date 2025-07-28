@@ -94,7 +94,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("products/{productId}/reject")]
-        public async Task<IActionResult> RejectProduct(string productId, [FromBody] string reason)
+        public async Task<IActionResult> RejectProduct(string productId, [FromBody] AdminProductRejectDTO reason)
         {
             if (string.IsNullOrWhiteSpace(productId))
                 return BadRequest(new GeneralResponse<string>
@@ -112,7 +112,7 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid GUID format"
                 });
 
-            if (string.IsNullOrWhiteSpace(reason))
+            if (string.IsNullOrWhiteSpace(reason.Reason))
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
@@ -120,7 +120,7 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid input"
                 });
 
-            var response = await _productService.RejectProductAsync(productId, reason);
+            var response = await _productService.RejectProductAsync(productId, reason.Reason);
             return Ok(response);
         }
 

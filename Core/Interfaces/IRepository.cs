@@ -8,19 +8,6 @@ using TechpertsSolutions.Core.Entities;
 
 namespace Core.Interfaces
 {
-    //public interface IRepository<T> where T : class
-    //{
-    //    Task<T> GetByIdAsync(string id);
-    //    Task<IEnumerable<T>> GetAllAsync();
-    //    Task<T?> GetFirstOrDefaultAsync(Expression<Func<T,bool>> predicate, string? includeProperties = null);
-    //    Task AddAsync(T entity);
-    //    void Update(T entity);
-    //    void Remove(T entity);
-    //    Task SaveChanges();
-    //    Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
-    //    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-    //    Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
-    //}
     public interface IRepository<T> where T : class
     {
         Task<T> GetByIdAsync(string id);
@@ -45,6 +32,5 @@ namespace Core.Interfaces
         Task SaveChangesAsync();
 
         Task<T?> GetByIdWithIncludesAsync(string id, params Expression<Func<T, object>>[] includes);
-
     }
 }
