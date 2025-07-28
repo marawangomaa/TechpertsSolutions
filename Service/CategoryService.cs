@@ -133,10 +133,8 @@ namespace Service
             }
         }
 
-        // Creates a new category from a DTO.
         public async Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryCreateDto)
         {
-            // Input validation
             if (categoryCreateDto == null)
             {
                 return new GeneralResponse<CategoryDTO>
@@ -159,7 +157,6 @@ namespace Service
 
             try
             {
-                // Use CategoryMapper for mapping
                 var category = CategoryMapper.MapToCategory(categoryCreateDto);
 
                 await _categoryRepository.AddAsync(category); // Add entity via repository
@@ -185,7 +182,7 @@ namespace Service
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while creating the category.",
+                    Message = $"An unexpected error occurred while creating the category.",
                     Data = null
                 };
             }

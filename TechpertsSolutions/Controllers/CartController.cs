@@ -1,5 +1,4 @@
-﻿// Controllers.CartController.cs (Assuming this file path)
-using Core.DTOs.CartDTOs;
+﻿using Core.DTOs.CartDTOs;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using System;
@@ -21,12 +20,6 @@ namespace TechpertsSolutions.Controllers
             cartService = _cartService;
         }
 
-        /// <summary>
-        /// Retrieves the shopping cart for a specific customer.
-        /// If no cart exists, a new empty cart is created.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <returns>The customer's cart details.</returns>
         [HttpGet("{customerId}")]
         public async Task<IActionResult> GetCart(string customerId)
         {
@@ -56,8 +49,6 @@ namespace TechpertsSolutions.Controllers
 
                 if (cart == null)
                 {
-                    // This case should ideally be handled by the service creating a cart,
-                    // but as a fallback, if the customer ID itself was invalid within the service.
                     return NotFound(new GeneralResponse<string>
                     {
                         Success = false,
@@ -75,7 +66,6 @@ namespace TechpertsSolutions.Controllers
             }
             catch (Exception ex)
             {
-                // Catching generic Exception for unexpected server errors
                 return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
@@ -84,13 +74,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
         }
-
-        /// <summary>
-        /// Adds a product to the customer's cart or updates its quantity if already present.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <param name="itemDto">The details of the item to add/update (ProductId, Quantity).</param>
-        /// <returns>A response indicating success or failure.</returns>
+        
         [HttpPost("{customerId}/items")]
         public async Task<IActionResult> AddItem(string customerId, [FromForm] CartItemDTO itemDto)
         {
@@ -107,25 +91,18 @@ namespace TechpertsSolutions.Controllers
 
             var resultMessage = await cartService.AddItemAsync(customerId, itemDto);
 
-            // Determine success based on the message from the service
             var isSuccess = resultMessage.StartsWith("✅");
 
             var response = new GeneralResponse<object>
             {
                 Success = isSuccess,
-                Message = resultMessage.TrimStart('✅', '❌').Trim(), // Clean up emoji prefixes
+                Message = resultMessage.TrimStart('✅', '❌').Trim(),
                 Data = null
             };
 
             return isSuccess ? Ok(response) : BadRequest(response);
         }
 
-        /// <summary>
-        /// Updates the quantity of a specific item in the customer's cart.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <param name="updateDto">The DTO containing ProductId and the new Quantity.</param>
-        /// <returns>A response indicating success or failure.</returns>
         [HttpPut("{customerId}/items")]
         public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromForm] CartUpdateItemQuantityDTO updateDto)
         {
@@ -154,13 +131,6 @@ namespace TechpertsSolutions.Controllers
             return isSuccess ? Ok(response) : NotFound(response); // Use NotFound if item/cart not found
         }
 
-
-        /// <summary>
-        /// Removes a specific product from the customer's cart.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <param name="productId">The unique identifier of the product to remove.</param>
-        /// <returns>A response indicating success or failure.</returns>
         [HttpDelete("{customerId}/items/{productId}")]
         public async Task<IActionResult> RemoveItem(string customerId, string productId)
         {
@@ -188,11 +158,6 @@ namespace TechpertsSolutions.Controllers
             return isSuccess ? Ok(response) : NotFound(response);
         }
 
-        /// <summary>
-        /// Clears all items from the customer's cart.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <returns>A response indicating success or failure.</returns>
         [HttpDelete("{customerId}/clear")]
         public async Task<IActionResult> ClearCart(string customerId)
         {
@@ -220,12 +185,6 @@ namespace TechpertsSolutions.Controllers
             return isSuccess ? Ok(response) : NotFound(response); // Use NotFound if cart not found
         }
 
-        /// <summary>
-        /// Converts the customer's current cart into a new order.
-        /// Performs stock validation and clears the cart upon successful order creation.
-        /// </summary>
-        /// <param name="customerId">The unique identifier of the customer.</param>
-        /// <returns>A response containing the created order details or an error message.</returns>
         [HttpPost("{customerId}/checkout")]
         public async Task<IActionResult> Checkout(string customerId)
         {
@@ -257,28 +216,21 @@ namespace TechpertsSolutions.Controllers
             }
             else
             {
-                // Use appropriate status codes based on the error message from the service
                 if (result.Message.Contains("not found") || result.Message.Contains("empty"))
                 {
-                    return NotFound(result); // 404 for resource not found/empty
+                    return NotFound(result); 
                 }
                 else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
                 {
-                    return Conflict(result); // 409 Conflict for stock issues
+                    return Conflict(result);
                 }
                 else
                 {
-                    return BadRequest(result); // 400 for other validation/business logic errors
+                    return BadRequest(result);
                 }
             }
         }
 
-        /// <summary>
-        /// Converts the customer's current cart into a new order with additional parameters.
-        /// Performs comprehensive validation and clears the cart upon successful order creation.
-        /// </summary>
-        /// <param name="checkoutDto">The checkout details including customer ID and optional parameters.</param>
-        /// <returns>A response containing the created order details or an error message.</returns>
         [HttpPost("checkout")]
         public async Task<IActionResult> CheckoutWithDetails([FromBody] CartCheckoutDTO checkoutDto)
         {
@@ -292,7 +244,6 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Validate required fields
             var errors = new List<string>();
 
             if (string.IsNullOrWhiteSpace(checkoutDto.CustomerId))
@@ -308,7 +259,6 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Additional validation
             if (string.IsNullOrWhiteSpace(checkoutDto.CustomerId))
             {
                 return BadRequest(new GeneralResponse<string>
@@ -329,7 +279,6 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Validate optional GUIDs if provided
             if (!string.IsNullOrWhiteSpace(checkoutDto.DeliveryId) && !Guid.TryParse(checkoutDto.DeliveryId, out _))
             {
                 return BadRequest(new GeneralResponse<string>
@@ -362,18 +311,17 @@ namespace TechpertsSolutions.Controllers
             }
             else
             {
-                // Use appropriate status codes based on the error message from the service
                 if (result.Message.Contains("not found") || result.Message.Contains("empty"))
                 {
-                    return NotFound(result); // 404 for resource not found/empty
+                    return NotFound(result);
                 }
                 else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
                 {
-                    return Conflict(result); // 409 Conflict for stock issues
+                    return Conflict(result);
                 }
                 else
                 {
-                    return BadRequest(result); // 400 for other validation/business logic errors
+                    return BadRequest(result);
                 }
             }
         }

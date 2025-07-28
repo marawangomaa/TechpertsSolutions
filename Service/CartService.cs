@@ -414,7 +414,6 @@ namespace Service
 
             try
             {
-                // 2. Create the Order entity
                 var newOrder = new Order
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -444,18 +443,17 @@ namespace Service
                     newOrder.OrderItems.Add(orderItem);
                     totalAmount += orderItem.ItemTotal;
 
-                    // Update product stock
                     cartItem.Product.Stock -= cartItem.Quantity;
                     productRepo.Update(cartItem.Product);
                 }
 
                 newOrder.TotalAmount = totalAmount;
 
-                // 4. Save the new order and updated products
+                
                 await orderRepo.AddAsync(newOrder);
                 await orderRepo.SaveChangesAsync();
 
-                // 5. Clear the cart after successful order placement
+                
                 await ClearCartAsync(customerId);
 
                 return new GeneralResponse<OrderReadDTO>
