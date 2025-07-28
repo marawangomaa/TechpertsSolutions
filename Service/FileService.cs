@@ -12,7 +12,7 @@ namespace Service
         private readonly IHostEnvironment _environment;
         private readonly IConfiguration _configuration;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        private readonly long _maxFileSize = 5 * 1024 * 1024; // 5MB
+        private readonly long _maxFileSize = 5 * 1024 * 1024; 
 
         public FileService(IHostEnvironment environment, IConfiguration configuration)
         {
@@ -28,7 +28,7 @@ namespace Service
             if (!IsValidImageFile(file))
                 throw new ArgumentException("Invalid image file");
 
-            // Create assets directory structure
+            
             var assetsPath = Path.Combine(_environment.ContentRootPath, "wwwroot", "assets");
             var controllerPath = Path.Combine(assetsPath, controllerName.ToLower());
             
@@ -38,17 +38,17 @@ namespace Service
             if (!Directory.Exists(controllerPath))
                 Directory.CreateDirectory(controllerPath);
 
-            // Generate unique filename
+            
             var fileName = GenerateUniqueFileName(file.FileName);
             var filePath = Path.Combine(controllerPath, fileName);
 
-            // Save file
+            
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            // Return relative path for database storage
+            
             return Path.Combine("assets", controllerName.ToLower(), fileName).Replace("\\", "/");
         }
 
@@ -70,13 +70,13 @@ namespace Service
 
         public async Task<string> UpdateImageAsync(IFormFile newFile, string oldImagePath, string controllerName)
         {
-            // Delete old image if exists
+            
             if (!string.IsNullOrEmpty(oldImagePath))
             {
                 await DeleteImageAsync(oldImagePath);
             }
 
-            // Upload new image
+            
             return await UploadImageAsync(newFile, controllerName);
         }
 
@@ -85,16 +85,16 @@ namespace Service
             if (file == null || file.Length == 0)
                 return false;
 
-            // Check file size
+            
             if (file.Length > _maxFileSize)
                 return false;
 
-            // Check file extension
+            
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))
                 return false;
 
-            // Check MIME type
+            
             if (!file.ContentType.StartsWith("image/"))
                 return false;
 
@@ -106,7 +106,7 @@ namespace Service
             if (string.IsNullOrEmpty(imagePath))
                 return string.Empty;
 
-            var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:7001";
+            var baseUrl = _configuration["BaseUrl"] ?? "https://localhost:5001";
             return $"{baseUrl}/{imagePath.Replace("\\", "/")}";
         }
 
@@ -115,10 +115,10 @@ namespace Service
             var extension = Path.GetExtension(originalFileName);
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalFileName);
             
-            // Remove special characters and spaces
+            
             fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, @"[^a-zA-Z0-9]", "");
             
-            // Generate unique identifier
+            
             var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
             var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
             

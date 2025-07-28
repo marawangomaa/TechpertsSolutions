@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -18,16 +18,15 @@ namespace Repository.Data.Configurtaions
                    .WithOne(ct => ct.Cart)
                    .HasForeignKey<Cart>(c => c.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); // Delete cart when customer is deleted
+                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Ensure each customer can only have one cart
             builder.HasIndex(c => c.CustomerId)
                    .IsUnique();
 
             builder.HasMany(c => c.CartItems)
                    .WithOne(ci => ci.Cart)
                    .HasForeignKey(ci => ci.CartId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete cart items when cart is deleted
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

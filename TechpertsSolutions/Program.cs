@@ -1,4 +1,4 @@
-﻿using Core.Interfaces;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Enums;
 using Core.Utilities;
@@ -27,7 +27,7 @@ namespace TechpertsSolutions
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //  Add services
+            
             builder.Services.AddControllers()
                 .AddJsonOptions(opt => {
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -35,21 +35,21 @@ namespace TechpertsSolutions
             });
             builder.Services.AddEndpointsApiExplorer();
 
-            // Adding JWT support to Swagger
+            
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
-                c.CustomSchemaIds(type => type.FullName); // <-- Fix for duplicate class names
-                c.SchemaFilter<EnumSchemaFilter>(); // Enable enum string values in Swagger
+                c.CustomSchemaIds(type => type.FullName); 
+                c.SchemaFilter<EnumSchemaFilter>(); 
                 
-                // Configure enum handling
+                
                 c.MapType<RoleType>(() => new OpenApiSchema 
                 { 
                     Type = "string",
                     Enum = Enum.GetValues<RoleType>().Select(e => new Microsoft.OpenApi.Any.OpenApiString(e.GetStringValue())).Cast<Microsoft.OpenApi.Any.IOpenApiAny>().ToList()
                 });
                 
-                // Configure form data handling
+                
                 c.OperationFilter<FormDataOperationFilter>();
                 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -75,12 +75,12 @@ namespace TechpertsSolutions
                         Array.Empty<string>()
                     }
                 });
-                // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                // c.IncludeXmlComments(xmlPath);
+                
+                
+                
             });
 
-            //  App services
+            
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<ICustomerService,CustomerService>();
             builder.Services.AddScoped<IAdminService, AdminService>();
@@ -155,7 +155,7 @@ namespace TechpertsSolutions
 
 
 
-            //  EF + Identity
+            
             builder.Services.AddDbContext<TechpertsContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -176,7 +176,7 @@ namespace TechpertsSolutions
                 options.User.RequireUniqueEmail = true;
             });
 
-            //  CORS
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
@@ -187,7 +187,7 @@ namespace TechpertsSolutions
                 });
             });
 
-            //  JWT Auth
+            
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -210,7 +210,7 @@ namespace TechpertsSolutions
 
             var app = builder.Build();
 
-            //  Data seeding
+            
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;

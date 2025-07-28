@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -18,13 +18,13 @@ namespace Repository.Data.Configurtaions
                    .WithMany(wl => wl.WishListItems)
                    .HasForeignKey(wli => wli.WishListId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist item when wishlist is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(wli => wli.Product)
                    .WithMany(p => p.WishListItems)
                    .HasForeignKey(wli => wli.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in wishlist items
+                   .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }

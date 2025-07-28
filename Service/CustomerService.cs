@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using TechpertsSolutions.Core.DTOs.CustomerDTOs;
@@ -54,7 +54,7 @@ namespace Service
 
         public async Task<GeneralResponse<CustomerEditDTO>> UpdateCustomerAsync(string id, CustomerEditDTO dto)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CustomerEditDTO>
@@ -164,7 +164,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> CleanupCustomerDataAsync(string userId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return new GeneralResponse<bool>
@@ -198,11 +198,11 @@ namespace Service
                     };
                 }
 
-                // Use a transaction to ensure data consistency
+                
                 await using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {
-                    // 1. Clean up Cart Items (these are automatically deleted via cascade, but let's be explicit)
+                    
                     var carts = await cartRepo.GetAllAsync();
                     var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
                     foreach (var cart in customerCarts)
@@ -210,7 +210,7 @@ namespace Service
                         cartRepo.Remove(cart);
                     }
 
-                    // 2. Clean up WishLists and WishList Items
+                    
                     if (_wishListRepo != null)
                     {
                         var wishLists = await _wishListRepo.FindAsync(w => w.CustomerId == customer.Id);
@@ -220,44 +220,44 @@ namespace Service
                         }
                     }
 
-                    // 3. Clean up Orders and Order Items
+                    
                     var orders = await context.Orders.Where(o => o.CustomerId == customer.Id).ToListAsync();
                     foreach (var order in orders)
                     {
-                        // Order items are automatically deleted via cascade
+                        
                         context.Orders.Remove(order);
                     }
 
-                    // 4. Clean up PC Assemblies and PC Assembly Items
+                    
                     var pcAssemblies = await context.PCAssemblies.Where(pca => pca.CustomerId == customer.Id).ToListAsync();
                     foreach (var pcAssembly in pcAssemblies)
                     {
-                        // PC Assembly items are automatically deleted via cascade
+                        
                         context.PCAssemblies.Remove(pcAssembly);
                     }
 
-                    // 5. Clean up Maintenances
+                    
                     var maintenances = await context.Maintenances.Where(m => m.CustomerId == customer.Id).ToListAsync();
                     foreach (var maintenance in maintenances)
                     {
-                        // Service usages are automatically deleted via cascade
+                        
                         context.Maintenances.Remove(maintenance);
                     }
 
-                    // 6. Clean up Deliveries (if any are customer-specific)
+                    
                     var deliveries = await context.Deliveries.Where(d => d.CustomerId == customer.Id).ToListAsync();
                     foreach (var delivery in deliveries)
                     {
                         context.Deliveries.Remove(delivery);
                     }
 
-                    // 7. Finally, remove the customer entity
+                    
                     _customerRepository.Remove(customer);
 
-                    // Save all changes
+                    
                     await context.SaveChangesAsync();
                     
-                    // Commit the transaction
+                    
                     await transaction.CommitAsync();
 
                     return new GeneralResponse<bool>
@@ -269,7 +269,7 @@ namespace Service
                 }
                 catch (Exception)
                 {
-                    // Rollback the transaction on error
+                    
                     await transaction.RollbackAsync();
                     throw;
                 }
@@ -287,7 +287,7 @@ namespace Service
 
         public async Task<GeneralResponse<CustomerDTO>> GetCustomerByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CustomerDTO>

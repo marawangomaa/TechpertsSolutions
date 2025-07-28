@@ -16,14 +16,14 @@ namespace TechpertsSolutions
             {
                 if (parameter.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.FromFormAttribute), false).Any())
                 {
-                    // Remove the default request body for form data
+                    
                     operation.RequestBody = null;
 
-                    // Add form parameters
+                    
                     if (operation.Parameters == null)
                         operation.Parameters = new List<OpenApiParameter>();
 
-                    // Handle CategoryCreateDTO
+                    
                     if (parameter.ParameterType.Name == "CategoryCreateDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter
@@ -54,7 +54,7 @@ namespace TechpertsSolutions
                         });
                     }
 
-                    // Handle CategoryUpdateDTO
+                    
                     if (parameter.ParameterType.Name == "CategoryUpdateDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter
@@ -94,7 +94,7 @@ namespace TechpertsSolutions
                         });
                     }
 
-                    // Handle CreateSubCategoryDTO
+                    
                     if (parameter.ParameterType.Name == "CreateSubCategoryDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter
@@ -134,7 +134,7 @@ namespace TechpertsSolutions
                         });
                     }
 
-                    // Handle UpdateSubCategoryDTO
+                    
                     if (parameter.ParameterType.Name == "UpdateSubCategoryDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter
@@ -183,7 +183,7 @@ namespace TechpertsSolutions
                         });
                     }
 
-                    // Handle CartItemDTO
+                    
                     if (parameter.ParameterType.Name == "CartItemDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter
@@ -205,7 +205,7 @@ namespace TechpertsSolutions
                         });
                     }
 
-                    // Handle CartUpdateItemQuantityDTO
+                    
                     if (parameter.ParameterType.Name == "CartUpdateItemQuantityDTO")
                     {
                         operation.Parameters.Add(new OpenApiParameter

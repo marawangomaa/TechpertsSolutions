@@ -1,4 +1,4 @@
-﻿using Core.DTOs.WishListDTOs;
+using Core.DTOs.WishListDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -65,7 +65,7 @@ namespace Service
 
         public async Task<GeneralResponse<LoginResultDTO>> LoginAsync(LoginDTO loginDTO)
         {
-            // Input validation
+            
             if (loginDTO == null)
             {
                 return new GeneralResponse<LoginResultDTO>
@@ -98,7 +98,7 @@ namespace Service
 
             try
             {
-                // Normalize email (trim and convert to lowercase)
+                
                 var normalizedEmail = loginDTO.Email.Trim().ToLowerInvariant();
 
                 var user = await userManager.FindByEmailAsync(normalizedEmail);
@@ -112,7 +112,7 @@ namespace Service
                     };
                 }
 
-                // Check if user is locked out
+                
                 if (await userManager.IsLockedOutAsync(user))
                 {
                     return new GeneralResponse<LoginResultDTO>
@@ -126,7 +126,7 @@ namespace Service
                 var isPasswordValid = await userManager.CheckPasswordAsync(user, loginDTO.Password);
                 if (!isPasswordValid)
                 {
-                    // Increment failed login attempts
+                    
                     await userManager.AccessFailedAsync(user);
                     
                     return new GeneralResponse<LoginResultDTO>
@@ -137,7 +137,7 @@ namespace Service
                     };
                 }
 
-                // Reset failed login attempts on successful login
+                
                 await userManager.ResetAccessFailedCountAsync(user);
 
                 var roles = await userManager.GetRolesAsync(user);
@@ -159,7 +159,7 @@ namespace Service
                     UserId = user.Id,
                     UserName = user.UserName,
                     RoleName = roles,
-                    PCAssemblyId = null // Will be set below if customer has PC assemblies
+                    PCAssemblyId = null 
                 };
 
                 foreach (var role in roles)
@@ -170,16 +170,16 @@ namespace Service
                             var customer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == user.Id);
                             if (customer == null) return FailRoleWarning("Customer", user.Id);
                             loginResultDTO.CustomerId = customer.Id;
-                            // Fetch CartId
+                            
                             var cart = await cartRepo.GetFirstOrDefaultAsync(c => c.CustomerId == customer.Id);
                             if (cart != null)
                                 loginResultDTO.CartId = cart.Id;
-                            // Fetch WishListId
+                            
                             var wishListsResponse = await wishListService.GetByCustomerIdAsync(customer.Id);
                             var wishList = wishListsResponse.Data?.FirstOrDefault();
                             if (wishList != null)
                                 loginResultDTO.WishListId = wishList.Id;
-                            // Fetch PCAssemblyId (get the most recent one)
+                            
                             var pcAssembliesResponse = await pcAssemblyService.GetByCustomerIdAsync(customer.Id);
                             var latestPCAssembly = pcAssembliesResponse.Data?.OrderByDescending(pc => pc.CreatedAt).FirstOrDefault();
                             if (latestPCAssembly != null)
@@ -226,7 +226,7 @@ namespace Service
 
         public async Task<GeneralResponse<string>> RegisterAsync(RegisterDTO registerDTO,RoleType roleName)
         {
-            // Input validation
+            
             if (registerDTO == null)
             {
                 return new GeneralResponse<string>
@@ -237,7 +237,7 @@ namespace Service
                 };
             }
 
-            // Validate required fields
+            
             if (string.IsNullOrWhiteSpace(registerDTO.Email))
             {
                 return new GeneralResponse<string>
@@ -320,7 +320,7 @@ namespace Service
 
             try
             {
-                // Normalize email (trim and convert to lowercase)
+                
                 var normalizedEmail = registerDTO.Email.Trim().ToLowerInvariant();
 
                 var existingUser = await userManager.FindByEmailAsync(normalizedEmail);
@@ -334,7 +334,7 @@ namespace Service
                     };
                 }
 
-                // Check if username is already taken
+                
                 var existingUserByUsername = await userManager.FindByNameAsync(registerDTO.UserName.Trim());
                 if (existingUserByUsername != null)
                 {
@@ -353,7 +353,7 @@ namespace Service
                     FullName = registerDTO.FullName.Trim(),
                     Address = registerDTO.Address.Trim(),
                     PhoneNumber = registerDTO.PhoneNumber.Trim(),
-                    EmailConfirmed = false, // Require email confirmation
+                    EmailConfirmed = false, 
                     PhoneNumberConfirmed = false
                 };
 
@@ -369,8 +369,8 @@ namespace Service
                     };
                 }
 
-                // Get the role name from the enum
-                //var roleName = registerDTO.Role.GetStringValue();
+                
+                
                 var role = await roleManager.FindByNameAsync(roleName.GetStringValue());
                 if (role == null)
                 {
@@ -382,7 +382,7 @@ namespace Service
                     };
                 }
 
-                // Assign the selected role
+                
                 var roleResult = await userManager.AddToRoleAsync(user, roleName.GetStringValue());
                 if (!roleResult.Succeeded)
                 {
@@ -395,7 +395,7 @@ namespace Service
                     };
                 }
 
-                // Create the appropriate entity based on the role
+                
                 string? entityId = null;
                 string? cartId = null;
 
@@ -410,7 +410,7 @@ namespace Service
                         await customerRepo.AddAsync(customer);
                         await context.SaveChangesAsync();
 
-                        // Create cart for the new customer
+                        
                         var cart = new Cart
                         {
                             CustomerId = customer.Id,
@@ -418,7 +418,7 @@ namespace Service
                         };
                         await cartRepo.AddAsync(cart);
 
-                        // Create wishlist for the new customer
+                        
                         await wishListService.CreateAsync(new WishListCreateDTO { CustomerId = customer.Id });
 
                         entityId = customer.Id;
@@ -458,7 +458,7 @@ namespace Service
 
                 await context.SaveChangesAsync();
 
-                // Generate login result
+                
                 var roles = await userManager.GetRolesAsync(user);
                 var token = GenerateJwtToken(user, roles);
 
@@ -470,7 +470,7 @@ namespace Service
                     RoleName = roles,
                     CustomerId = roleName == RoleType.Customer ? entityId : null,
                     CartId = cartId,
-                    PCAssemblyId = null // New customers won't have PC assemblies yet
+                    PCAssemblyId = null 
                 };
 
                 return new GeneralResponse<string>
@@ -546,7 +546,7 @@ namespace Service
 
         public async Task<GeneralResponse<string>> DeleteAccountAsync(DeleteAccountDTO dto, string userId)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<string>
@@ -590,7 +590,7 @@ namespace Service
                     };
                 }
 
-                // Verify password before deletion
+                
                 var isPasswordValid = await userManager.CheckPasswordAsync(user, dto.Password);
                 if (!isPasswordValid)
                 {
@@ -602,7 +602,7 @@ namespace Service
                     };
                 }
 
-                // Delete user (this will cascade delete related entities)
+                
                 var result = await userManager.DeleteAsync(user);
                 if (!result.Succeeded)
                 {

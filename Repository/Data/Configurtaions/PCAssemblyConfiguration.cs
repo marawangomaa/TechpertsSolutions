@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -17,18 +17,18 @@ namespace Repository.Data.Configurtaions
                    .WithMany(c => c.PCAssembly)
                    .HasForeignKey(pc => pc.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly when customer is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(pc => pc.ServiceUsage)
                    .WithMany(su => su.PCAssemblies)
                    .HasForeignKey(pc => pc.ServiceUsageId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent service usage deletion if it has PC assemblies
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(pc => pc.PCAssemblyItems)
                    .WithOne(pci => pci.PCAssembly)
                    .HasForeignKey(pci => pci.PCAssemblyId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly items when PC assembly is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }

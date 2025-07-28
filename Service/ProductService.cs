@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ProductDTOs;
+using Core.DTOs.ProductDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Enums;
 using Core.Entities;
@@ -47,7 +47,7 @@ namespace Service
             string? sortBy = null,
             bool sortDescending = false)
         {
-            // Input validation
+            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
@@ -72,7 +72,7 @@ namespace Service
             {
                 var allProducts = (await _productRepo.GetAllWithIncludesAsync(p => p.Category, p => p.SubCategory)).AsQueryable();
 
-                // Apply filters
+                
                 if (status.HasValue)
                     allProducts = allProducts.Where(p => p.status == status.Value);
 
@@ -90,7 +90,7 @@ namespace Service
                 if (!string.IsNullOrWhiteSpace(nameSearch))
                     allProducts = allProducts.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
 
-                // Sorting
+                
                 allProducts = sortBy?.ToLower() switch
                 {
                     "price" => sortDescending ? allProducts.OrderByDescending(p => p.Price) : allProducts.OrderBy(p => p.Price),
@@ -135,7 +135,7 @@ namespace Service
 
         public async Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<ProductDTO>
@@ -194,7 +194,7 @@ namespace Service
 
         public async Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto, ProductCategory category, ProductPendingStatus status)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<ProductDTO>
@@ -237,7 +237,7 @@ namespace Service
 
             try
             {
-                // 1. Resolve Category from Enum
+                
                 var categoryName = category.GetStringValue();
                 var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
                 if (categoryEntity == null)
@@ -250,7 +250,7 @@ namespace Service
                     };
                 }
 
-                // 2. Resolve SubCategory from Name (if provided)
+                
                 SubCategory? subCategory = null;
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
@@ -266,7 +266,7 @@ namespace Service
                     }
                 }
 
-                // 3. Map DTO to Product entity
+                
                 var product = ProductMapper.MapToProduct(dto);
                 if (product == null)
                 {
@@ -278,7 +278,7 @@ namespace Service
                     };
                 }
 
-                // Set the status and category from parameters
+                
                 product.status = status;
                 product.CategoryId = categoryEntity.Id;
                 if (subCategory != null)
@@ -310,7 +310,7 @@ namespace Service
 
         public async Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, ProductUpdateDTO dto, ProductCategory category, ProductPendingStatus status)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<ProductDTO>
@@ -386,7 +386,7 @@ namespace Service
                     };
                 }
 
-                // 1. Resolve Category from Enum
+                
                 var categoryName = category.GetStringValue();
                 var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
                 if (categoryEntity == null)
@@ -399,7 +399,7 @@ namespace Service
                     };
                 }
 
-                // 2. Resolve SubCategory from Name (if provided)
+                
                 SubCategory? subCategory = null;
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
@@ -415,7 +415,7 @@ namespace Service
                     }
                 }
 
-                // 3. Update Product Properties
+                
                 ProductMapper.MapToProduct(dto, product);
                 product.status = status;
                 product.CategoryId = categoryEntity.Id;
@@ -423,10 +423,10 @@ namespace Service
 
                 _productRepo.Update(product);
 
-                // Update Specifications & Warranties [same logic as before]
+                
                 await _productRepo.SaveChangesAsync();
 
-                // Fetch the updated product with all includes for complete response
+                
                 var updatedProduct = await _productRepo.GetByIdWithIncludesAsync(
                     product.Id, 
                     p => p.Category, 
@@ -456,7 +456,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
@@ -513,7 +513,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> ApproveProductAsync(string productId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(productId))
             {
                 return new GeneralResponse<bool>
@@ -581,7 +581,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> RejectProductAsync(string productId, string reason)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(productId))
             {
                 return new GeneralResponse<bool>
@@ -663,7 +663,7 @@ namespace Service
             string? sortBy = null,
             bool sortDescending = false)
         {
-            // Input validation
+            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductDTO>>
@@ -694,13 +694,13 @@ namespace Service
                     p => p.Specifications,
                     p => p.Warranties);
 
-                // Apply sorting
+                
                 var sortedProducts = sortBy?.ToLower() switch
                 {
                     "price" => sortDescending ? pendingProducts.OrderByDescending(p => p.Price) : pendingProducts.OrderBy(p => p.Price),
                     "name" => sortDescending ? pendingProducts.OrderByDescending(p => p.Name) : pendingProducts.OrderBy(p => p.Name),
                     "stock" => sortDescending ? pendingProducts.OrderByDescending(p => p.Stock) : pendingProducts.OrderBy(p => p.Stock),
-                    _ => pendingProducts.OrderBy(p => p.Name) // Default sort by name
+                    _ => pendingProducts.OrderBy(p => p.Name) 
                 };
 
                 int totalItems = sortedProducts.Count();
@@ -745,7 +745,7 @@ namespace Service
             string? sortBy = null,
             bool sortDescending = false)
         {
-            // Input validation
+            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
@@ -774,13 +774,13 @@ namespace Service
                     p => p.Category,
                     p => p.SubCategory);
 
-                // Apply sorting
+                
                 var sortedProducts = sortBy?.ToLower() switch
                 {
                     "price" => sortDescending ? products.OrderByDescending(p => p.Price) : products.OrderBy(p => p.Price),
                     "name" => sortDescending ? products.OrderByDescending(p => p.Name) : products.OrderBy(p => p.Name),
                     "stock" => sortDescending ? products.OrderByDescending(p => p.Stock) : products.OrderBy(p => p.Stock),
-                    _ => products.OrderBy(p => p.Name) // Default sort by name
+                    _ => products.OrderBy(p => p.Name) 
                 };
 
                 int totalItems = sortedProducts.Count();
@@ -841,7 +841,7 @@ namespace Service
                     };
                 }
 
-                // Check if product exists
+                
                 var product = await _productRepo.GetByIdAsync(productId);
                 if (product == null)
                 {
@@ -853,11 +853,11 @@ namespace Service
                     };
                 }
 
-                // Upload image
+                
                 var imagePath = await _fileService.UploadImageAsync(imageFile, "products");
                 var imageUrl = _fileService.GetImageUrl(imagePath);
 
-                // Update product with new image path
+                
                 product.ImageUrl = imagePath;
                 _productRepo.Update(product);
                 await _productRepo.SaveChangesAsync();
@@ -911,11 +911,11 @@ namespace Service
                     };
                 }
 
-                // Delete image file
+                
                 var deleted = await _fileService.DeleteImageAsync(product.ImageUrl);
                 if (deleted)
                 {
-                    // Update product to remove image reference
+                    
                     product.ImageUrl = null;
                     _productRepo.Update(product);
                     await _productRepo.SaveChangesAsync();

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.SpecificationsDTOs;
+using Core.DTOs.SpecificationsDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;

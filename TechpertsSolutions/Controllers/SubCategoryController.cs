@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Core.Interfaces.Services;
 using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.DTOs;
@@ -12,12 +12,12 @@ using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
-    /// <summary>
-    /// Controller for managing subcategories.
-    /// </summary>
+    
+    
+    
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize] // Uncomment if you want to secure all endpoints in this controller
+    
     public class SubCategoryController : ControllerBase
     {
         private readonly ISubCategoryService _subCategoryService;
@@ -29,10 +29,10 @@ namespace TechpertsSolutions.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Gets all subcategories.
-        /// </summary>
-        /// <returns>A list of SubCategoryDto wrapped in GeneralResponse.</returns>
+        
+        
+        
+        
         [HttpGet]
         [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
@@ -58,11 +58,11 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Gets a subcategory by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the subcategory.</param>
-        /// <returns>A SubCategoryDto wrapped in GeneralResponse if found, otherwise 404 Not Found or 500 Internal Server Error.</returns>
+        
+        
+        
+        
+        
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(GeneralResponse<SubCategoryDTO>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
@@ -89,11 +89,11 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Gets subcategories by their parent Category ID.
-        /// </summary>
-        /// <param name="categoryId">The ID of the parent category.</param>
-        /// <returns>A list of SubCategoryDto wrapped in GeneralResponse.</returns>
+        
+        
+        
+        
+        
         [HttpGet("byCategory/{categoryId}")]
         [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
@@ -120,13 +120,13 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Creates a new subcategory.
-        /// </summary>
-        /// <param name="createDto">The SubCategory data to create.</param>
-        /// <returns>The created SubCategoryDto wrapped in GeneralResponse.</returns>
+        
+        
+        
+        
+        
         [HttpPost]
-        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can create
+        
         [ProducesResponseType(typeof(GeneralResponse<SubCategoryDTO>), 201)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
@@ -134,7 +134,7 @@ namespace TechpertsSolutions.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Return validation errors wrapped in GeneralResponse
+                
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<string>
                 {
@@ -169,15 +169,15 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Updates an existing subcategory.
-        /// </summary>
-        /// <param name="id">The ID of the subcategory to update.</param>
-        /// <param name="updateDto">The updated SubCategory data.</param>
-        /// <returns>200 OK with GeneralResponse if successful, 400 Bad Request, 404 Not Found, or 500 Internal Server Error.</returns>
+        
+        
+        
+        
+        
+        
         [HttpPut("{id}")]
-        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can update
-        [ProducesResponseType(typeof(GeneralResponse<string>), 200)] // Changed from 204 to 200 for consistent GeneralResponse
+        
+        [ProducesResponseType(typeof(GeneralResponse<string>), 200)] 
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
@@ -225,14 +225,14 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Deletes a subcategory by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the subcategory to delete.</param>
-        /// <returns>200 OK with GeneralResponse if successful, 404 Not Found, or 500 Internal Server Error.</returns>
+        
+        
+        
+        
+        
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can delete
-        [ProducesResponseType(typeof(GeneralResponse<string>), 200)] // Changed from 204 to 200 for consistent GeneralResponse
+        
+        [ProducesResponseType(typeof(GeneralResponse<string>), 200)] 
         [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
         public async Task<IActionResult> DeleteSubCategory(string id)
@@ -257,14 +257,14 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Uploads an image for a subcategory.
-        /// </summary>
-        /// <param name="subCategoryId">The ID of the subcategory.</param>
-        /// <param name="imageFile">The image file to upload.</param>
-        /// <returns>200 OK with image upload response if successful, 400 Bad Request, or 500 Internal Server Error.</returns>
+        
+        
+        
+        
+        
+        
         [HttpPost("{subCategoryId}/upload-image")]
-        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can upload images
+        
         [ProducesResponseType(typeof(GeneralResponse<ImageUploadResponseDTO>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
@@ -311,13 +311,13 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Deletes the image for a subcategory.
-        /// </summary>
-        /// <param name="subCategoryId">The ID of the subcategory.</param>
-        /// <returns>200 OK with success response if successful, 400 Bad Request, or 500 Internal Server Error.</returns>
+        
+        
+        
+        
+        
         [HttpDelete("{subCategoryId}/delete-image")]
-        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can delete images
+        
         [ProducesResponseType(typeof(GeneralResponse<bool>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]

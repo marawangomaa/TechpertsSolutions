@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -17,12 +17,12 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(oi => oi.Order)
                    .WithMany(o => o.OrderItems)
                    .HasForeignKey(oi => oi.OrderId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete order item when order is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(oi => oi.Product)
                    .WithMany(p => p.OrderItems)
                    .HasForeignKey(oi => oi.ProductId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in order items
+                   .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }

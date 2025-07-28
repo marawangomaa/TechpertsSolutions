@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssemblyDTOs;
+using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs.ProductDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
@@ -58,11 +58,11 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        // New endpoints for PC Build functionality
+        
 
-        /// <summary>
-        /// Get products by PC component category for the PC Build page
-        /// </summary>
+        
+        
+        
         [HttpGet("build/components/{category}")]
         public async Task<IActionResult> GetComponentsByCategory(
             ProductCategory category,
@@ -95,9 +95,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Get all available PC component categories
-        /// </summary>
+        
+        
+        
         [HttpGet("build/categories")]
         public IActionResult GetPCComponentCategories()
         {
@@ -120,9 +120,9 @@ namespace TechpertsSolutions.Controllers
             });
         }
 
-        /// <summary>
-        /// Add a component to an existing PC build
-        /// </summary>
+        
+        
+        
         [HttpPost("build/{assemblyId}/add-component")]
         public async Task<IActionResult> AddComponentToBuild(
             string assemblyId,
@@ -140,7 +140,7 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                // First, verify the product exists and belongs to the correct category
+                
                 var productResponse = await _productService.GetByIdAsync(dto.ProductId);
                 if (!productResponse.Success)
                 {
@@ -151,7 +151,7 @@ namespace TechpertsSolutions.Controllers
                     });
                 }
 
-                // Create the assembly item
+                
                 var assemblyItem = new PCAssemblyItemCreateDTO
                 {
                     ProductId = dto.ProductId,
@@ -159,7 +159,7 @@ namespace TechpertsSolutions.Controllers
                     Price = productResponse.Data?.Price ?? 0
                 };
 
-                // Add to existing assembly or create new one
+                
                 var result = await _pcAssemblyService.AddComponentToAssemblyAsync(assemblyId, assemblyItem);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
@@ -174,9 +174,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Remove a component from PC build
-        /// </summary>
+        
+        
+        
         [HttpDelete("build/{assemblyId}/remove-component/{itemId}")]
         public async Task<IActionResult> RemoveComponentFromBuild(string assemblyId, string itemId)
         {
@@ -196,9 +196,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Get current PC build status with component details
-        /// </summary>
+        
+        
+        
         [HttpGet("build/{assemblyId}/status")]
         public async Task<IActionResult> GetPCBuildStatus(string assemblyId)
         {
@@ -218,9 +218,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Calculate total price of PC build
-        /// </summary>
+        
+        
+        
         [HttpGet("build/{assemblyId}/total")]
         public async Task<IActionResult> GetPCBuildTotal(string assemblyId)
         {
@@ -240,9 +240,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        /// <summary>
-        /// Get compatible components for a specific component (for recommendations)
-        /// </summary>
+        
+        
+        
         [HttpGet("build/compatible/{productId}")]
         public async Task<IActionResult> GetCompatibleComponents(string productId)
         {
@@ -282,7 +282,7 @@ namespace TechpertsSolutions.Controllers
         }
     }
 
-    // DTO for adding component to build
+    
     public class AddComponentToBuildDTO
     {
         [Required]

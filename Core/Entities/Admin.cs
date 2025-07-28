@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

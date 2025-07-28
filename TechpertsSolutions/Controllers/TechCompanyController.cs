@@ -1,4 +1,4 @@
-﻿using Core.DTOs.TechCompanyDTOs;
+using Core.DTOs.TechCompanyDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

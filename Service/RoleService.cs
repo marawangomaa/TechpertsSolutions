@@ -1,4 +1,4 @@
-﻿using Core.Enums;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
@@ -186,13 +186,13 @@ namespace Service
                         await customerRepo.AddAsync(newCustomer);
                         await context.SaveChangesAsync();
 
-                        // Reload the customer to ensure Id is set
+                        
                         var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == userId);
 
                         var newCart = new Cart { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
                         await cartRepo.AddAsync(newCart);
 
-                        // Create WishList for the new customer (using repo)
+                        
                         var newWishList = new TechpertsSolutions.Core.Entities.WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
                         await wishListRepo.AddAsync(newWishList);
                         await wishListRepo.SaveChangesAsync();

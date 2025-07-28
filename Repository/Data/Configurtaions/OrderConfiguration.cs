@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,34 +19,34 @@ namespace Repository.Data.Configurtaions
                   .WithMany(c => c.Orders)
                   .HasForeignKey(o => o.CustomerId)
                   .IsRequired()
-                  .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have orders
+                  .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(o => o.OrderItems)
                    .WithOne(oi => oi.Order)
                    .HasForeignKey(oi => oi.OrderId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete order items when order is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(o => o.OrderHistory)
                    .WithMany(oh => oh.Orders)
                    .HasForeignKey(o => o.OrderHistoryId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if order history is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
 
             builder.HasOne(o => o.ServiceUsage)
                    .WithMany(su => su.Orders)
                    .HasForeignKey(o => o.ServiceUsageId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if service usage is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
 
             builder.HasOne(o => o.Cart)
                    .WithOne(c => c.Order)
                    .HasForeignKey<Order>(o => o.CartId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent cart deletion if it has an order
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(o => o.Delivery)
                    .WithMany()
                    .HasForeignKey(o => o.DeliveryId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
 
-            // Configure the Status enum
+            
             builder.Property(o => o.Status)
                    .HasConversion<string>()
                    .HasMaxLength(20);

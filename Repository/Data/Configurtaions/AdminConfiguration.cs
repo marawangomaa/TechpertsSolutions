@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TechpertsSolutions.Core.Entities;
 
@@ -11,12 +11,12 @@ namespace TechpertsSolutions.Repository.Data.Configurations
             builder.HasOne(a => a.User)
                    .WithOne(u => u.Admin)
                    .HasForeignKey<Admin>(a => a.Id)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete admin when user is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(a => a.Role)
                    .WithMany()
                    .HasForeignKey(a => a.RoleId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent role deletion if admins use it
+                   .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }

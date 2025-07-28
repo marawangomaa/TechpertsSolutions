@@ -1,4 +1,4 @@
-﻿using Core.DTOs.OrderDTOs;
+using Core.DTOs.OrderDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Enums;
@@ -28,7 +28,7 @@ namespace Service
 
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<OrderReadDTO>
@@ -73,10 +73,10 @@ namespace Service
             {
                 var order = OrderMapper.ToEntity(dto);
                 
-                // Calculate total amount properly
+                
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
 
-                // Create or get order history for the customer
+                
                 var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
                 order.OrderHistoryId = orderHistory.Id;
 
@@ -103,7 +103,7 @@ namespace Service
 
         public async Task<GeneralResponse<OrderReadDTO>> GetOrderByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<OrderReadDTO>
@@ -190,7 +190,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetOrdersByCustomerIdAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
@@ -241,7 +241,7 @@ namespace Service
 
         private async Task<OrderHistory> GetOrCreateOrderHistoryAsync(string customerId)
         {
-            // Try to find existing order history for the customer
+            
             var existingHistory = await _orderHistoryRepo.GetFirstOrDefaultAsync(
                 oh => oh.Orders.Any(o => o.CustomerId == customerId),
                 includeProperties: "Orders");
@@ -251,7 +251,7 @@ namespace Service
                 return existingHistory;
             }
 
-            // Create new order history if none exists
+            
             var newHistory = new OrderHistory
             {
                 Id = Guid.NewGuid().ToString(),
@@ -266,7 +266,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetOrderHistoryByCustomerIdAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
@@ -320,7 +320,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> UpdateOrderStatusAsync(string orderId, OrderStatus newStatus)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(orderId))
             {
                 return new GeneralResponse<bool>

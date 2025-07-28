@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(p => p.TechCompany)
                    .WithMany(tc => tc.Products)
                    .HasForeignKey(p => p.TechCompanyId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if it has products
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(p => p.Specifications)
                    .WithOne(s => s.Product)

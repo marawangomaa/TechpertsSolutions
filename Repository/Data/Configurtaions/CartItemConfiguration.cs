@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -17,12 +17,12 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(ci => ci.Product)
                    .WithMany(p => p.CartItems)
                    .HasForeignKey(ci => ci.ProductId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in cart items
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(ci => ci.Cart)
                    .WithMany(c => c.CartItems)
                    .HasForeignKey(ci => ci.CartId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete cart item when cart is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }

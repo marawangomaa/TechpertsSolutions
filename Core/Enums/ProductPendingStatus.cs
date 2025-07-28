@@ -1,4 +1,4 @@
-﻿using Core.Enums.Attributes;
+using Core.Enums.Attributes;
 
 namespace Core.Enums
 {

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.DeliveryDTOs;
+using Core.DTOs.DeliveryDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
@@ -49,7 +49,7 @@ namespace Service
 
         public async Task<GeneralResponse<DeliveryDTO>> GetByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<DeliveryDTO>
@@ -181,7 +181,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
@@ -238,7 +238,7 @@ namespace Service
 
         public async Task<GeneralResponse<DeliveryDetailsDTO>> GetDetailsByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<DeliveryDetailsDTO>

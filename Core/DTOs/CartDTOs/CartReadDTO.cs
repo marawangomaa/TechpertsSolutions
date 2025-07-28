@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ namespace Core.DTOs.CartDTOs
         public string CustomerId { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<CartItemReadDTO> CartItems { get; set; } = new List<CartItemReadDTO>();
-        public decimal SubTotal { get; set; } // New: Calculated total price of items in the cart
+        public decimal SubTotal { get; set; } 
 
     }
 }

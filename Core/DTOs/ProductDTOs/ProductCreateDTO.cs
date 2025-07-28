@@ -1,4 +1,4 @@
-﻿using Core.Enums;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,7 +30,7 @@ namespace Core.DTOs.ProductDTOs
         [Range(0, double.MaxValue, ErrorMessage = "Discount price cannot be negative")]
         public decimal? DiscountPrice { get; set; }
 
-        //[Required(ErrorMessage = "Tech Company ID is required")]
+        
         public string TechCompanyId { get; set; } = null!;
         public List<SpecificationDTO>? Specifications { get; set; }
         public List<WarrantyDTO>? Warranties { get; set; }

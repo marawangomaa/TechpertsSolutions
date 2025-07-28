@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -18,23 +18,23 @@ namespace Repository.Data.Configurtaions
                    .WithMany(c => c.Maintenances)
                    .HasForeignKey(m => m.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have maintenances
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(m => m.TechCompany)
                    .WithMany(tc => tc.Maintenances)
                    .HasForeignKey(m => m.TechCompanyId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent tech company deletion if they have maintenances
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(m => m.Warranty)
                    .WithMany()
                    .HasForeignKey(m => m.WarrantyId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if warranty is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
 
             builder.HasMany(m => m.ServiceUsages)
                    .WithOne(su => su.Maintenance)
                    .HasForeignKey(su => su.MaintenanceId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete service usages when maintenance is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }

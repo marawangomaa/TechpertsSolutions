@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssemblyDTOs;
+using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs.ProductDTOs;
 using Core.Entities;
 using Core.Enums;
@@ -220,7 +220,7 @@ namespace Service
                 };
             }
 
-            // Check if component already exists for this category
+            
             var product = await _productRepo.GetByIdAsync(item.ProductId);
             if (product == null)
             {
@@ -232,11 +232,11 @@ namespace Service
                 };
             }
 
-            // Remove existing component of the same category if exists
+            
             var existingItem = assembly.PCAssemblyItems?.FirstOrDefault(i => 
                 i.ProductId == item.ProductId);
 
-            // Also check for components of the same category
+            
             if (existingItem == null && product.Category != null)
             {
                 var existingItems = assembly.PCAssemblyItems?.ToList() ?? new List<PCAssemblyItem>();
@@ -256,7 +256,7 @@ namespace Service
                 assembly.PCAssemblyItems.Remove(existingItem);
             }
 
-            // Add new component
+            
             var newItem = new PCAssemblyItem
             {
                 Id = Guid.NewGuid().ToString(),
@@ -364,19 +364,19 @@ namespace Service
                 ComponentStatus = new Dictionary<string, bool>()
             };
 
-            // Get all available component categories
+            
             var allCategories = Enum.GetValues(typeof(ProductCategory))
                 .Cast<ProductCategory>()
                 .Where(c => c != ProductCategory.PreBuildPC && c != ProductCategory.Laptop)
                 .ToList();
 
-            // Initialize component status
+            
             foreach (var category in allCategories)
             {
                 buildStatus.ComponentStatus[category.ToString()] = false;
             }
 
-            // Populate components and update status
+            
             if (assembly.PCAssemblyItems != null)
             {
                 foreach (var item in assembly.PCAssemblyItems)
@@ -408,7 +408,7 @@ namespace Service
                             }
                             catch
                             {
-                                // If category name doesn't match enum, skip
+                                
                             }
                         }
                     }
@@ -449,7 +449,7 @@ namespace Service
             }
 
             var subtotal = assembly.PCAssemblyItems?.Sum(i => i.Total) ?? 0;
-            var discount = 0m; // Calculate discount based on business logic
+            var discount = 0m; 
             var total = subtotal - discount;
 
             var buildTotal = new PCBuildTotalDTO
@@ -493,7 +493,7 @@ namespace Service
                 };
             }
 
-            // Get products in the same category or related categories
+            
             var compatibleProducts = await _productRepo.FindAsync(p => 
                 p.Id != productId && 
                 p.CategoryId == baseProduct.CategoryId);
@@ -507,7 +507,7 @@ namespace Service
                 Price = p.Price,
                 DiscountPrice = p.DiscountPrice,
                 CompatibilityReason = "Same category component",
-                CompatibilityScore = 0.8 // Basic compatibility score
+                CompatibilityScore = 0.8 
             }).ToList();
 
             return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>

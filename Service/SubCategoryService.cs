@@ -1,4 +1,4 @@
-﻿using Core.DTOs.SubCategoryDTOs;
+using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -18,8 +18,8 @@ namespace Service
     public class SubCategoryService : ISubCategoryService
     {
         private readonly IRepository<SubCategory> _subCategoryRepository;
-        private readonly IRepository<Product> _productRepository; // Needed for manual cascading delete
-        private readonly IRepository<Category> _categoryRepository; // To validate CategoryId
+        private readonly IRepository<Product> _productRepository; 
+        private readonly IRepository<Category> _categoryRepository; 
         private readonly IFileService _fileService;
         private readonly ILogger<SubCategoryService> _logger;
 
@@ -41,7 +41,7 @@ namespace Service
         {
             try
             {
-                // Include Category and Products to get complete data for DTO mapping
+                
                 var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
                     sc => sc.Category,
                     sc => sc.Products
@@ -68,7 +68,7 @@ namespace Service
 
         public async Task<GeneralResponse<SubCategoryDTO>> GetSubCategoryByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<SubCategoryDTO>
@@ -91,7 +91,7 @@ namespace Service
 
             try
             {
-                // Include Category and Products to get complete data for DTO mapping
+                
                 var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     id, 
                     sc => sc.Category,
@@ -129,7 +129,7 @@ namespace Service
 
         public async Task<GeneralResponse<SubCategoryDTO>> CreateSubCategoryAsync(CreateSubCategoryDTO createDto)
         {
-            // Input validation
+            
             if (createDto == null)
             {
                 return new GeneralResponse<SubCategoryDTO>
@@ -172,7 +172,7 @@ namespace Service
 
             try
             {
-                // Validate if the CategoryId exists
+                
                 var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == createDto.CategoryId);
                 if (!categoryExists)
                 {
@@ -184,13 +184,26 @@ namespace Service
                     };
                 }
 
-                // Use SubCategoryMapper for mapping
+                
+                var existingSubCategory = await _subCategoryRepository.AnyAsync(
+                    sc => sc.Name.ToLower() == createDto.Name.ToLower());
+                if (existingSubCategory)
+                {
+                    return new GeneralResponse<SubCategoryDTO>
+                    {
+                        Success = false,
+                        Message = $"A subcategory with the name '{createDto.Name}' already exists in another category.",
+                        Data = null
+                    };
+                }
+
+                
                 var subCategory = SubCategoryMapper.MapToSubCategory(createDto);
 
                 await _subCategoryRepository.AddAsync(subCategory);
                 await _subCategoryRepository.SaveChangesAsync();
 
-                // Fetch the created subcategory with its category for the DTO response
+                
                 var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     subCategory.Id, 
                     sc => sc.Category,
@@ -218,7 +231,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> UpdateSubCategoryAsync(UpdateSubCategoryDTO updateDto)
         {
-            // Input validation
+            
             if (updateDto == null)
             {
                 return new GeneralResponse<bool>
@@ -292,7 +305,7 @@ namespace Service
                     };
                 }
 
-                // Validate if the CategoryId exists
+                
                 var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == updateDto.CategoryId);
                 if (!categoryExists)
                 {
@@ -304,7 +317,21 @@ namespace Service
                     };
                 }
 
-                // Use SubCategoryMapper for mapping
+                
+                var duplicateExists = await _subCategoryRepository.AnyAsync(
+                    sc => sc.Name.ToLower() == updateDto.Name.ToLower() &&
+                          sc.Id != updateDto.Id);
+                if (duplicateExists)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = $"A subcategory with the name '{updateDto.Name}' already exists in another category.",
+                        Data = false
+                    };
+                }
+
+                
                 SubCategoryMapper.MapToSubCategory(updateDto, existingSubCategory);
 
                 _subCategoryRepository.Update(existingSubCategory);
@@ -331,7 +358,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> DeleteSubCategoryAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
@@ -365,15 +392,15 @@ namespace Service
                     };
                 }
 
-                // --- Manual Cascading Delete for Products associated with this SubCategory ---
-                // This assumes DeleteBehavior.Cascade is NOT configured in DbContext for SubCategory -> Product
-                // If it IS configured, this section can be removed.
+                
+                
+                
                 var productsToDelete = await _productRepository.FindAsync(p => p.SubCategoryId == id);
                 if (productsToDelete != null && productsToDelete.Any())
                 {
-                    // As noted before, if you are doing manual cascading, you would also need to
-                    // fetch and delete/nullify the dependents of these products (CartItems, OrderItems, etc.)
-                    // before deleting the products themselves. This is simplified here for brevity.
+                    
+                    
+                    
                     _productRepository.RemoveRange(productsToDelete.ToList());
                 }
 
@@ -401,7 +428,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesByCategoryIdAsync(string categoryId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(categoryId))
             {
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
@@ -424,7 +451,7 @@ namespace Service
 
             try
             {
-                // Validate if the CategoryId exists
+                
                 var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == categoryId);
                 if (!categoryExists)
                 {
@@ -436,7 +463,7 @@ namespace Service
                     };
                 }
 
-                // Find subcategories by CategoryId and include the Category and Products for DTO mapping
+                
                 var subCategories = await _subCategoryRepository.FindWithIncludesAsync(
                     sc => sc.CategoryId == categoryId,
                     sc => sc.Category,
@@ -486,7 +513,7 @@ namespace Service
                     };
                 }
 
-                // Check if subcategory exists
+                
                 var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
                 if (subCategory == null)
                 {
@@ -498,11 +525,11 @@ namespace Service
                     };
                 }
 
-                // Upload image
+                
                 var imagePath = await _fileService.UploadImageAsync(imageFile, "subcategories");
                 var imageUrl = _fileService.GetImageUrl(imagePath);
 
-                // Update subcategory with new image path
+                
                 subCategory.Image = imagePath;
                 _subCategoryRepository.Update(subCategory);
                 await _subCategoryRepository.SaveChangesAsync();
@@ -557,11 +584,11 @@ namespace Service
                     };
                 }
 
-                // Delete image file
+                
                 var deleted = await _fileService.DeleteImageAsync(subCategory.Image);
                 if (deleted)
                 {
-                    // Update subcategory to remove image reference
+                    
                     subCategory.Image = null;
                     _subCategoryRepository.Update(subCategory);
                     await _subCategoryRepository.SaveChangesAsync();

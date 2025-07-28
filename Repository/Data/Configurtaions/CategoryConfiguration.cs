@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -16,12 +16,12 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasMany(c => c.SubCategories)
                    .WithOne(sc => sc.Category)
                    .HasForeignKey(sc => sc.CategoryId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete subcategories when category is deleted
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(c => c.Products)
                    .WithOne(p => p.Category)
                    .HasForeignKey(p => p.CategoryId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent category deletion if it has products
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

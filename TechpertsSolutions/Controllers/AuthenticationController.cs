@@ -1,4 +1,4 @@
-﻿using Core.Enums;
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;       
@@ -32,7 +32,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO dto, RoleType role)
         {
-            // Check if model state is valid (validation attributes)
+            
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values
@@ -55,7 +55,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO dto)
         {
-            // Check if model state is valid (validation attributes)
+            
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values
@@ -78,7 +78,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
         {
-            // Check if model state is valid (validation attributes)
+            
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values
@@ -96,19 +96,19 @@ namespace TechpertsSolutions.Controllers
 
             var response = await _authService.ForgotPasswordAsync(dto);
             
-            // For development/testing purposes, if email is not configured, return the token
+            
             if (response.Success && response.Data != null)
             {
-                // Check if email configuration is empty (development mode)
+                
                 var smtpServer = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Email:SmtpServer"];
                 if (string.IsNullOrEmpty(smtpServer))
                 {
-                    // Return token for testing purposes
+                    
                     return Ok(new GeneralResponse<string>
                     {
                         Success = true,
                         Message = "Password reset token generated successfully. (Development mode - email not configured)",
-                        Data = response.Data // This contains the token
+                        Data = response.Data 
                     });
                 }
             }
@@ -119,7 +119,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
         {
-            // Check if model state is valid (validation attributes)
+            
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values
@@ -143,7 +143,7 @@ namespace TechpertsSolutions.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDTO dto)
         {
-            // Check if model state is valid (validation attributes)
+            
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values
@@ -159,7 +159,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Get the user ID and email from the JWT token
+            
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             
@@ -183,8 +183,8 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // For security, we don't need the email in the request body since we get it from the token
-            // But we can validate that the user is aware of their email
+            
+            
             Console.WriteLine($"Delete Account Request:");
             Console.WriteLine($"User ID from token: {userId}");
             Console.WriteLine($"User Email from token: {userEmail}");

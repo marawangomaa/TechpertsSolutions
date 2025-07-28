@@ -16,17 +16,17 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(dp => dp.User)
                  .WithOne(u => u.DeliveryPerson)
                  .HasForeignKey<DeliveryPerson>(dp => dp.UserId)
-                 .OnDelete(DeleteBehavior.Cascade); // Delete delivery person when user is deleted
+                 .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(dp => dp.Role)
                  .WithMany()
                  .HasForeignKey(dp => dp.RoleId)
-                 .OnDelete(DeleteBehavior.Restrict); // Prevent role deletion if delivery persons use it
+                 .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(dp => dp.Deliveries)
                  .WithOne(d => d.DeliveryPerson)
                  .HasForeignKey(d => d.DeliveryPersonId)
-                 .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery person is deleted
+                 .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 } 

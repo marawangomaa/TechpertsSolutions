@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -16,27 +16,27 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(c => c.User)
                    .WithOne(u => u.Customer)
                    .HasForeignKey<Customer>(c => c.Id)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete customer when user is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(c => c.Role)
                    .WithMany()
                    .HasForeignKey(c => c.RoleId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent role deletion if customers use it
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(c => c.Orders)
                    .WithOne(o => o.Customer)
                    .HasForeignKey(o => o.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have orders
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(c => c.Maintenances)
                    .WithOne(m => m.Customer)
                    .HasForeignKey(m => m.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have maintenances
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasMany(c => c.PCAssembly)
                    .WithOne(pca => pca.Customer)
                    .HasForeignKey(pca => pca.CustomerId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assemblies when customer is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -18,13 +18,13 @@ namespace Repository.Data.Configurtaions
                    .WithMany(pc => pc.PCAssemblyItems)
                    .HasForeignKey(pci => pci.PCAssemblyId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); // Delete PC assembly item when PC assembly is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(pci => pci.Product)
                    .WithMany(p => p.PCAssemblyItems)
                    .HasForeignKey(pci => pci.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent product deletion if it's in PC assembly items
+                   .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }

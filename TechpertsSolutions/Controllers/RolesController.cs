@@ -1,4 +1,4 @@
-﻿using Core.DTOs.RoleDTOs;
+using Core.DTOs.RoleDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -107,13 +107,13 @@ namespace TechpertsSolutions.Controllers
                         };
 
                         await customerRepo.AddAsync(newCustomer);
-                        await context.SaveChangesAsync(); // Now newCustomer.Id is available
+                        await context.SaveChangesAsync(); 
 
                         var newCart = new Cart
                         {
                             CustomerId = newCustomer.Id,
                             CreatedAt = DateTime.UtcNow,
-                            CartItems = new List<CartItem>() // optional, but safe
+                            CartItems = new List<CartItem>() 
                         };
 
                         await cartRepo.AddAsync(newCart);
@@ -211,7 +211,7 @@ namespace TechpertsSolutions.Controllers
             switch (roleName)
             {
                 case RoleType.Customer:
-                    await customerService.CleanupCustomerDataAsync(user.Id); // ✅ Shared logic inserted here
+                    await customerService.CleanupCustomerDataAsync(user.Id); 
                     break;
 
                 case RoleType.Admin:

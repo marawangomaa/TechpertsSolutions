@@ -28,7 +28,7 @@ namespace Service
         {
             try
             {
-                // Get email configuration from appsettings
+                
                 var smtpServer = _configuration["Email:SmtpServer"];
                 var smtpPort = int.Parse(_configuration["Email:SmtpPort"]);
                 var smtpUsername = _configuration["Email:Username"];
@@ -36,7 +36,7 @@ namespace Service
                 var fromEmail = _configuration["Email:FromEmail"];
                 var fromName = _configuration["Email:FromName"];
 
-                // If email configuration is not set up, log the email content for development
+                
                 if (string.IsNullOrEmpty(smtpServer))
                 {
                     Console.WriteLine($"=== EMAIL WOULD BE SENT ===");
@@ -44,7 +44,7 @@ namespace Service
                     Console.WriteLine($"Subject: {subject}");
                     Console.WriteLine($"Body: {body}");
                     Console.WriteLine($"==========================");
-                    return true; // Return true for development purposes
+                    return true; 
                 }
 
                 using (var client = new SmtpClient(smtpServer, smtpPort))
@@ -69,7 +69,7 @@ namespace Service
             }
             catch (Exception ex)
             {
-                // Log the exception (in a real application, use proper logging)
+                
                 Console.WriteLine($"Email sending failed: {ex.Message}");
                 return false;
             }

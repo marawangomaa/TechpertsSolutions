@@ -1,4 +1,4 @@
-﻿using Core.DTOs.WishListDTOs;
+using Core.DTOs.WishListDTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -26,7 +26,7 @@ namespace Service
             if (dto == null || string.IsNullOrWhiteSpace(dto.CustomerId))
                 return new GeneralResponse<WishListReadDTO> { Success = false, Message = "Invalid data.", Data = null };
 
-            // Check if a wishlist already exists for this customer
+            
             var existing = (await _wishListRepo.FindAsync(w => w.CustomerId == dto.CustomerId)).FirstOrDefault();
             if (existing != null)
             {
@@ -46,7 +46,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProductId = i.ProductId,
-                    //CartId = i.CartId
+                    
                 }).ToList() ?? new List<WishListItem>()
             };
 
@@ -88,7 +88,7 @@ namespace Service
 
         public async Task<GeneralResponse<WishListReadDTO>> GetOrCreateWishListAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<WishListReadDTO>
@@ -111,7 +111,7 @@ namespace Service
 
             try
             {
-                // Try to get existing wishlist
+                
                 var existingWishList = await _wishListRepo.GetFirstOrDefaultAsync(
                     w => w.CustomerId == customerId,
                     includeProperties: "WishListItems"
@@ -127,7 +127,7 @@ namespace Service
                     };
                 }
 
-                // Create a new wishlist if one doesn't exist
+                
                 var newWishList = new WishList
                 {
                     CustomerId = customerId,
@@ -162,7 +162,7 @@ namespace Service
             if (wishList == null)
                 return new GeneralResponse<WishListReadDTO> { Success = false, Message = "Wishlist not found.", Data = null };
 
-            // Prevent duplicate products
+            
             if (wishList.WishListItems.Any(i => i.ProductId == dto.ProductId))
                 return new GeneralResponse<WishListReadDTO> { Success = false, Message = "Product already in wishlist.", Data = ToReadDTO(wishList) };
 
@@ -170,7 +170,7 @@ namespace Service
             {
                 Id = Guid.NewGuid().ToString(),
                 ProductId = dto.ProductId,
-                //CartId = dto.CartId
+                
             });
 
             _wishListRepo.Update(wishList);
@@ -203,16 +203,16 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> MoveAllToCartAsync(string customerId, ICartService cartService)
         {
-            // Get wishlist
+            
             var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
 
-            // Move each item
+            
             var itemsToMove = wishlist.WishListItems.ToList();
             foreach (var wishItem in itemsToMove)
             {
-                // Use cart service to add item (prevents duplicates)
+                
                 await cartService.AddItemAsync(customerId, new Core.DTOs.CartDTOs.CartItemDTO
                 {
                     ProductId = wishItem.ProductId,
@@ -229,7 +229,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> MoveSelectedToCartAsync(string customerId, List<string> wishListItemIds, ICartService cartService)
         {
-            // Get wishlist
+            
             var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
@@ -256,7 +256,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> MoveItemToCartAsync(string customerId, string wishListItemId, ICartService cartService)
         {
-            // Get wishlist
+            
             var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
@@ -265,14 +265,14 @@ namespace Service
             if (wishItem == null)
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist item not found.", Data = false };
 
-            // Add to cart
+            
             await cartService.AddItemAsync(customerId, new Core.DTOs.CartDTOs.CartItemDTO
             {
                 ProductId = wishItem.ProductId,
                 Quantity = 1
             });
 
-            // Remove from wishlist
+            
             wishlist.WishListItems.Remove(wishItem);
             _wishListRepo.Update(wishlist);
             await _wishListRepo.SaveChangesAsync();

@@ -1,4 +1,4 @@
-﻿using Core.Enums.Attributes;
+using Core.Enums.Attributes;
 namespace Core.Utilities
 {
     public static class EnumExtensions
@@ -15,7 +15,7 @@ namespace Core.Utilities
             return attribute?.Value ?? enumVal.ToString();
         }
 
-        // Parses an enum value from its StringValue attribute or enum name
+        
         public static TEnum ParseFromStringValue<TEnum>(string value) where TEnum : struct, Enum
         {
             foreach (var field in typeof(TEnum).GetFields())

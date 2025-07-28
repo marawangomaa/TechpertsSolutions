@@ -1,4 +1,4 @@
-﻿using Core.DTOs.OrderDTOs;
+using Core.DTOs.OrderDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
@@ -19,12 +19,12 @@ namespace TechpertsSolutions.Controllers
             _service = service;
         }
 
-        /// <summary>
-        /// DEPRECATED: Direct order creation is not supported. 
-        /// Please use the cart checkout flow instead:
-        /// 1. Add items to cart: POST /api/cart/{customerId}/items
-        /// 2. Checkout from cart: POST /api/cart/{customerId}/checkout
-        /// </summary>
+        
+        
+        
+        
+        
+        
         [HttpPost]
         public ActionResult<GeneralResponse<string>> CreateOrder(OrderCreateDTO dto)
         {

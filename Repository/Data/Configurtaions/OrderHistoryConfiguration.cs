@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Repository.Data.Configurtaions
             builder.HasMany(oh => oh.Orders)
                    .WithOne(o => o.OrderHistory)
                    .HasForeignKey(o => o.OrderHistoryId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if order history is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 }

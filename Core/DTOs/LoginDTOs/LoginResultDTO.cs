@@ -1,4 +1,4 @@
-﻿namespace TechpertsSolutions.Core.DTOs.LoginDTOs
+namespace TechpertsSolutions.Core.DTOs.LoginDTOs
 {
     public class LoginResultDTO
     {

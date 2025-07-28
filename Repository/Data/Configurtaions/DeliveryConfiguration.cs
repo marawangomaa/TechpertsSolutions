@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -19,12 +19,12 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(d => d.Customer)
                    .WithMany()
                    .HasForeignKey(d => d.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict); // Prevent customer deletion if they have deliveries
+                   .OnDelete(DeleteBehavior.Restrict); 
 
             builder.HasOne(d => d.DeliveryPerson)
                    .WithMany(dp => dp.Deliveries)
                    .HasForeignKey(d => d.DeliveryPersonId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null if delivery person is deleted
+                   .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 }

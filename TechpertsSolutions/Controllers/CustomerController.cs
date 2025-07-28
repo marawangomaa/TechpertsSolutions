@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using Core.Interfaces.Services;

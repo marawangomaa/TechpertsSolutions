@@ -1,4 +1,4 @@
-﻿using Core.DTOs.AdminDTOs;
+using Core.DTOs.AdminDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
@@ -62,7 +62,7 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        // Product Management Endpoints
+        
         [HttpGet("products/pending")]
         public async Task<IActionResult> GetPendingProducts()
         {
@@ -124,7 +124,7 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        // Order Management Endpoints
+        
         [HttpGet("orders")]
         public async Task<IActionResult> GetAllOrders()
         {
@@ -132,11 +132,11 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Gets all orders filtered by their status using the OrderStatus enum
-        /// </summary>
-        /// <param name="status">The status to filter by (Pending, InProgress, Delivered)</param>
-        /// <returns>List of orders with the specified status</returns>
+        
+        
+        
+        
+        
         [HttpGet("orders/status/{status}")]
         public async Task<IActionResult> GetOrdersByStatus(OrderStatus status)
         {
@@ -160,12 +160,12 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Updates the status of an order using the OrderStatus enum
-        /// </summary>
-        /// <param name="orderId">The unique identifier of the order</param>
-        /// <param name="statusUpdate">The new status for the order</param>
-        /// <returns>Success response with updated order information</returns>
+        
+        
+        
+        
+        
+        
         [HttpPut("orders/{orderId}/status")]
         public async Task<IActionResult> UpdateOrderStatus(string orderId, OrderStatus statusUpdate)
         {
@@ -197,11 +197,11 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Marks an order as in progress
-        /// </summary>
-        /// <param name="orderId">The unique identifier of the order</param>
-        /// <returns>Success response with updated order information</returns>
+        
+        
+        
+        
+        
         [HttpPut("orders/{orderId}/mark-in-progress")]
         public async Task<IActionResult> MarkOrderInProgress(string orderId)
         {
@@ -225,11 +225,11 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Marks an order as delivered
-        /// </summary>
-        /// <param name="orderId">The unique identifier of the order</param>
-        /// <returns>Success response with updated order information</returns>
+        
+        
+        
+        
+        
         [HttpPut("orders/{orderId}/mark-delivered")]
         public async Task<IActionResult> MarkOrderDelivered(string orderId)
         {
@@ -253,11 +253,11 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        /// <summary>
-        /// Marks an order as pending
-        /// </summary>
-        /// <param name="orderId">The unique identifier of the order</param>
-        /// <returns>Success response with updated order information</returns>
+        
+        
+        
+        
+        
         [HttpPut("orders/{orderId}/mark-pending")]
         public async Task<IActionResult> MarkOrderPending(string orderId)
         {
@@ -281,7 +281,7 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        // Dashboard Statistics
+        
         [HttpGet("dashboard/stats")]
         public async Task<IActionResult> GetDashboardStats()
         {

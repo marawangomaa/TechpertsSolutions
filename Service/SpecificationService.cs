@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -46,7 +46,7 @@ namespace Service
 
         public async Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> GetSpecificationByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
@@ -100,7 +100,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>> GetSpecificationsByProductIdAsync(string productId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(productId))
             {
                 return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
@@ -159,7 +159,7 @@ namespace Service
 
         public async Task<GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>> CreateSpecificationAsync(CreateSpecificationDTO dto)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<Core.DTOs.SpecificationsDTOs.SpecificationDTO>
@@ -248,7 +248,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> UpdateSpecificationAsync(UpdateSpecificationDTO dto)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<bool>
@@ -368,7 +368,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> DeleteSpecificationAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>

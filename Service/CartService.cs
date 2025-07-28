@@ -1,4 +1,4 @@
-﻿// Service.CartService.cs
+
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
@@ -24,7 +24,7 @@ namespace Service
         private readonly IRepository<Customer> customerRepo;
         private readonly IRepository<Order> orderRepo;
         private readonly IRepository<OrderItem> orderItemRepo;
-        private readonly TechpertsContext dbContext; // For transaction handling
+        private readonly TechpertsContext dbContext; 
 
         public CartService(
             IRepository<Cart> _cartRepo,
@@ -46,7 +46,7 @@ namespace Service
 
         public async Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return null;
@@ -60,17 +60,17 @@ namespace Service
             var customer = await customerRepo.GetByIdAsync(customerId);
             if (customer == null)
             {
-                return null; // Customer not found
+                return null; 
             }
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
-                includeProperties: "CartItems.Product" // Include Product details for CartItems
+                includeProperties: "CartItems.Product" 
             );
 
             if (cart == null)
             {
-                // Create a new cart if one doesn't exist for the customer
+                
                 cart = new Cart
                 {
                     CustomerId = customerId,
@@ -87,7 +87,7 @@ namespace Service
 
         public async Task<GeneralResponse<CartReadDTO>> GetOrCreateCartAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<CartReadDTO>
@@ -123,12 +123,12 @@ namespace Service
 
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.CustomerId == customerId,
-                    includeProperties: "CartItems.Product" // Include Product details for CartItems
+                    includeProperties: "CartItems.Product" 
                 );
 
                 if (cart == null)
                 {
-                    // Create a new cart if one doesn't exist for the customer
+                    
                     cart = new Cart
                     {
                         CustomerId = customerId,
@@ -167,47 +167,47 @@ namespace Service
 
         public async Task<string> AddItemAsync(string customerId, CartItemDTO itemDto)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
-                return "❌ Customer ID cannot be null or empty.";
+                return "? Customer ID cannot be null or empty.";
 
             if (!Guid.TryParse(customerId, out _))
-                return "❌ Invalid Customer ID format. Expected GUID format.";
+                return "? Invalid Customer ID format. Expected GUID format.";
 
             if (itemDto == null)
-                return "❌ Item data cannot be null.";
+                return "? Item data cannot be null.";
 
             if (string.IsNullOrWhiteSpace(itemDto.ProductId))
-                return "❌ Product ID cannot be null or empty.";
+                return "? Product ID cannot be null or empty.";
 
             if (!Guid.TryParse(itemDto.ProductId, out _))
-                return "❌ Invalid Product ID format. Expected GUID format.";
+                return "? Invalid Product ID format. Expected GUID format.";
 
             if (itemDto.Quantity <= 0)
-                return "❌ Quantity must be greater than zero.";
+                return "? Quantity must be greater than zero.";
 
-            if (itemDto.Quantity > 1000) // Reasonable upper limit
-                return "❌ Quantity cannot exceed 1000 items.";
+            if (itemDto.Quantity > 1000) 
+                return "? Quantity cannot exceed 1000 items.";
 
-            // Validate customer exists
+            
             var customer = await customerRepo.GetByIdAsync(customerId);
             if (customer == null)
-                return $"❌ Customer with ID {customerId} not found.";
+                return $"? Customer with ID {customerId} not found.";
 
-            // Validate product exists
+            
             var product = await productRepo.GetByIdAsync(itemDto.ProductId);
             if (product == null)
-                return $"❌ Product with ID {itemDto.ProductId} not found.";
+                return $"? Product with ID {itemDto.ProductId} not found.";
 
             if (product.Stock < itemDto.Quantity)
-                return $"❌ Not enough stock for product '{product.Name}'. Available: {product.Stock}, Requested: {itemDto.Quantity}.";
+                return $"? Not enough stock for product '{product.Name}'. Available: {product.Stock}, Requested: {itemDto.Quantity}.";
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
                 includeProperties: "CartItems"
             );
 
-            // Create cart if it doesn't exist
+            
             if (cart == null)
             {
                 cart = new Cart
@@ -217,26 +217,26 @@ namespace Service
                     CartItems = new List<CartItem>()
                 };
                 await cartRepo.AddAsync(cart);
-                await cartRepo.SaveChangesAsync(); // Save to get cart.Id
+                await cartRepo.SaveChangesAsync(); 
             }
 
             var existingItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
 
             if (existingItem != null)
             {
-                // If item exists, update quantity
+                
                 int newQuantity = existingItem.Quantity + itemDto.Quantity;
                 if (product.Stock < newQuantity)
-                    return $"❌ Cannot add {itemDto.Quantity} more. Total requested ({newQuantity}) exceeds available stock ({product.Stock}).";
+                    return $"? Cannot add {itemDto.Quantity} more. Total requested ({newQuantity}) exceeds available stock ({product.Stock}).";
 
                 existingItem.Quantity = newQuantity;
                 cartItemRepo.Update(existingItem);
                 await cartItemRepo.SaveChangesAsync();
-                return "✅ Item quantity updated successfully.";
+                return "? Item quantity updated successfully.";
             }
             else
             {
-                // Add new item to cart
+                
                 var newItem = new CartItem
                 {
                     ProductId = itemDto.ProductId,
@@ -246,74 +246,74 @@ namespace Service
 
                 await cartItemRepo.AddAsync(newItem);
                 await cartItemRepo.SaveChangesAsync();
-                return "✅ Item added successfully.";
+                return "? Item added successfully.";
             }
         }
 
         public async Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
-                return "❌ Customer ID cannot be null or empty.";
+                return "? Customer ID cannot be null or empty.";
 
             if (!Guid.TryParse(customerId, out _))
-                return "❌ Invalid Customer ID format. Expected GUID format.";
+                return "? Invalid Customer ID format. Expected GUID format.";
 
             if (updateDto == null)
-                return "❌ Update data cannot be null.";
+                return "? Update data cannot be null.";
 
             if (string.IsNullOrWhiteSpace(updateDto.ProductId))
-                return "❌ Product ID cannot be null or empty.";
+                return "? Product ID cannot be null or empty.";
 
             if (!Guid.TryParse(updateDto.ProductId, out _))
-                return "❌ Invalid Product ID format. Expected GUID format.";
+                return "? Invalid Product ID format. Expected GUID format.";
 
             if (updateDto.Quantity <= 0)
-                return "❌ Quantity must be greater than zero. To remove, use the remove endpoint.";
+                return "? Quantity must be greater than zero. To remove, use the remove endpoint.";
 
-            if (updateDto.Quantity > 1000) // Reasonable upper limit
-                return "❌ Quantity cannot exceed 1000 items.";
+            if (updateDto.Quantity > 1000) 
+                return "? Quantity cannot exceed 1000 items.";
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
-                includeProperties: "CartItems.Product" // Include Product to check stock
+                includeProperties: "CartItems.Product" 
             );
 
             if (cart == null)
-                return $"❌ Cart not found for customer ID {customerId}.";
+                return $"? Cart not found for customer ID {customerId}.";
 
             var itemToUpdate = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == updateDto.ProductId);
             if (itemToUpdate == null)
-                return $"❌ Product with ID {updateDto.ProductId} not found in cart.";
+                return $"? Product with ID {updateDto.ProductId} not found in cart.";
 
-            // Check stock availability for the new quantity
+            
             if (itemToUpdate.Product == null)
-                return "❌ Product details not available for stock check."; // Should not happen with includeProperties
+                return "? Product details not available for stock check."; 
 
             if (itemToUpdate.Product.Stock < updateDto.Quantity)
-                return $"❌ Not enough stock for product '{itemToUpdate.Product.Name}'. Available: {itemToUpdate.Product.Stock}, Requested: {updateDto.Quantity}.";
+                return $"? Not enough stock for product '{itemToUpdate.Product.Name}'. Available: {itemToUpdate.Product.Stock}, Requested: {updateDto.Quantity}.";
 
             itemToUpdate.Quantity = updateDto.Quantity;
             cartItemRepo.Update(itemToUpdate);
             await cartItemRepo.SaveChangesAsync();
 
-            return "✅ Item quantity updated successfully.";
+            return "? Item quantity updated successfully.";
         }
 
         public async Task<string> RemoveItemAsync(string customerId, string productId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
-                return "❌ Customer ID cannot be null or empty.";
+                return "? Customer ID cannot be null or empty.";
 
             if (!Guid.TryParse(customerId, out _))
-                return "❌ Invalid Customer ID format. Expected GUID format.";
+                return "? Invalid Customer ID format. Expected GUID format.";
 
             if (string.IsNullOrWhiteSpace(productId))
-                return "❌ Product ID cannot be null or empty.";
+                return "? Product ID cannot be null or empty.";
 
             if (!Guid.TryParse(productId, out _))
-                return "❌ Invalid Product ID format. Expected GUID format.";
+                return "? Invalid Product ID format. Expected GUID format.";
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
@@ -321,27 +321,27 @@ namespace Service
             );
 
             if (cart == null)
-                return $"❌ Cart not found for customer ID {customerId}.";
+                return $"? Cart not found for customer ID {customerId}.";
 
             var item = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == productId);
             if (item == null)
-                return $"❌ Product with ID {productId} not found in cart.";
+                return $"? Product with ID {productId} not found in cart.";
 
-            cart.CartItems.Remove(item); // Remove from navigation property
-            cartItemRepo.Remove(item); // Mark for deletion in DB
+            cart.CartItems.Remove(item); 
+            cartItemRepo.Remove(item); 
             await cartItemRepo.SaveChangesAsync();
 
-            return "✅ Item removed successfully.";
+            return "? Item removed successfully.";
         }
 
         public async Task<string> ClearCartAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
-                return "❌ Customer ID cannot be null or empty.";
+                return "? Customer ID cannot be null or empty.";
 
             if (!Guid.TryParse(customerId, out _))
-                return "❌ Invalid Customer ID format. Expected GUID format.";
+                return "? Invalid Customer ID format. Expected GUID format.";
 
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
@@ -349,41 +349,41 @@ namespace Service
             );
 
             if (cart == null)
-                return $"❌ Cart not found for customer ID {customerId}.";
+                return $"? Cart not found for customer ID {customerId}.";
 
             if (cart.CartItems == null || !cart.CartItems.Any())
-                return "ℹ️ Cart is already empty.";
+                return "?? Cart is already empty.";
 
-            // Remove all items from the cart
-            foreach (var item in cart.CartItems.ToList()) // Use ToList() to avoid modification during iteration
+            
+            foreach (var item in cart.CartItems.ToList()) 
             {
                 cart.CartItems.Remove(item);
                 cartItemRepo.Remove(item);
             }
             await cartItemRepo.SaveChangesAsync();
 
-            return "✅ Cart cleared successfully.";
+            return "? Cart cleared successfully.";
         }
 
-        /// <summary>
-        /// Main checkout method that handles both full cart checkout and partial checkout
-        /// </summary>
+        
+        
+        
         public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? serviceUsageId = null)
         {
             return await CheckoutCartAsync(customerId, null, deliveryId, serviceUsageId);
         }
 
-        /// <summary>
-        /// Partial checkout for specific products in the cart
-        /// </summary>
+        
+        
+        
         public async Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(string customerId, List<string> productIds, string? promoCode = null)
         {
             return await CheckoutCartAsync(customerId, productIds, null, null, promoCode);
         }
 
-        /// <summary>
-        /// Unified checkout method that handles both full and partial checkout
-        /// </summary>
+        
+        
+        
         private async Task<GeneralResponse<OrderReadDTO>> CheckoutCartAsync(
             string customerId, 
             List<string>? selectedProductIds = null, 
@@ -391,13 +391,13 @@ namespace Service
             string? serviceUsageId = null,
             string? promoCode = null)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Customer ID is required.",
+                    Message = "? Customer ID is required.",
                     Data = null
                 };
             }
@@ -407,18 +407,18 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Invalid Customer ID format. Expected GUID format.",
+                    Message = "? Invalid Customer ID format. Expected GUID format.",
                     Data = null
                 };
             }
 
-            // Validate optional GUIDs
+            
             if (!string.IsNullOrWhiteSpace(deliveryId) && !Guid.TryParse(deliveryId, out _))
             {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Invalid Delivery ID format. Expected GUID format.",
+                    Message = "? Invalid Delivery ID format. Expected GUID format.",
                     Data = null
                 };
             }
@@ -428,16 +428,16 @@ namespace Service
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "❌ Invalid Service Usage ID format. Expected GUID format.",
+                    Message = "? Invalid Service Usage ID format. Expected GUID format.",
                     Data = null
                 };
             }
 
-            // Use transaction for atomic operation
+            
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
             {
-                // Get cart with all necessary data
+                
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.CustomerId == customerId,
                     includeProperties: "CartItems.Product,Customer"
@@ -448,7 +448,7 @@ namespace Service
                     return new GeneralResponse<OrderReadDTO>
                     {
                         Success = false,
-                        Message = "❌ Cart not found for this customer.",
+                        Message = "? Cart not found for this customer.",
                         Data = null
                     };
                 }
@@ -458,12 +458,12 @@ namespace Service
                     return new GeneralResponse<OrderReadDTO>
                     {
                         Success = false,
-                        Message = "❌ Cart is empty.",
+                        Message = "? Cart is empty.",
                         Data = null
                     };
                 }
 
-                // Determine which items to checkout
+                
                 var itemsToCheckout = selectedProductIds != null && selectedProductIds.Any()
                     ? cart.CartItems.Where(ci => selectedProductIds.Contains(ci.ProductId)).ToList()
                     : cart.CartItems.ToList();
@@ -474,31 +474,31 @@ namespace Service
                     {
                         Success = false,
                         Message = selectedProductIds != null 
-                            ? "❌ None of the selected products are in the cart."
-                            : "❌ No items to checkout.",
+                            ? "? None of the selected products are in the cart."
+                            : "? No items to checkout.",
                         Data = null
                     };
                 }
 
-                // Validate stock availability for all items
+                
                 var stockValidationErrors = new List<string>();
                 foreach (var cartItem in itemsToCheckout)
                 {
                     if (cartItem.Product == null)
                     {
-                        stockValidationErrors.Add($"❌ Product with ID {cartItem.ProductId} not found.");
+                        stockValidationErrors.Add($"? Product with ID {cartItem.ProductId} not found.");
                         continue;
                     }
 
                     if (cartItem.Quantity <= 0)
                     {
-                        stockValidationErrors.Add($"❌ Invalid quantity ({cartItem.Quantity}) for product '{cartItem.Product.Name}'.");
+                        stockValidationErrors.Add($"? Invalid quantity ({cartItem.Quantity}) for product '{cartItem.Product.Name}'.");
                         continue;
                     }
 
                     if (cartItem.Product.Stock < cartItem.Quantity)
                     {
-                        stockValidationErrors.Add($"❌ Insufficient stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}");
+                        stockValidationErrors.Add($"? Insufficient stock for '{cartItem.Product.Name}'. Available: {cartItem.Product.Stock}, Requested: {cartItem.Quantity}");
                     }
                 }
 
@@ -507,12 +507,12 @@ namespace Service
                     return new GeneralResponse<OrderReadDTO>
                     {
                         Success = false,
-                        Message = $"❌ Stock validation failed:\n{string.Join("\n", stockValidationErrors)}",
+                        Message = $"? Stock validation failed:\n{string.Join("\n", stockValidationErrors)}",
                         Data = null
                     };
                 }
 
-                // Create new order
+                
                 var newOrder = new Order
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -527,7 +527,7 @@ namespace Service
 
                 decimal totalAmount = 0;
 
-                // Create order items and update product stock
+                
                 foreach (var cartItem in itemsToCheckout)
                 {
                     var orderItem = new OrderItem
@@ -543,25 +543,25 @@ namespace Service
                     newOrder.OrderItems.Add(orderItem);
                     totalAmount += orderItem.ItemTotal;
 
-                    // Update product stock
+                    
                     cartItem.Product.Stock -= cartItem.Quantity;
                     productRepo.Update(cartItem.Product);
                 }
 
-                // Apply promo code discount if provided (future enhancement)
+                
                 if (!string.IsNullOrWhiteSpace(promoCode))
                 {
-                    // TODO: Implement promo code logic
-                    // For now, just log that promo code was provided
+                    
+                    
                 }
 
                 newOrder.TotalAmount = totalAmount;
 
-                // Save order and order items
+                
                 await orderRepo.AddAsync(newOrder);
                 await orderRepo.SaveChangesAsync();
 
-                // Remove checked out items from cart
+                
                 foreach (var cartItem in itemsToCheckout)
                 {
                     cart.CartItems.Remove(cartItem);
@@ -569,26 +569,26 @@ namespace Service
                 }
                 await cartItemRepo.SaveChangesAsync();
 
-                // Commit transaction
+                
                 await transaction.CommitAsync();
 
                 var checkoutType = selectedProductIds != null ? "partial" : "full";
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = $"✅ {checkoutType} order placed successfully! Order ID: {newOrder.Id}, Total Amount: ${totalAmount:F2}",
+                    Message = $"? {checkoutType} order placed successfully! Order ID: {newOrder.Id}, Total Amount: ${totalAmount:F2}",
                     Data = CartMapper.MapToOrderReadDTO(newOrder)
                 };
             }
             catch (Exception ex)
             {
-                // Rollback transaction on error
+                
                 await transaction.RollbackAsync();
                 
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = $"❌ Error during checkout: {ex.Message}",
+                    Message = $"? Error during checkout: {ex.Message}",
                     Data = null
                 };
             }

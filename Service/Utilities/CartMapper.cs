@@ -1,4 +1,4 @@
-﻿// Service.Utilities.CartMapper.cs
+
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
@@ -26,7 +26,7 @@ namespace Service.Utilities
                                .ToList()
                 : new List<CartItemReadDTO>();
 
-            // Calculate subtotal from the mapped cart items
+            
             decimal subTotal = cartItemsReadDTO.Sum(item => item.ItemTotal);
 
             return new CartReadDTO
@@ -35,7 +35,7 @@ namespace Service.Utilities
                 CustomerId = cart.CustomerId ?? string.Empty,
                 CreatedAt = cart.CreatedAt,
                 CartItems = cartItemsReadDTO,
-                SubTotal = subTotal // Assign calculated subtotal
+                SubTotal = subTotal 
             };
         }
 
@@ -58,7 +58,7 @@ namespace Service.Utilities
                 Quantity = quantity,
                 ImageUrl = item.Product?.ImageUrl ?? string.Empty,
                 Stock = item.Product?.Stock ?? 0
-                // ItemTotal is calculated automatically by the property: Price * Quantity
+                
             };
         }
 
@@ -68,8 +68,8 @@ namespace Service.Utilities
             return new CartItem
             {
                 ProductId = dto.ProductId,
-                Quantity = dto.Quantity // New: Map quantity
-                // CartId is set when adding to an existing cart
+                Quantity = dto.Quantity 
+                
             };
         }
         public static CartItemDTO MapToCartItemDTO(CartItem item)
@@ -77,7 +77,7 @@ namespace Service.Utilities
             return new CartItemDTO
             {
                 ProductId = item.ProductId,
-                Quantity = item.Quantity // New: Map quantity
+                Quantity = item.Quantity 
             };
         }
 
@@ -116,7 +116,7 @@ namespace Service.Utilities
             {
                 Id = orderItem.Id ?? string.Empty,
                 ProductId = orderItem.ProductId ?? string.Empty,
-                ProductName = orderItem.Product?.Name ?? "Unknown Product", // Assuming Product is loaded
+                ProductName = orderItem.Product?.Name ?? "Unknown Product", 
                 Quantity = orderItem.Quantity,
                 UnitPrice = orderItem.UnitPrice,
                 ImageUrl = orderItem.Product?.ImageUrl ?? string.Empty,

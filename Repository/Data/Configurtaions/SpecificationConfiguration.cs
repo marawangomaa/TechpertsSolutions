@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -14,7 +14,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(s => s.Product)
                    .WithMany(p => p.Specifications)
                    .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete specification when product is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }

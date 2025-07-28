@@ -1,4 +1,4 @@
-﻿using Core.DTOs.AdminDTOs;
+using Core.DTOs.AdminDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -47,7 +47,7 @@ namespace Service
 
         public async Task<GeneralResponse<AdminReadDTO>> GetByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<AdminReadDTO>

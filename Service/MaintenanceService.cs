@@ -1,4 +1,4 @@
-﻿using Core.DTOs.MaintenanceDTOs;
+using Core.DTOs.MaintenanceDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Entities;
 using Core.Interfaces;
@@ -57,7 +57,7 @@ namespace Service
 
         public async Task<GeneralResponse<MaintenanceDetailsDTO>> GetByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<MaintenanceDetailsDTO>
@@ -111,7 +111,7 @@ namespace Service
 
         public async Task<GeneralResponse<MaintenanceDTO>> AddAsync(MaintenanceCreateDTO dto)
         {
-            // Input validation
+            
             if (dto == null)
             {
                 return new GeneralResponse<MaintenanceDTO>
@@ -177,7 +177,7 @@ namespace Service
                     customer?.User?.FullName ?? "Unknown",
                     techCompany?.User?.FullName ?? "Unknown",
                     warranty?.Product?.Name ?? "Unknown",
-                    "N/A", // Service type is no longer directly associated
+                    "N/A", 
                     warranty?.StartDate ?? DateTime.MinValue,
                     warranty?.EndDate ?? DateTime.MinValue);
 
@@ -201,7 +201,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> UpdateAsync(string id, MaintenanceUpdateDTO dto)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
@@ -327,7 +327,7 @@ namespace Service
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>

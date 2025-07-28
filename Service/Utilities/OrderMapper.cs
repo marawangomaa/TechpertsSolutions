@@ -1,4 +1,4 @@
-﻿using Core.DTOs.OrderDTOs;
+using Core.DTOs.OrderDTOs;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -61,7 +61,7 @@ namespace Service.Utilities
                 CartId = dto.CartId,
                 DeliveryId = dto.DeliveryId,
                 ServiceUsageId = dto.ServiceUsageId,
-                OrderHistoryId = null, // Will be set by the service
+                OrderHistoryId = null, 
                 OrderItems = dto.OrderItems.Select(item => new OrderItem
                 {
                     Id = Guid.NewGuid().ToString(),

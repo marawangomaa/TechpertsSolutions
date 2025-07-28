@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,6 @@ namespace Core.DTOs.OrderDTOs
     {
         public string ProductId { get; set; }
         public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; } // Can be fetched from product entity as well
+        public decimal UnitPrice { get; set; } 
     }
 }

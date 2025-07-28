@@ -13,7 +13,7 @@ namespace Service.Utilities
         {
             if (product == null) return null;
 
-            // Convert category name to enum
+            
             ProductCategory? categoryEnum = null;
             try
             {
@@ -24,7 +24,7 @@ namespace Service.Utilities
             }
             catch
             {
-                // If conversion fails, leave as null
+                
             }
 
             return new ProductDTO
@@ -42,7 +42,7 @@ namespace Service.Utilities
                 ImageUrl = product.ImageUrl,
                 Status = product.status,
                 DiscountPrice = product.DiscountPrice,
-                TechCompanyId = product.TechCompanyId, // Assuming same as TechManager for now
+                TechCompanyId = product.TechCompanyId, 
                 TechCompanyName = product.TechCompany?.User?.UserName ?? string.Empty,
                 Specifications = product.Specifications?.Select(s => new SpecificationDTO
                 {
@@ -70,7 +70,7 @@ namespace Service.Utilities
                 Price = dto.Price,
                 Description = dto.Description,
                 Stock = dto.Stock,
-                ImageUrl = null, // Image will be handled separately via upload
+                ImageUrl = null, 
                 DiscountPrice = dto.DiscountPrice,
                 TechCompanyId = dto.TechCompanyId, 
                 Specifications = dto.Specifications?.Select(s => new Specification
@@ -96,7 +96,7 @@ namespace Service.Utilities
             existingProduct.DiscountPrice = dto.DiscountPrice;
             existingProduct.Description = dto.Description;
             existingProduct.Stock = dto.Stock;
-            // ImageUrl is not updated here - use separate upload endpoint
+            
 
             return existingProduct;
         }
@@ -105,7 +105,7 @@ namespace Service.Utilities
         {
             if (product == null) return null;
 
-            // Convert category name to enum
+            
             ProductCategory? categoryEnum = null;
             try
             {
@@ -116,7 +116,7 @@ namespace Service.Utilities
             }
             catch
             {
-                // If conversion fails, leave as null
+                
             }
 
             return new ProductCardDTO

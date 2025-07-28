@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ProductDTOs;
+using Core.DTOs.ProductDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
 using Core.Utilities;
@@ -100,7 +100,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        // [Authorize(Roles = "Admin,TechManager")]
+        
         public async Task<IActionResult> AddProduct([FromBody] ProductCreateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
         {
             if (!ModelState.IsValid)
@@ -134,7 +134,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Roles = "Admin,TechManager")]
+        
         public async Task<IActionResult> UpdateProduct(string id, [FromBody] ProductUpdateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
         {
             if (!ModelState.IsValid)
@@ -178,7 +178,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "Admin")]
+        
         public async Task<IActionResult> DeleteProduct(string id)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
@@ -200,7 +200,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("{productId}/upload-image")]
-        //[Authorize(Roles = "Admin,TechManager")]
+        
         public async Task<IActionResult> UploadProductImage(string productId, IFormFile imageFile)
         {
             if (string.IsNullOrWhiteSpace(productId) || !Guid.TryParse(productId, out _))
@@ -232,7 +232,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpDelete("{productId}/delete-image")]
-        //[Authorize(Roles = "Admin,TechManager")]
+        
         public async Task<IActionResult> DeleteProductImage(string productId)
         {
             if (string.IsNullOrWhiteSpace(productId) || !Guid.TryParse(productId, out _))

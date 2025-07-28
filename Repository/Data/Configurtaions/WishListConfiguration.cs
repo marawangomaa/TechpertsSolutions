@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -16,16 +16,15 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(wl => wl.Customer)
                    .WithOne(c => c.WishList)
                    .HasForeignKey<WishList>(wl => wl.CustomerId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist when customer is deleted
+                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Ensure each customer can only have one wishlist
             builder.HasIndex(wl => wl.CustomerId)
                    .IsUnique();
 
             builder.HasMany(wl => wl.WishListItems)
                    .WithOne(wli => wli.WishList)
                    .HasForeignKey(wli => wli.WishListId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete wishlist items when wishlist is deleted
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace TechpertsSolutions.Core.DTOs.CustomerDTOs
+namespace TechpertsSolutions.Core.DTOs.CustomerDTOs
 {
     public class CustomerEditDTO
     {

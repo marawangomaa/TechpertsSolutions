@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Core.Enums;
 
 namespace TechpertsSolutions.Core.DTOs.RegisterDTOs
@@ -37,9 +37,9 @@ namespace TechpertsSolutions.Core.DTOs.RegisterDTOs
         [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string PhoneNumber { get; set; } = null!;
 
-        //[Required(ErrorMessage = "Role is required")]
-        //[EnumDataType(typeof(RoleType), ErrorMessage = "Invalid role selected")]
-        //public RoleType Role { get; set; }
+        
+        
+        
     }
 }
 

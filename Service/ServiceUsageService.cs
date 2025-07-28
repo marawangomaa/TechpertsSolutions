@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ServiceUsageDTOs;
+using Core.DTOs.ServiceUsageDTOs;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -88,7 +88,7 @@ namespace Service
 
         public async Task<GeneralResponse<ServiceUsageReadDTO>> TrackServiceUsageAsync(string customerId, string serviceType, string? techCompanyId = null)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<ServiceUsageReadDTO>
@@ -111,7 +111,7 @@ namespace Service
 
             try
             {
-                // Check if service usage already exists for this customer and service type
+                
                 var existingUsage = await _ServiceRepo.GetFirstOrDefaultAsync(
                     su => su.ServiceType == serviceType,
                     includeProperties: "Maintenance,PCAssemblies,Orders"
@@ -119,7 +119,7 @@ namespace Service
 
                 if (existingUsage != null)
                 {
-                    // Increment call count
+                    
                     existingUsage.CallCount++;
                     _ServiceRepo.Update(existingUsage);
                     await _ServiceRepo.SaveChangesAsync();
@@ -132,7 +132,7 @@ namespace Service
                     };
                 }
 
-                // Create new service usage
+                
                 var newServiceUsage = new ServiceUsage
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -164,7 +164,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByCustomerAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
@@ -211,7 +211,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<ServiceUsageReadDTO>>> GetServiceUsageByTechCompanyAsync(string techCompanyId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(techCompanyId))
             {
                 return new GeneralResponse<IEnumerable<ServiceUsageReadDTO>>
@@ -256,7 +256,7 @@ namespace Service
 
         public async Task<GeneralResponse<ServiceUsageReadDTO>> GetOrCreateServiceUsageAsync(string customerId, string serviceType)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<ServiceUsageReadDTO>
@@ -279,7 +279,7 @@ namespace Service
 
             try
             {
-                // Try to find existing service usage
+                
                 var existingUsage = await _ServiceRepo.GetFirstOrDefaultAsync(
                     su => su.ServiceType == serviceType,
                     includeProperties: "Maintenance,PCAssemblies,Orders"
@@ -295,7 +295,7 @@ namespace Service
                     };
                 }
 
-                // Create new service usage
+                
                 var newServiceUsage = new ServiceUsage
                 {
                     Id = Guid.NewGuid().ToString(),

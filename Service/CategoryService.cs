@@ -1,4 +1,4 @@
-﻿using Core.DTOs.CategoryDTOs;
+using Core.DTOs.CategoryDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -41,7 +41,7 @@ namespace Service
                     c => c.Products
                 );
 
-                // Use CategoryMapper for mapping
+                
                 var mappedCategories = CategoryMapper.MapToCategoryDTOList(categories);
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
@@ -61,10 +61,10 @@ namespace Service
             }
         }
 
-        // Retrieves a single category by ID, including its sub-categories and products.
+        
         public async Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CategoryDTO>
@@ -103,7 +103,7 @@ namespace Service
                     };
                 }
 
-                // Use CategoryMapper for mapping
+                
                 var mappedCategory = CategoryMapper.MapToCategoryDTO(category);
                 if (mappedCategory == null)
                 {
@@ -159,17 +159,17 @@ namespace Service
             {
                 var category = CategoryMapper.MapToCategory(categoryCreateDto);
 
-                await _categoryRepository.AddAsync(category); // Add entity via repository
-                await _categoryRepository.SaveChangesAsync(); // Save changes
+                await _categoryRepository.AddAsync(category); 
+                await _categoryRepository.SaveChangesAsync(); 
 
-                // Fetch the created category with includes for complete response
+                
                 var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
                     category.Id,
                     c => c.SubCategories,
                     c => c.Products
                 );
 
-                // Use CategoryMapper for mapping
+                
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
@@ -188,10 +188,10 @@ namespace Service
             }
         }
 
-        // Updates an existing category from a DTO.
+        
         public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(string id,CategoryUpdateDTO categoryUpdateDto)
         {
-            // Input validation
+            
             if (categoryUpdateDto == null)
             {
                 return new GeneralResponse<CategoryDTO>
@@ -245,13 +245,13 @@ namespace Service
                     };
                 }
 
-                // Use CategoryMapper for mapping
+                
                 CategoryMapper.MapToCategory(categoryUpdateDto, category);
 
-                _categoryRepository.Update(category); // Mark entity as updated
-                await _categoryRepository.SaveChangesAsync(); // Save changes
+                _categoryRepository.Update(category); 
+                await _categoryRepository.SaveChangesAsync(); 
 
-                // Fetch the updated category with includes for complete response
+                
                 var updatedCategory = await _categoryRepository.GetByIdWithIncludesAsync(
                     category.Id,
                     c => c.SubCategories,
@@ -276,10 +276,10 @@ namespace Service
             }
         }
 
-        // Deletes a category by ID.
+        
         public async Task<GeneralResponse<bool>> DeleteCategoryAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
@@ -313,42 +313,42 @@ namespace Service
                     };
                 }
 
-                // --- Start of changes for manual deletion ---
+                
 
-                // 1. Find all products associated with this category
-                // Use FindAsync from productRepository for filtering
+                
+                
                 var productsToDelete = await _productRepository.FindAsync(p => p.CategoryId == id);
 
-                // 2. For each product, find and delete its associated cart items
+                
                 foreach (var product in productsToDelete)
                 {
                     var cartItemsToDelete = await _cartItemRepository.FindAsync(ci => ci.ProductId == product.Id);
-                    // If your IRepository<T> doesn't have a RemoveRange, you'll need to loop:
+                    
                     foreach (var cartItem in cartItemsToDelete)
                     {
                         _cartItemRepository.Remove(cartItem);
                     }
-                    // If you added RemoveRange to IRepository, you could use:
-                    // _cartItemRepository.RemoveRange(cartItemsToDelete.ToList());
+                    
+                    
                 }
 
-                // 3. Remove the products
-                // Again, if no RemoveRange, loop:
+                
+                
                 foreach (var product in productsToDelete)
                 {
                     _productRepository.Remove(product);
                 }
-                // If you added RemoveRange to IRepository, you could use:
-                // _productRepository.RemoveRange(productsToDelete.ToList());
+                
+                
 
-                // --- End of changes for manual deletion ---
+                
 
-                // 4. Finally, remove the category itself
+                
                 _categoryRepository.Remove(category);
 
-                // 5. Save all changes. This single SaveChangesAsync call will commit
-                // all pending deletions (cart items, then products, then category)
-                // within a single transaction, resolving the foreign key conflict.
+                
+                
+                
                 await _categoryRepository.SaveChangesAsync();
                 
                 return new GeneralResponse<bool>
@@ -393,7 +393,7 @@ namespace Service
                     };
                 }
 
-                // Check if category exists
+                
                 var category = await _categoryRepository.GetByIdAsync(categoryId);
                 if (category == null)
                 {
@@ -405,11 +405,11 @@ namespace Service
                     };
                 }
 
-                // Upload image
+                
                 var imagePath = await _fileService.UploadImageAsync(imageFile, "categories");
                 var imageUrl = _fileService.GetImageUrl(imagePath);
 
-                // Update category with new image path
+                
                 category.Image = imagePath;
                 _categoryRepository.Update(category);
                 await _categoryRepository.SaveChangesAsync();
@@ -463,11 +463,11 @@ namespace Service
                     };
                 }
 
-                // Delete image file
+                
                 var deleted = await _fileService.DeleteImageAsync(category.Image);
                 if (deleted)
                 {
-                    // Update category to remove image reference
+                    
                     category.Image = null;
                     _categoryRepository.Update(category);
                     await _categoryRepository.SaveChangesAsync();

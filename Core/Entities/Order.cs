@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+using Core.Entities;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace TechpertsSolutions.Core.Entities
         public Customer? Customer { get; set; }
         public string CartId { get; set; }
         public Cart? Cart { get; set; }
-        public string? DeliveryId { get; set; } // Made optional
+        public string? DeliveryId { get; set; } 
         public Delivery? Delivery { get; set; }
         public string? ServiceUsageId { get; set; }
         public string? OrderHistoryId { get; set; }

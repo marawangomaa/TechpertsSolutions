@@ -1,4 +1,4 @@
-﻿using Core.DTOs.TechCompanyDTOs;
+using Core.DTOs.TechCompanyDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;

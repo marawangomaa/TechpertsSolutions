@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs.CustomerDTOs;
+using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -32,14 +32,14 @@ namespace Service.Utilities
                 City = customer.City,
                 Country = customer.Country,
 
-                // From IdentityUser (AppUser)
+                
                 Email = user?.Email,
                 UserName = user?.UserName,
                 PhoneNumber = user?.PhoneNumber,
                 FullName = user?.FullName,
                 Address = user?.Address,
 
-                // From IdentityRole (AppRole)
+                
                 CartId = customer.Cart?.Id,
                 WishListId = customer.WishList?.Id,
                 PCAssemblyIds = customer.PCAssembly?.Select(p => p.Id).ToList(),

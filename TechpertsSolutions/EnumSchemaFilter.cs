@@ -1,4 +1,4 @@
-﻿using Core.Utilities;
+using Core.Utilities;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -15,7 +15,7 @@ namespace TechpertsSolutions
                 schema.Enum.Clear();
                 foreach (var enumVal in enumValues)
                 {
-                    var stringValue = enumVal.GetStringValue(); // Use your extension method here
+                    var stringValue = enumVal.GetStringValue(); 
                     schema.Enum.Add(new OpenApiString(stringValue));
                 }
                 schema.Type = "string";

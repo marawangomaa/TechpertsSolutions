@@ -1,4 +1,4 @@
-﻿using Core.DTOs.PCAssemblyDTOs;
+using Core.DTOs.PCAssemblyDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<PCAssemblyReadDTO>> UpdatePCAssemblyAsync(string id, PCAssemblyUpdateDTO dto);
         Task<GeneralResponse<IEnumerable<PCAssemblyReadDTO>>> GetByCustomerIdAsync(string customerId);
         
-        // New methods for PC Build functionality
+        
         Task<GeneralResponse<PCAssemblyReadDTO>> AddComponentToAssemblyAsync(string assemblyId, PCAssemblyItemCreateDTO item);
         Task<GeneralResponse<PCAssemblyReadDTO>> RemoveComponentFromAssemblyAsync(string assemblyId, string itemId);
         Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(string assemblyId);

@@ -1,4 +1,4 @@
-﻿using Core.DTOs.OrderDTOs;
+using Core.DTOs.OrderDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -23,7 +23,7 @@ namespace Service
 
         public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByIdAsync(string id)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<OrderHistoryReadDTO>
@@ -80,7 +80,7 @@ namespace Service
 
         public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByCustomerIdAsync(string customerId)
         {
-            // Input validation
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<OrderHistoryReadDTO>
@@ -147,7 +147,7 @@ namespace Service
                 {
                     if (history != null)
                     {
-                        // Load related data for each history
+                        
                         var historyWithIncludes = await _historyRepo.GetFirstOrDefaultAsync(
                             h => h.Id == history.Id,
                             includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer");

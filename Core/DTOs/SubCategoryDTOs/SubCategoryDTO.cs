@@ -1,4 +1,4 @@
-﻿using Core.DTOs.ProductDTOs;
+using Core.DTOs.ProductDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace Core.DTOs.SubCategoryDTOs
         public string Name { get; set; }
         public string? Image { get; set; }
         public string CategoryId { get; set; }
-        public string CategoryName { get; set; } // To display category name directly
+        public string CategoryName { get; set; } 
         public List<ProductListItemDTO> Products { get; set; } = new List<ProductListItemDTO>();
     }
 }

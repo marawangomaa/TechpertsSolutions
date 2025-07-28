@@ -1,4 +1,4 @@
-﻿using Core.DTOs.CartDTOs;
+using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
@@ -24,7 +24,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{customerId}")]
         public async Task<IActionResult> GetCart(string customerId)
         {
-            // Input validation for customerId
+            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return BadRequest(new GeneralResponse<string>
@@ -79,7 +79,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("{customerId}/items")]
         public async Task<IActionResult> AddItem(string customerId, [FromForm] CartItemDTO itemDto)
         {
-            // Basic DTO validation
+            
             if (itemDto == null || string.IsNullOrWhiteSpace(itemDto.ProductId) || itemDto.Quantity <= 0)
             {
                 return BadRequest(new GeneralResponse<string>
@@ -92,12 +92,12 @@ namespace TechpertsSolutions.Controllers
 
             var resultMessage = await cartService.AddItemAsync(customerId, itemDto);
 
-            var isSuccess = resultMessage.StartsWith("✅");
+            var isSuccess = resultMessage.StartsWith("?");
 
             var response = new GeneralResponse<object>
             {
                 Success = isSuccess,
-                Message = resultMessage.TrimStart('✅', '❌').Trim(),
+                Message = resultMessage.TrimStart('?', '?').Trim(),
                 Data = null
             };
 
@@ -107,7 +107,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPut("{customerId}/items")]
         public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromForm] CartUpdateItemQuantityDTO updateDto)
         {
-            // Basic DTO validation
+            
             if (updateDto == null || string.IsNullOrWhiteSpace(updateDto.ProductId) || updateDto.Quantity <= 0)
             {
                 return BadRequest(new GeneralResponse<string>
@@ -120,16 +120,16 @@ namespace TechpertsSolutions.Controllers
 
             var resultMessage = await cartService.UpdateItemQuantityAsync(customerId, updateDto);
 
-            var isSuccess = resultMessage.StartsWith("✅");
+            var isSuccess = resultMessage.StartsWith("?");
 
             var response = new GeneralResponse<object>
             {
                 Success = isSuccess,
-                Message = resultMessage.TrimStart('✅', '❌').Trim(),
+                Message = resultMessage.TrimStart('?', '?').Trim(),
                 Data = null
             };
 
-            return isSuccess ? Ok(response) : NotFound(response); // Use NotFound if item/cart not found
+            return isSuccess ? Ok(response) : NotFound(response); 
         }
 
         [HttpDelete("{customerId}/items/{productId}")]
@@ -147,12 +147,12 @@ namespace TechpertsSolutions.Controllers
 
             var resultMessage = await cartService.RemoveItemAsync(customerId, productId);
 
-            var isSuccess = resultMessage.StartsWith("✅");
+            var isSuccess = resultMessage.StartsWith("?");
 
             var response = new GeneralResponse<object>
             {
                 Success = isSuccess,
-                Message = resultMessage.TrimStart('✅', '❌').Trim(),
+                Message = resultMessage.TrimStart('?', '?').Trim(),
                 Data = null
             };
 
@@ -174,21 +174,21 @@ namespace TechpertsSolutions.Controllers
 
             var resultMessage = await cartService.ClearCartAsync(customerId);
 
-            var isSuccess = resultMessage.StartsWith("✅");
+            var isSuccess = resultMessage.StartsWith("?");
 
             var response = new GeneralResponse<object>
             {
                 Success = isSuccess,
-                Message = resultMessage.TrimStart('✅', '❌').Trim(),
+                Message = resultMessage.TrimStart('?', '?').Trim(),
                 Data = null
             };
 
-            return isSuccess ? Ok(response) : NotFound(response); // Use NotFound if cart not found
+            return isSuccess ? Ok(response) : NotFound(response); 
         }
 
-        /// <summary>
-        /// Checkout entire cart - creates order from all cart items
-        /// </summary>
+        
+        
+        
         [HttpPost("{customerId}/checkout")]
         public async Task<IActionResult> Checkout(string customerId)
         {
@@ -217,9 +217,9 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
-        /// <summary>
-        /// Advanced checkout with delivery and service usage options
-        /// </summary>
+        
+        
+        
         [HttpPost("checkout")]
         public async Task<IActionResult> CheckoutWithDetails([FromBody] CartCheckoutDTO checkoutDto)
         {
@@ -287,9 +287,9 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
-        /// <summary>
-        /// Partial checkout - checkout only selected products from cart
-        /// </summary>
+        
+        
+        
         [HttpPost("{customerId}/partial-checkout")]
         public async Task<IActionResult> PartialCheckout(string customerId, [FromBody] PartialCheckoutDTO dto)
         {
@@ -323,7 +323,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Validate all product IDs are valid GUIDs
+            
             foreach (var productId in dto.ProductIds)
             {
                 if (!Guid.TryParse(productId, out _))
@@ -342,9 +342,9 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
-        /// <summary>
-        /// Helper method to determine appropriate HTTP status code based on error message
-        /// </summary>
+        
+        
+        
         private IActionResult GetErrorResponse(GeneralResponse<OrderReadDTO> result)
         {
             if (result.Message.Contains("not found") || result.Message.Contains("empty"))

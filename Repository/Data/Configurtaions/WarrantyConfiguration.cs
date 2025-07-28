@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(w => w.Product)
                    .WithMany(p => p.Warranties)
                    .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade); // Delete warranty when product is deleted
+                   .OnDelete(DeleteBehavior.Cascade); 
         }
     }
 }
