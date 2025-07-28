@@ -189,7 +189,7 @@ namespace Service
         }
 
         // Updates an existing category from a DTO.
-        public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDto)
+        public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(string id,CategoryUpdateDTO categoryUpdateDto)
         {
             // Input validation
             if (categoryUpdateDto == null)
@@ -202,7 +202,7 @@ namespace Service
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(categoryUpdateDto.Id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CategoryDTO>
                 {
@@ -212,7 +212,7 @@ namespace Service
                 };
             }
 
-            if (!Guid.TryParse(categoryUpdateDto.Id, out _))
+            if (!Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<CategoryDTO>
                 {
@@ -234,13 +234,13 @@ namespace Service
 
             try
             {
-                var category = await _categoryRepository.GetByIdAsync(categoryUpdateDto.Id);
+                var category = await _categoryRepository.GetByIdAsync(id);
                 if (category == null)
                 {
                     return new GeneralResponse<CategoryDTO>
                     {
                         Success = false,
-                        Message = $"Category with ID '{categoryUpdateDto.Id}' not found.",
+                        Message = $"Category with ID '{id}' not found.",
                         Data = null
                     };
                 }

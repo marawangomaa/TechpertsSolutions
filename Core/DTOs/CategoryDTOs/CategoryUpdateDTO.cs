@@ -8,7 +8,6 @@ namespace Core.DTOs.CategoryDTOs
 {
     public class CategoryUpdateDTO
     {
-        public string Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 }

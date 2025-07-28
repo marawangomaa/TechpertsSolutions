@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -128,7 +130,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(typeof(GeneralResponse<SubCategoryDTO>), 201)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
-        public async Task<IActionResult> CreateSubCategory([FromForm] CreateSubCategoryDTO createDto)
+        public async Task<IActionResult> CreateSubCategory([FromBody] CreateSubCategoryDTO createDto)
         {
             if (!ModelState.IsValid)
             {
@@ -179,7 +181,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
-        public async Task<IActionResult> UpdateSubCategory(string id, [FromForm] UpdateSubCategoryDTO updateDto)
+        public async Task<IActionResult> UpdateSubCategory(string id, [FromBody] UpdateSubCategoryDTO updateDto)
         {
             if (id != updateDto.Id)
             {
@@ -251,6 +253,103 @@ namespace TechpertsSolutions.Controllers
                 {
                     Success = false,
                     Message = "An error occurred while deleting the subcategory."
+                });
+            }
+        }
+
+        /// <summary>
+        /// Uploads an image for a subcategory.
+        /// </summary>
+        /// <param name="subCategoryId">The ID of the subcategory.</param>
+        /// <param name="imageFile">The image file to upload.</param>
+        /// <returns>200 OK with image upload response if successful, 400 Bad Request, or 500 Internal Server Error.</returns>
+        [HttpPost("{subCategoryId}/upload-image")]
+        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can upload images
+        [ProducesResponseType(typeof(GeneralResponse<ImageUploadResponseDTO>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> UploadSubCategoryImage(string subCategoryId, IFormFile imageFile)
+        {
+            if (string.IsNullOrWhiteSpace(subCategoryId) || !Guid.TryParse(subCategoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid subcategory ID.",
+                    Data = subCategoryId
+                });
+            }
+
+            if (imageFile == null || imageFile.Length == 0)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "No image file provided.",
+                    Data = null
+                });
+            }
+
+            try
+            {
+                var response = await _subCategoryService.UploadSubCategoryImageAsync(imageFile, subCategoryId);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error uploading image for subcategory with ID: {subCategoryId}");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while uploading the image.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+        /// <summary>
+        /// Deletes the image for a subcategory.
+        /// </summary>
+        /// <param name="subCategoryId">The ID of the subcategory.</param>
+        /// <returns>200 OK with success response if successful, 400 Bad Request, or 500 Internal Server Error.</returns>
+        [HttpDelete("{subCategoryId}/delete-image")]
+        // [Authorize(Roles = "Admin,TechManager")] // Example: Only Admin or TechManager can delete images
+        [ProducesResponseType(typeof(GeneralResponse<bool>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> DeleteSubCategoryImage(string subCategoryId)
+        {
+            if (string.IsNullOrWhiteSpace(subCategoryId) || !Guid.TryParse(subCategoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid subcategory ID.",
+                    Data = subCategoryId
+                });
+            }
+
+            try
+            {
+                var response = await _subCategoryService.DeleteSubCategoryImageAsync(subCategoryId);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting image for subcategory with ID: {subCategoryId}");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while deleting the image.",
+                    Data = ex.Message
                 });
             }
         }

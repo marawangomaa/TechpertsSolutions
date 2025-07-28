@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace Service
 {
@@ -18,17 +20,20 @@ namespace Service
         private readonly IRepository<SubCategory> _subCategoryRepository;
         private readonly IRepository<Product> _productRepository; // Needed for manual cascading delete
         private readonly IRepository<Category> _categoryRepository; // To validate CategoryId
+        private readonly IFileService _fileService;
         private readonly ILogger<SubCategoryService> _logger;
 
         public SubCategoryService(
             IRepository<SubCategory> subCategoryRepository,
             IRepository<Product> productRepository,
             IRepository<Category> categoryRepository,
+            IFileService fileService,
             ILogger<SubCategoryService> logger)
         {
             _subCategoryRepository = subCategoryRepository;
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _fileService = fileService;
             _logger = logger;
         }
 
@@ -453,6 +458,130 @@ namespace Service
                     Success = false,
                     Message = "An unexpected error occurred while retrieving subcategories.",
                     Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadSubCategoryImageAsync(IFormFile imageFile, string subCategoryId)
+        {
+            try
+            {
+                if (imageFile == null || imageFile.Length == 0)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "No image file provided",
+                        Data = null
+                    };
+                }
+
+                if (!_fileService.IsValidImageFile(imageFile))
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                        Data = null
+                    };
+                }
+
+                // Check if subcategory exists
+                var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
+                if (subCategory == null)
+                {
+                    return new GeneralResponse<ImageUploadResponseDTO>
+                    {
+                        Success = false,
+                        Message = "SubCategory not found",
+                        Data = null
+                    };
+                }
+
+                // Upload image
+                var imagePath = await _fileService.UploadImageAsync(imageFile, "subcategories");
+                var imageUrl = _fileService.GetImageUrl(imagePath);
+
+                // Update subcategory with new image path
+                subCategory.Image = imagePath;
+                _subCategoryRepository.Update(subCategory);
+                await _subCategoryRepository.SaveChangesAsync();
+
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = true,
+                    Message = "SubCategory image uploaded successfully",
+                    Data = new ImageUploadResponseDTO
+                    {
+                        Success = true,
+                        Message = "Image uploaded successfully",
+                        ImagePath = imagePath,
+                        ImageUrl = imageUrl
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error uploading subcategory image: {ex.Message}");
+                return new GeneralResponse<ImageUploadResponseDTO>
+                {
+                    Success = false,
+                    Message = $"Error uploading subcategory image: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<bool>> DeleteSubCategoryImageAsync(string subCategoryId)
+        {
+            try
+            {
+                var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
+                if (subCategory == null)
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "SubCategory not found",
+                        Data = false
+                    };
+                }
+
+                if (string.IsNullOrEmpty(subCategory.Image))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "SubCategory has no image to delete",
+                        Data = false
+                    };
+                }
+
+                // Delete image file
+                var deleted = await _fileService.DeleteImageAsync(subCategory.Image);
+                if (deleted)
+                {
+                    // Update subcategory to remove image reference
+                    subCategory.Image = null;
+                    _subCategoryRepository.Update(subCategory);
+                    await _subCategoryRepository.SaveChangesAsync();
+                }
+
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "SubCategory image deleted successfully",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deleting subcategory image: {ex.Message}");
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Error deleting subcategory image: {ex.Message}",
+                    Data = false
                 };
             }
         }

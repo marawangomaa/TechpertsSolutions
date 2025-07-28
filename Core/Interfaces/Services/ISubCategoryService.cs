@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.SubCategoryDTOs;
+using Microsoft.AspNetCore.Http;
+using Core.DTOs;
 
 namespace Core.Interfaces.Services
 {
@@ -16,5 +18,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<bool>> UpdateSubCategoryAsync(UpdateSubCategoryDTO updateDto);
         Task<GeneralResponse<bool>> DeleteSubCategoryAsync(string id);
         Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesByCategoryIdAsync(string categoryId);
+        Task<GeneralResponse<ImageUploadResponseDTO>> UploadSubCategoryImageAsync(IFormFile imageFile, string subCategoryId);
+        Task<GeneralResponse<bool>> DeleteSubCategoryImageAsync(string subCategoryId);
     }
 }

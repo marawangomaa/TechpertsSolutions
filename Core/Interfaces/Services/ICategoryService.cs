@@ -15,7 +15,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync();
         Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string Id);
         Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryDTO);
-        Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(CategoryUpdateDTO categoryUpdateDTO);
+        Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(string id,CategoryUpdateDTO categoryUpdateDTO);
         Task<GeneralResponse<bool>> DeleteCategoryAsync(string Id);
         Task<GeneralResponse<ImageUploadResponseDTO>> UploadCategoryImageAsync(IFormFile imageFile, string categoryId);
         Task<GeneralResponse<bool>> DeleteCategoryImageAsync(string categoryId);

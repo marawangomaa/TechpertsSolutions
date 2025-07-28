@@ -11,6 +11,7 @@ namespace Core.DTOs.SubCategoryDTOs
     {
         public string Id { get; set; }
         public string Name { get; set; }
+        public string? Image { get; set; }
         public string CategoryId { get; set; }
         public string CategoryName { get; set; } // To display category name directly
         public List<ProductListItemDTO> Products { get; set; } = new List<ProductListItemDTO>();

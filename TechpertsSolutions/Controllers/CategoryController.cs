@@ -74,18 +74,8 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
-        public async Task<IActionResult> Update(string Id, [FromForm] CategoryUpdateDTO categoryUpdateDto)
+        public async Task<IActionResult> Update(string Id, [FromBody] CategoryUpdateDTO categoryUpdateDto)
         {
-            if (Id != categoryUpdateDto.Id)
-            {
-                return BadRequest(new GeneralResponse<object>
-                {
-                    Success = false,
-                    Message = "Route ID and body ID do not match.",
-                    Data = "Route ID: " + Id + ", Body ID: " + categoryUpdateDto.Id
-                });
-            }
-
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
@@ -97,7 +87,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _categoryService.UpdateCategoryAsync(categoryUpdateDto);
+            var response = await _categoryService.UpdateCategoryAsync(Id,categoryUpdateDto);
             if (!response.Success)
             {
                 return NotFound(response);

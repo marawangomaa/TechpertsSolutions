@@ -14,6 +14,7 @@ namespace Service.Utilities
             {
                 Id = subCategory.Id,
                 Name = subCategory.Name,
+                Image = subCategory.Image,
                 CategoryId = subCategory.CategoryId,
                 CategoryName = subCategory.Category?.Name,
                 Products = subCategory.Products?.Select(p => ProductMapper.MapToProductListItem(p)).Where(p => p != null).ToList() ?? new List<ProductListItemDTO>()
