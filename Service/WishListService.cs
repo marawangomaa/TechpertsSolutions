@@ -77,7 +77,7 @@ namespace Service
 
         public async Task<GeneralResponse<IEnumerable<WishListReadDTO>>> GetByCustomerIdAsync(string customerId)
         {
-            var wishLists = await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems);
+            var wishLists = await _wishListRepo.FindWithStringIncludesAsync(w => w.CustomerId == customerId, includeProperties: "WishListItems,WishListItems.Product");
             return new GeneralResponse<IEnumerable<WishListReadDTO>>
             {
                 Success = true,
@@ -114,7 +114,7 @@ namespace Service
                 
                 var existingWishList = await _wishListRepo.GetFirstOrDefaultAsync(
                     w => w.CustomerId == customerId,
-                    includeProperties: "WishListItems"
+                    includeProperties: "WishListItems,WishListItems.Product"
                 );
 
                 if (existingWishList != null)
@@ -150,7 +150,7 @@ namespace Service
                 return new GeneralResponse<WishListReadDTO>
                 {
                     Success = false,
-                    Message = $"An error occurred while getting or creating wishlist: {ex.Message}",
+                    Message = "An unexpected error occurred while retrieving or creating the wishlist.",
                     Data = null
                 };
             }
@@ -204,7 +204,7 @@ namespace Service
         public async Task<GeneralResponse<bool>> MoveAllToCartAsync(string customerId, ICartService cartService)
         {
             
-            var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
+            var wishlist = (await _wishListRepo.FindWithStringIncludesAsync(w => w.CustomerId == customerId, includeProperties: "WishListItems")).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
 
@@ -230,7 +230,7 @@ namespace Service
         public async Task<GeneralResponse<bool>> MoveSelectedToCartAsync(string customerId, List<string> wishListItemIds, ICartService cartService)
         {
             
-            var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
+            var wishlist = (await _wishListRepo.FindWithStringIncludesAsync(w => w.CustomerId == customerId, includeProperties: "WishListItems")).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
 
@@ -257,7 +257,7 @@ namespace Service
         public async Task<GeneralResponse<bool>> MoveItemToCartAsync(string customerId, string wishListItemId, ICartService cartService)
         {
             
-            var wishlist = (await _wishListRepo.FindWithIncludesAsync(w => w.CustomerId == customerId, w => w.WishListItems)).FirstOrDefault();
+            var wishlist = (await _wishListRepo.FindWithStringIncludesAsync(w => w.CustomerId == customerId, includeProperties: "WishListItems")).FirstOrDefault();
             if (wishlist == null || wishlist.WishListItems == null || !wishlist.WishListItems.Any())
                 return new GeneralResponse<bool> { Success = false, Message = "Wishlist is empty.", Data = false };
 
@@ -291,7 +291,10 @@ namespace Service
                 {
                     Id = i.Id,
                     ProductId = i.ProductId,
-                    WishListId = i.WishListId
+                    WishListId = i.WishListId,
+                    ProductName = i.Product?.Name ?? "Unknown Product",
+                    ProductPrice = i.Product?.Price ?? 0,
+                    ProductImageUrl = i.Product?.ImageUrl
                 }).ToList() ?? new List<WishListItemReadDTO>()
             };
         }

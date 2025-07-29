@@ -12,7 +12,13 @@ namespace Service.Utilities
 
             return new MaintenanceDTO
             {
-                Id = maintenance.Id
+                Id = maintenance.Id,
+                CustomerName = maintenance.Customer?.User?.FullName ?? "Unknown Customer",
+                TechCompanyName = maintenance.TechCompany?.User?.FullName ?? "Unknown Tech Company",
+                ProductName = maintenance.Warranty?.Product?.Name ?? "Unknown Product",
+                ServiceType = maintenance.ServiceUsages?.FirstOrDefault()?.ServiceType.ToString() ?? "Unknown Service",
+                WarrantyStart = maintenance.Warranty?.StartDate ?? DateTime.MinValue,
+                WarrantyEnd = maintenance.Warranty?.EndDate ?? DateTime.MinValue
             };
         }
 

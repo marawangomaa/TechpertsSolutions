@@ -26,6 +26,8 @@ namespace Service.Utilities
                 {
                     Id = item.Id,
                     ProductId = item.ProductId,
+                    ProductName = item.Product?.Name ?? "Unknown Product",
+                    ProductImageUrl = item.Product?.ImageUrl,
                     Quantity = item.Quantity,
                     Price = item.Price,
                     Total = item.Total

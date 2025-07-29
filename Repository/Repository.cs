@@ -69,6 +69,21 @@ namespace Repository
 
             return await query.ToListAsync();
         }
+
+        public async Task<IEnumerable<T>> FindWithStringIncludesAsync(
+            Expression<Func<T, bool>> predicate,
+            string? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var prop in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    query = query.Include(prop.Trim());
+            }
+
+            return await query.ToListAsync();
+        }
         public async Task<IEnumerable<T>> FindByNameAsync(Expression<Func<T, bool>> predicate)
         {
             return await _context.Set<T>().Where(predicate).ToListAsync();

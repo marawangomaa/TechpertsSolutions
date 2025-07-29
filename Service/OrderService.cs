@@ -126,10 +126,12 @@ namespace Service
 
             try
             {
-                var order = await _orderRepo.GetByIdWithIncludesAsync(id, 
-                    o => o.OrderItems, 
-                    o => o.Customer,
-                    o => o.OrderHistory);
+                // Use FindWithStringIncludesAsync to get the order with all necessary includes
+                var orders = await _orderRepo.FindWithStringIncludesAsync(
+                    o => o.Id == id,
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                
+                var order = orders.FirstOrDefault();
                 
                 if (order == null)
                 {
@@ -168,7 +170,13 @@ namespace Service
                     o => o.Customer,
                     o => o.OrderHistory);
                 
-                var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
+                // Since GetAllWithIncludesAsync doesn't support nested includes, we need to use a different approach
+                // Let's use FindWithStringIncludesAsync with a predicate that matches all orders
+                var allOrders = await _orderRepo.FindWithStringIncludesAsync(
+                    o => true, // This will match all orders
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                
+                var orderDtos = allOrders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
@@ -213,11 +221,9 @@ namespace Service
 
             try
             {
-                var orders = await _orderRepo.FindWithIncludesAsync(
+                var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId, 
-                    o => o.OrderItems, 
-                    o => o.Customer,
-                    o => o.OrderHistory);
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
                 
                 var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
@@ -380,11 +386,9 @@ namespace Service
         {
             try
             {
-                var orders = await _orderRepo.FindWithIncludesAsync(
+                var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Status == status,
-                    o => o.OrderItems,
-                    o => o.Customer,
-                    o => o.OrderHistory);
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
 
                 var orderDtos = orders
                     .Where(o => o != null)

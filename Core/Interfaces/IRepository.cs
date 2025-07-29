@@ -23,6 +23,10 @@ namespace Core.Interfaces
             Expression<Func<T, bool>> predicate,
             params Expression<Func<T, object>>[] includes);
 
+        Task<IEnumerable<T>> FindWithStringIncludesAsync(
+            Expression<Func<T, bool>> predicate,
+            string? includeProperties = null);
+
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
         void RemoveRange(IEnumerable<T> entities);
         Task AddAsync(T entity);

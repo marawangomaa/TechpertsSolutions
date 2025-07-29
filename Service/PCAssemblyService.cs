@@ -108,7 +108,7 @@ namespace Service
                 };
             }
 
-            var assemblies = await _pcAssemblyRepo.FindWithIncludesAsync(a => a.CustomerId == customerId, a => a.PCAssemblyItems, a => a.Customer, a => a.ServiceUsage);
+            var assemblies = await _pcAssemblyRepo.FindWithStringIncludesAsync(a => a.CustomerId == customerId, includeProperties: "PCAssemblyItems,PCAssemblyItems.Product,Customer,ServiceUsage");
 
             return new GeneralResponse<IEnumerable<PCAssemblyReadDTO>>
             {

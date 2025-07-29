@@ -36,7 +36,12 @@ namespace Service
         {
             try
             {
-                var maintenances = await _maintenanceRepo.GetAllAsync();
+                var maintenances = await _maintenanceRepo.GetAllWithIncludesAsync(
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = true,
@@ -80,7 +85,12 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdAsync(id);
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(id,
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
                 if (maintenance == null)
                 {
                     return new GeneralResponse<MaintenanceDetailsDTO>
@@ -396,12 +406,9 @@ namespace Service
 
             try
             {
-                var maintenances = await _maintenanceRepo.FindWithIncludesAsync(
+                var maintenances = await _maintenanceRepo.FindWithStringIncludesAsync(
                     m => m.TechCompanyId == techCompanyId,
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
 
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
@@ -436,7 +443,12 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
                 if (maintenance == null)
                 {
                     return new GeneralResponse<MaintenanceDTO>
@@ -494,7 +506,12 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
                 if (maintenance == null)
                 {
                     return new GeneralResponse<MaintenanceDTO>
@@ -510,7 +527,7 @@ namespace Service
                     return new GeneralResponse<MaintenanceDTO>
                     {
                         Success = false,
-                        Message = "This maintenance request is not assigned to you.",
+                        Message = "This maintenance request is not assigned to the specified tech company.",
                         Data = null
                     };
                 }
@@ -543,10 +560,9 @@ namespace Service
         {
             try
             {
-                var maintenances = await _maintenanceRepo.FindWithIncludesAsync(
+                var maintenances = await _maintenanceRepo.FindWithStringIncludesAsync(
                     m => m.TechCompanyId == null && m.Status == "Pending",
-                    m => m.Customer,
-                    m => m.Warranty
+                    includeProperties: "Customer,Customer.User,Warranty,Warranty.Product,ServiceUsages"
                 );
 
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
@@ -581,7 +597,12 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdAsync(maintenanceId);
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
+                    m => m.Customer,
+                    m => m.TechCompany,
+                    m => m.Warranty,
+                    m => m.ServiceUsages
+                );
                 if (maintenance == null)
                 {
                     return new GeneralResponse<MaintenanceDTO>
