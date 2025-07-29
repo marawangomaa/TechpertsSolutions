@@ -77,7 +77,7 @@ namespace TechpertsSolutions.Controllers
         }
         
         [HttpPost("{customerId}/items")]
-        public async Task<IActionResult> AddItem(string customerId, [FromForm] CartItemDTO itemDto)
+        public async Task<IActionResult> AddItem(string customerId, [FromBody] CartItemDTO itemDto)
         {
             
             if (itemDto == null || string.IsNullOrWhiteSpace(itemDto.ProductId) || itemDto.Quantity <= 0)
@@ -105,7 +105,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{customerId}/items")]
-        public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromForm] CartUpdateItemQuantityDTO updateDto)
+        public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromBody] CartUpdateItemQuantityDTO updateDto)
         {
             
             if (updateDto == null || string.IsNullOrWhiteSpace(updateDto.ProductId) || updateDto.Quantity <= 0)

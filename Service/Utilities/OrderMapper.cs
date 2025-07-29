@@ -58,7 +58,6 @@ namespace Service.Utilities
                 CustomerId = dto.CustomerId,
                 OrderDate = DateTime.UtcNow,
                 Status = OrderStatus.Pending,
-                CartId = dto.CartId,
                 DeliveryId = dto.DeliveryId,
                 ServiceUsageId = dto.ServiceUsageId,
                 OrderHistoryId = null, 

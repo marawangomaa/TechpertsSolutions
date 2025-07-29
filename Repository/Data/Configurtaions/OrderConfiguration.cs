@@ -36,11 +36,6 @@ namespace Repository.Data.Configurtaions
                    .HasForeignKey(o => o.ServiceUsageId)
                    .OnDelete(DeleteBehavior.SetNull); 
 
-            builder.HasOne(o => o.Cart)
-                   .WithOne(c => c.Order)
-                   .HasForeignKey<Order>(o => o.CartId)
-                   .OnDelete(DeleteBehavior.Restrict); 
-
             builder.HasOne(o => o.Delivery)
                    .WithMany()
                    .HasForeignKey(o => o.DeliveryId)

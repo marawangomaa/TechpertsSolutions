@@ -182,50 +182,6 @@ namespace TechpertsSolutions
                             Description = "Parent category ID"
                         });
                     }
-
-                    
-                    if (parameter.ParameterType.Name == "CartItemDTO")
-                    {
-                        operation.Parameters.Add(new OpenApiParameter
-                        {
-                            Name = "productId",
-                            In = ParameterLocation.Query,
-                            Required = true,
-                            Schema = new OpenApiSchema { Type = "string" },
-                            Description = "Product ID to add to cart"
-                        });
-
-                        operation.Parameters.Add(new OpenApiParameter
-                        {
-                            Name = "quantity",
-                            In = ParameterLocation.Query,
-                            Required = true,
-                            Schema = new OpenApiSchema { Type = "integer" },
-                            Description = "Quantity of the product"
-                        });
-                    }
-
-                    
-                    if (parameter.ParameterType.Name == "CartUpdateItemQuantityDTO")
-                    {
-                        operation.Parameters.Add(new OpenApiParameter
-                        {
-                            Name = "productId",
-                            In = ParameterLocation.Query,
-                            Required = true,
-                            Schema = new OpenApiSchema { Type = "string" },
-                            Description = "Product ID to update"
-                        });
-
-                        operation.Parameters.Add(new OpenApiParameter
-                        {
-                            Name = "quantity",
-                            In = ParameterLocation.Query,
-                            Required = true,
-                            Schema = new OpenApiSchema { Type = "integer" },
-                            Description = "New quantity of the product"
-                        });
-                    }
                 }
             }
         }

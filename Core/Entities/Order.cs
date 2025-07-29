@@ -15,8 +15,6 @@ namespace TechpertsSolutions.Core.Entities
         public OrderStatus Status { get; set; }
         public string CustomerId { get; set; }
         public Customer? Customer { get; set; }
-        public string CartId { get; set; }
-        public Cart? Cart { get; set; }
         public string? DeliveryId { get; set; } 
         public Delivery? Delivery { get; set; }
         public string? ServiceUsageId { get; set; }

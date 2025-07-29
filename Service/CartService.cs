@@ -517,7 +517,6 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     CustomerId = customerId,
-                    CartId = cart.Id,
                     OrderDate = DateTime.UtcNow,
                     Status = OrderStatus.Pending,
                     OrderItems = new List<OrderItem>(),
