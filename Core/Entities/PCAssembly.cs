@@ -11,9 +11,9 @@ namespace Core.Entities
     {
         public string? Name { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public string CustomerId { get; set; }
+        public string CustomerId { get; set; } = string.Empty;
         public Customer? Customer { get; set; }
-        public string ServiceUsageId { get; set; }
+        public string ServiceUsageId { get; set; } = string.Empty;
         public ServiceUsage? ServiceUsage { get; set; }
         public List<PCAssemblyItem>? PCAssemblyItems { get; set; } = new List<PCAssemblyItem>();
     }

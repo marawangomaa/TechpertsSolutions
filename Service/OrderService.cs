@@ -73,21 +73,26 @@ namespace Service
             {
                 var order = OrderMapper.ToEntity(dto);
                 
-                
+                // Calculate total amount
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
 
-                
+                // Get or create order history for this customer
                 var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
                 order.OrderHistoryId = orderHistory.Id;
 
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
+                // Get the created order with all includes to return proper data
+                var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
+                    o => o.Id == order.Id,
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
                     Message = "Order created successfully.",
-                    Data = OrderMapper.ToReadDTO(order)
+                    Data = OrderMapper.ToReadDTO(createdOrder)
                 };
             }
             catch (Exception ex)
@@ -129,7 +134,7 @@ namespace Service
                 // Use FindWithStringIncludesAsync to get the order with all necessary includes
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Id == id,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
                 
                 var order = orders.FirstOrDefault();
                 
@@ -174,7 +179,7 @@ namespace Service
                 // Let's use FindWithStringIncludesAsync with a predicate that matches all orders
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
                     o => true, // This will match all orders
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
                 
                 var orderDtos = allOrders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
@@ -223,7 +228,7 @@ namespace Service
             {
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId, 
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
                 
                 var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
@@ -247,7 +252,7 @@ namespace Service
 
         private async Task<OrderHistory> GetOrCreateOrderHistoryAsync(string customerId)
         {
-            
+            // First, try to find an existing OrderHistory that has orders for this customer
             var existingHistory = await _orderHistoryRepo.GetFirstOrDefaultAsync(
                 oh => oh.Orders.Any(o => o.CustomerId == customerId),
                 includeProperties: "Orders");
@@ -257,7 +262,7 @@ namespace Service
                 return existingHistory;
             }
 
-            
+            // If no existing history found, create a new one
             var newHistory = new OrderHistory
             {
                 Id = Guid.NewGuid().ToString(),
@@ -295,11 +300,9 @@ namespace Service
 
             try
             {
-                var orderHistories = await _orderHistoryRepo.FindWithIncludesAsync(
+                var orderHistories = await _orderHistoryRepo.FindWithStringIncludesAsync(
                     oh => oh.Orders.Any(o => o.CustomerId == customerId),
-                    oh => oh.Orders,
-                    oh => oh.Orders.Select(o => o.OrderItems),
-                    oh => oh.Orders.Select(o => o.Customer));
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
 
                 var orderHistoryDtos = orderHistories
                     .Where(oh => oh != null)
@@ -388,7 +391,7 @@ namespace Service
             {
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Status == status,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
 
                 var orderDtos = orders
                     .Where(o => o != null)

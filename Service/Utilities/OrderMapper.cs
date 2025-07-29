@@ -22,6 +22,7 @@ namespace Service.Utilities
             {
                 Id = order.Id ?? string.Empty,
                 CustomerId = order.CustomerId ?? string.Empty,
+                CustomerName = order.Customer?.User?.FullName ?? "Unknown Customer",
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,

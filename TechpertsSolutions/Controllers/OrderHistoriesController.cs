@@ -70,5 +70,68 @@ namespace TechpertsSolutions.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("customer/{customerId}/orders")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<OrderReadDTO>>>> GetCustomerOrders(string customerId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _historyService.GetCustomerOrdersAsync(customerId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("order/{orderId}")]
+        public async Task<ActionResult<GeneralResponse<OrderHistoryReadDTO>>> GetHistoryByOrderId(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Order ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _historyService.GetHistoryByOrderIdAsync(orderId);
+            if (!response.Success)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("customer/{customerId}/orders-direct")]
+        public async Task<ActionResult<GeneralResponse<IEnumerable<OrderReadDTO>>>> GetCustomerOrdersDirect(string customerId)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID cannot be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _historyService.GetCustomerOrdersDirectAsync(customerId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
     }
 }
