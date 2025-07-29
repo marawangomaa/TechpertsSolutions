@@ -10,13 +10,25 @@ namespace Service.Utilities
         {
             if (maintenance == null) return null;
 
+            // For maintenance records, the service type should be "Maintenance"
+            // If there are service usages, use the first one's service type, otherwise default to "Maintenance"
+            string serviceType = "Maintenance";
+            if (maintenance.ServiceUsages != null && maintenance.ServiceUsages.Any())
+            {
+                var firstServiceUsage = maintenance.ServiceUsages.FirstOrDefault();
+                if (firstServiceUsage != null && !string.IsNullOrEmpty(firstServiceUsage.ServiceType))
+                {
+                    serviceType = firstServiceUsage.ServiceType;
+                }
+            }
+
             return new MaintenanceDTO
             {
                 Id = maintenance.Id,
                 CustomerName = maintenance.Customer?.User?.FullName ?? "Unknown Customer",
                 TechCompanyName = maintenance.TechCompany?.User?.FullName ?? "Unknown Tech Company",
                 ProductName = maintenance.Warranty?.Product?.Name ?? "Unknown Product",
-                ServiceType = maintenance.ServiceUsages?.FirstOrDefault()?.ServiceType.ToString() ?? "Unknown Service",
+                ServiceType = serviceType,
                 WarrantyStart = maintenance.Warranty?.StartDate ?? DateTime.MinValue,
                 WarrantyEnd = maintenance.Warranty?.EndDate ?? DateTime.MinValue
             };

@@ -110,5 +110,116 @@ namespace TechpertsSolutions.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("tech-company/{techCompanyId}")]
+        public async Task<IActionResult> GetByTechCompanyId(string techCompanyId)
+        {
+            if (string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Tech Company ID must not be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _service.GetByTechCompanyIdAsync(techCompanyId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("available-requests")]
+        public async Task<IActionResult> GetAvailableMaintenanceRequests()
+        {
+            var response = await _service.GetAvailableMaintenanceRequestsAsync();
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{maintenanceId}/accept")]
+        public async Task<IActionResult> AcceptMaintenanceRequest(string maintenanceId, [FromBody] string techCompanyId)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(techCompanyId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Maintenance ID and Tech Company ID must not be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _service.AcceptMaintenanceRequestAsync(maintenanceId, techCompanyId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{maintenanceId}/complete")]
+        public async Task<IActionResult> CompleteMaintenance(string maintenanceId, [FromBody] CompleteMaintenanceRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Maintenance ID must not be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.TechCompanyId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Tech Company ID must not be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _service.CompleteMaintenanceAsync(maintenanceId, request.TechCompanyId, request.Notes);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPut("{maintenanceId}/status")]
+        public async Task<IActionResult> UpdateMaintenanceStatus(string maintenanceId, [FromBody] string newStatus)
+        {
+            if (string.IsNullOrWhiteSpace(maintenanceId) || string.IsNullOrWhiteSpace(newStatus))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Maintenance ID and new status must not be null or empty.",
+                    Data = "Invalid input"
+                });
+            }
+
+            var response = await _service.UpdateMaintenanceStatusAsync(maintenanceId, newStatus);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+    }
+
+    public class CompleteMaintenanceRequest
+    {
+        public string TechCompanyId { get; set; }
+        public string Notes { get; set; }
     }
 }

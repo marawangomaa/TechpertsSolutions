@@ -36,11 +36,9 @@ namespace Service
         {
             try
             {
-                var maintenances = await _maintenanceRepo.GetAllWithIncludesAsync(
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                var maintenances = await _maintenanceRepo.FindWithStringIncludesAsync(
+                    m => true,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
@@ -85,11 +83,9 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(id,
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                var maintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
+                    m => m.Id == id,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
                 if (maintenance == null)
                 {
@@ -100,6 +96,9 @@ namespace Service
                         Data = null
                     };
                 }
+
+                // Ensure the maintenance has a ServiceUsage record
+                await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 return new GeneralResponse<MaintenanceDetailsDTO>
                 {
@@ -176,20 +175,29 @@ namespace Service
             {
                 var entity = MaintenanceMapper.MapToMaintenance(dto);
 
+                // Create a ServiceUsage record for this maintenance
+                var serviceUsage = new ServiceUsage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ServiceType = "Maintenance",
+                    UsedOn = DateTime.UtcNow,
+                    CallCount = 1,
+                    MaintenanceId = entity.Id
+                };
+
+                entity.ServiceUsages = new List<ServiceUsage> { serviceUsage };
+
                 await _maintenanceRepo.AddAsync(entity);
+                await _serviceUsageRepo.AddAsync(serviceUsage);
                 await _maintenanceRepo.SaveChangesAsync();
 
-                var customer = await _customerRepo.GetByIdAsync(dto.CustomerId);
-                var techCompany = await _techCompanyRepo.GetByIdAsync(dto.TechCompanyId);
-                var warranty = await _warrantyRepo.GetByIdAsync(dto.WarrantyId);
+                // Get the created maintenance with all includes to return proper names
+                var createdMaintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
+                    m => m.Id == entity.Id,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
+                );
 
-                var maintenanceDto = MaintenanceMapper.MapToMaintenanceDTO(entity, 
-                    customer?.User?.FullName ?? "Unknown",
-                    techCompany?.User?.FullName ?? "Unknown",
-                    warranty?.Product?.Name ?? "Unknown",
-                    "N/A", 
-                    warranty?.StartDate ?? DateTime.MinValue,
-                    warranty?.EndDate ?? DateTime.MinValue);
+                var maintenanceDto = MaintenanceMapper.MapToMaintenanceDTO(createdMaintenance);
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
@@ -443,11 +451,9 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                var maintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
+                    m => m.Id == maintenanceId,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
                 if (maintenance == null)
                 {
@@ -468,6 +474,9 @@ namespace Service
                         Data = null
                     };
                 }
+
+                // Ensure the maintenance has a ServiceUsage record
+                await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 maintenance.TechCompanyId = techCompanyId;
                 maintenance.Status = "InProgress";
@@ -506,11 +515,9 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                var maintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
+                    m => m.Id == maintenanceId,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
                 if (maintenance == null)
                 {
@@ -531,6 +538,9 @@ namespace Service
                         Data = null
                     };
                 }
+
+                // Ensure the maintenance has a ServiceUsage record
+                await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 maintenance.Status = "Completed";
                 maintenance.Notes = notes;
@@ -597,11 +607,9 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(maintenanceId,
-                    m => m.Customer,
-                    m => m.TechCompany,
-                    m => m.Warranty,
-                    m => m.ServiceUsages
+                var maintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
+                    m => m.Id == maintenanceId,
+                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
                 );
                 if (maintenance == null)
                 {
@@ -612,6 +620,9 @@ namespace Service
                         Data = null
                     };
                 }
+
+                // Ensure the maintenance has a ServiceUsage record
+                await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 maintenance.Status = newStatus;
                 _maintenanceRepo.Update(maintenance);
@@ -632,6 +643,25 @@ namespace Service
                     Message = "An unexpected error occurred while updating maintenance status.",
                     Data = null
                 };
+            }
+        }
+
+        private async Task EnsureMaintenanceHasServiceUsage(Maintenance maintenance)
+        {
+            // If maintenance doesn't have any ServiceUsage records, create one
+            if (maintenance.ServiceUsages == null || !maintenance.ServiceUsages.Any())
+            {
+                var serviceUsage = new ServiceUsage
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    ServiceType = "Maintenance",
+                    UsedOn = DateTime.UtcNow,
+                    CallCount = 1,
+                    MaintenanceId = maintenance.Id
+                };
+
+                await _serviceUsageRepo.AddAsync(serviceUsage);
+                maintenance.ServiceUsages = new List<ServiceUsage> { serviceUsage };
             }
         }
     }
