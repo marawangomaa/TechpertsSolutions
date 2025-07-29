@@ -58,7 +58,7 @@ namespace Service.Utilities
                 Quantity = quantity,
                 ImageUrl = item.Product?.ImageUrl ?? string.Empty,
                 Stock = item.Product?.Stock ?? 0
-                
+                // ItemTotal is calculated automatically via the property
             };
         }
 

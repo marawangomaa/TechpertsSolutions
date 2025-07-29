@@ -347,11 +347,11 @@ namespace TechpertsSolutions.Controllers
         
         private IActionResult GetErrorResponse(GeneralResponse<OrderReadDTO> result)
         {
-            if (result.Message.Contains("not found") || result.Message.Contains("empty"))
+            if (result.Message?.Contains("not found") == true || result.Message?.Contains("empty") == true)
             {
                 return NotFound(result);
             }
-            else if (result.Message.Contains("stock") || result.Message.Contains("validation"))
+            else if (result.Message?.Contains("stock") == true || result.Message?.Contains("validation") == true)
             {
                 return Conflict(result);
             }

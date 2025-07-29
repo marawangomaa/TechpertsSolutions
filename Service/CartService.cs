@@ -327,7 +327,7 @@ namespace Service
             if (item == null)
                 return $"? Product with ID {productId} not found in cart.";
 
-            cart.CartItems.Remove(item); 
+            cart.CartItems?.Remove(item); 
             cartItemRepo.Remove(item); 
             await cartItemRepo.SaveChangesAsync();
 
@@ -562,9 +562,9 @@ namespace Service
                 await orderRepo.SaveChangesAsync();
 
                 
-                foreach (var cartItem in itemsToCheckout)
+                foreach (var cartItem in itemsToCheckout.ToList())
                 {
-                    cart.CartItems.Remove(cartItem);
+                    cart.CartItems?.Remove(cartItem);
                     cartItemRepo.Remove(cartItem);
                 }
                 await cartItemRepo.SaveChangesAsync();
