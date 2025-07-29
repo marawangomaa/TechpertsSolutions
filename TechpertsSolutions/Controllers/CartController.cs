@@ -79,7 +79,28 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("{customerId}/items")]
         public async Task<IActionResult> AddItem(string customerId, [FromBody] CartItemDTO itemDto)
         {
-            
+            // Validate customerId
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID must not be null or empty.",
+                    Data = "Missing CustomerId"
+                });
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
+
+            // Validate itemDto
             if (itemDto == null || string.IsNullOrWhiteSpace(itemDto.ProductId) || itemDto.Quantity <= 0)
             {
                 return BadRequest(new GeneralResponse<string>
@@ -90,24 +111,69 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var resultMessage = await cartService.AddItemAsync(customerId, itemDto);
-
-            var isSuccess = resultMessage.StartsWith("?");
-
-            var response = new GeneralResponse<object>
+            // Validate ProductId format
+            if (!Guid.TryParse(itemDto.ProductId, out _))
             {
-                Success = isSuccess,
-                Message = resultMessage.TrimStart('?', '?').Trim(),
-                Data = null
-            };
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Product ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
 
-            return isSuccess ? Ok(response) : BadRequest(response);
+            try
+            {
+                var resultMessage = await cartService.AddItemAsync(customerId, itemDto);
+
+                // The service returns messages starting with "?" for success
+                var isSuccess = resultMessage.StartsWith("?");
+
+                var response = new GeneralResponse<object>
+                {
+                    Success = isSuccess,
+                    Message = resultMessage.TrimStart('?').Trim(),
+                    Data = null
+                };
+
+                return isSuccess ? Ok(response) : BadRequest(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while adding item to cart.",
+                    Data = ex.Message
+                });
+            }
         }
 
         [HttpPut("{customerId}/items")]
         public async Task<IActionResult> UpdateItemQuantity(string customerId, [FromBody] CartUpdateItemQuantityDTO updateDto)
         {
-            
+            // Validate customerId
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID must not be null or empty.",
+                    Data = "Missing CustomerId"
+                });
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
+
+            // Validate updateDto
             if (updateDto == null || string.IsNullOrWhiteSpace(updateDto.ProductId) || updateDto.Quantity <= 0)
             {
                 return BadRequest(new GeneralResponse<string>
@@ -118,72 +184,165 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var resultMessage = await cartService.UpdateItemQuantityAsync(customerId, updateDto);
-
-            var isSuccess = resultMessage.StartsWith("?");
-
-            var response = new GeneralResponse<object>
+            // Validate ProductId format
+            if (!Guid.TryParse(updateDto.ProductId, out _))
             {
-                Success = isSuccess,
-                Message = resultMessage.TrimStart('?', '?').Trim(),
-                Data = null
-            };
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Product ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
 
-            return isSuccess ? Ok(response) : NotFound(response); 
+            try
+            {
+                var resultMessage = await cartService.UpdateItemQuantityAsync(customerId, updateDto);
+
+                // The service returns messages starting with "?" for success
+                var isSuccess = resultMessage.StartsWith("?");
+
+                var response = new GeneralResponse<object>
+                {
+                    Success = isSuccess,
+                    Message = resultMessage.TrimStart('?').Trim(),
+                    Data = null
+                };
+
+                return isSuccess ? Ok(response) : NotFound(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while updating item quantity.",
+                    Data = ex.Message
+                });
+            }
         }
 
         [HttpDelete("{customerId}/items/{productId}")]
         public async Task<IActionResult> RemoveItem(string customerId, string productId)
         {
-            if (string.IsNullOrWhiteSpace(customerId) || string.IsNullOrWhiteSpace(productId))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Customer ID and Product ID must not be null or empty.",
-                    Data = "Missing CustomerId or ProductId"
-                });
-            }
-
-            var resultMessage = await cartService.RemoveItemAsync(customerId, productId);
-
-            var isSuccess = resultMessage.StartsWith("?");
-
-            var response = new GeneralResponse<object>
-            {
-                Success = isSuccess,
-                Message = resultMessage.TrimStart('?', '?').Trim(),
-                Data = null
-            };
-
-            return isSuccess ? Ok(response) : NotFound(response);
-        }
-
-        [HttpDelete("{customerId}/clear")]
-        public async Task<IActionResult> ClearCart(string customerId)
-        {
+            // Validate customerId
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Customer ID must not be null or empty.",
-                    Data = null
+                    Data = "Missing CustomerId"
                 });
             }
 
-            var resultMessage = await cartService.ClearCartAsync(customerId);
-
-            var isSuccess = resultMessage.StartsWith("?");
-
-            var response = new GeneralResponse<object>
+            if (!Guid.TryParse(customerId, out _))
             {
-                Success = isSuccess,
-                Message = resultMessage.TrimStart('?', '?').Trim(),
-                Data = null
-            };
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
 
-            return isSuccess ? Ok(response) : NotFound(response); 
+            // Validate productId
+            if (string.IsNullOrWhiteSpace(productId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Product ID must not be null or empty.",
+                    Data = "Missing ProductId"
+                });
+            }
+
+            if (!Guid.TryParse(productId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Product ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
+
+            try
+            {
+                var resultMessage = await cartService.RemoveItemAsync(customerId, productId);
+
+                // The service returns messages starting with "?" for success
+                var isSuccess = resultMessage.StartsWith("?");
+
+                var response = new GeneralResponse<object>
+                {
+                    Success = isSuccess,
+                    Message = resultMessage.TrimStart('?').Trim(),
+                    Data = null
+                };
+
+                return isSuccess ? Ok(response) : NotFound(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while removing item from cart.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+        [HttpDelete("{customerId}/clear")]
+        public async Task<IActionResult> ClearCart(string customerId)
+        {
+            // Validate customerId
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID must not be null or empty.",
+                    Data = "Missing CustomerId"
+                });
+            }
+
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID format is invalid.",
+                    Data = "Expected GUID format"
+                });
+            }
+
+            try
+            {
+                var resultMessage = await cartService.ClearCartAsync(customerId);
+
+                // The service returns messages starting with "?" for success
+                var isSuccess = resultMessage.StartsWith("?");
+
+                var response = new GeneralResponse<object>
+                {
+                    Success = isSuccess,
+                    Message = resultMessage.TrimStart('?').Trim(),
+                    Data = null
+                };
+
+                return isSuccess ? Ok(response) : NotFound(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while clearing cart.",
+                    Data = ex.Message
+                });
+            }
         }
 
         
