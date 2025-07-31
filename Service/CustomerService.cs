@@ -32,16 +32,23 @@ namespace Service
         {
             try
             {
-                var customers = await _customerRepository.GetAllWithIncludesAsync(c => c.User, c => c.Cart, c => c.WishList);
-                var mappedCustomers = customers.Select(CustomerMapper.MapToCustomerDTO).Where(c => c != null).ToList();
+                // Optimized includes for customer listing with essential related data
+                var customers = await _customerRepository.GetAllWithIncludesAsync(
+                    c => c.User, 
+                    c => c.Role,
+                    c => c.Cart,
+                    c => c.WishList);
+
+                var customerDtos = customers.Select(CustomerMapper.MapToCustomerDTO).ToList();
+
                 return new GeneralResponse<IEnumerable<CustomerDTO>>
                 {
                     Success = true,
                     Message = "Customers retrieved successfully.",
-                    Data = mappedCustomers
+                    Data = customerDtos
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<IEnumerable<CustomerDTO>>
                 {
@@ -118,8 +125,8 @@ namespace Service
                     };
                 }
 
-                customer.City = dto.City;
-                customer.Country = dto.Country;
+                customer.User.City = dto.City;
+                customer.User.Country = dto.Country;
 
                 if (customer.User != null)
                 {
@@ -135,8 +142,8 @@ namespace Service
 
                 var updatedCustomer = new CustomerEditDTO
                 {
-                    City = customer.City,
-                    Country = customer.Country,
+                    City = customer.User.City,
+                    Country = customer.User.Country,
                     FullName = customer.User?.FullName,
                     Email = customer.User?.Email,
                     PhoneNumber = customer.User?.PhoneNumber,
@@ -310,7 +317,16 @@ namespace Service
 
             try
             {
-                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, c => c.User, c => c.Cart, c => c.WishList);
+                // Comprehensive includes for detailed customer view
+                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, 
+                    c => c.User, 
+                    c => c.Role,
+                    c => c.Cart,
+                    c => c.WishList,
+                    c => c.Orders,
+                    c => c.Maintenances,
+                    c => c.PCAssembly);
+
                 if (customer == null)
                 {
                     return new GeneralResponse<CustomerDTO>
@@ -321,25 +337,14 @@ namespace Service
                     };
                 }
 
-                var customerDto = CustomerMapper.MapToCustomerDTO(customer);
-                if (customerDto == null)
-                {
-                    return new GeneralResponse<CustomerDTO>
-                    {
-                        Success = false,
-                        Message = "Failed to map customer data.",
-                        Data = null
-                    };
-                }
-
                 return new GeneralResponse<CustomerDTO>
                 {
                     Success = true,
                     Message = "Customer retrieved successfully.",
-                    Data = customerDto
+                    Data = CustomerMapper.MapToCustomerDTO(customer)
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<CustomerDTO>
                 {

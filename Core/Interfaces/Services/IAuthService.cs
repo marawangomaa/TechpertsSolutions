@@ -1,14 +1,12 @@
-﻿using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using Core.Enums;
-
 
 namespace Core.Interfaces.Services
 {

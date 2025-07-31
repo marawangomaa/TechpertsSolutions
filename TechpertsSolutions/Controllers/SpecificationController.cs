@@ -1,7 +1,7 @@
 using Core.DTOs.SpecificationsDTOs;
+using Core.DTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {

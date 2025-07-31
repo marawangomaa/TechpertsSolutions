@@ -5,10 +5,12 @@ namespace Core.Enums
     public enum ProductPendingStatus
     {
         [StringValue("Pending")]
-        Pending,
+        Pending = 0,
+        
         [StringValue("Approved")]
-        Approved,
+        Approved = 1,
+        
         [StringValue("Rejected")]
-        Rejected
+        Rejected = 2
     }
 }

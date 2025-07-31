@@ -21,5 +21,17 @@ namespace Service.Utilities
                 RoleName = admin.Role?.Name
             };
         }
+
+        public static AdminReadDTO MapToAdminReadDTO(Admin admin) 
+        {
+            return new AdminReadDTO 
+            {
+                Id = admin.Id,
+                UserId = admin.UserId,
+                RoleId = admin.RoleId,
+                UserName = admin.User?.UserName,
+                RoleName = admin.Role?.Name
+            };
+        }
     }
 }

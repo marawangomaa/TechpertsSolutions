@@ -41,22 +41,21 @@ namespace Service
         {
             try
             {
-                
+                // Optimized includes for subcategory listing with category information
                 var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
-                    sc => sc.Category,
-                    sc => sc.Products
-                );
+                    sc => sc.Category);
+
+                var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
                 {
                     Success = true,
                     Message = "SubCategories retrieved successfully.",
-                    Data = SubCategoryMapper.MapToSubCategoryDTOList(subCategories)
+                    Data = subCategoryDtos
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting all subcategories.");
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
                 {
                     Success = false,
@@ -91,13 +90,11 @@ namespace Service
 
             try
             {
-                
+                // Comprehensive includes for detailed subcategory view with category information
                 var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
-                    id, 
-                    sc => sc.Category,
-                    sc => sc.Products
-                );
-                
+                    id,
+                    sc => sc.Category);
+
                 if (subCategory == null)
                 {
                     return new GeneralResponse<SubCategoryDTO>
@@ -117,7 +114,6 @@ namespace Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occurred while getting subcategory with ID: {id}");
                 return new GeneralResponse<SubCategoryDTO>
                 {
                     Success = false,

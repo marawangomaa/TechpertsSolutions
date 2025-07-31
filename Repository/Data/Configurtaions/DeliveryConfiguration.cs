@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class DeliveryConfiguration : IEntityTypeConfiguration<Delivery>
+    public class DeliveryConfiguration : BaseEntityConfiguration<Delivery>
     {
-        public void Configure(EntityTypeBuilder<Delivery> builder)
+        public override void Configure(EntityTypeBuilder<Delivery> builder)
         {
+            base.Configure(builder);
             builder.HasMany(d => d.TechCompanies)
                     .WithMany(t => t.Deliveries);
 
@@ -24,6 +26,11 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(d => d.DeliveryPerson)
                    .WithMany(dp => dp.Deliveries)
                    .HasForeignKey(d => d.DeliveryPersonId)
+                   .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne(d => d.Order)
+                   .WithOne(o => o.Delivery)
+                   .HasForeignKey<Delivery>(d => d.OrderId)
                    .OnDelete(DeleteBehavior.SetNull); 
         }
     }

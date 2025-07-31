@@ -9,6 +9,8 @@ using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
+using Microsoft.AspNetCore.Authorization;
+using Core.DTOs;
 
 
 namespace TechpertsSolutions.Controllers

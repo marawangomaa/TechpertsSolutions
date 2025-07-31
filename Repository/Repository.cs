@@ -1,4 +1,3 @@
-using Core.Entities;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -7,7 +6,7 @@ using TechpertsSolutions.Repository.Data;
 
 namespace Repository
 {
-    public class Repository<T> : IRepository<T> where T : BaseEntity
+    public class Repository<T> : IRepository<T> where T : class, IEntity
     {
         private readonly TechpertsContext _context;
         private readonly DbSet<T> _dbSet;

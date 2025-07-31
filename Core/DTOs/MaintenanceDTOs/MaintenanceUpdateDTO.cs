@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.Enums;
 
 namespace Core.DTOs.MaintenanceDTOs
 {
     public class MaintenanceUpdateDTO
     {
-        public string CustomerId { get; set; } = null!;
-        public string TechCompanyId { get; set; } = null!;
-        public string WarrantyId { get; set; } = null!;
+        public string? CustomerId { get; set; }
+        public string? TechCompanyId { get; set; }
+        public string? WarrantyId { get; set; }
+        public MaintenanceStatus? Status { get; set; }
+        public string? Notes { get; set; }
+        public DateTime? CompletedDate { get; set; }
     }
 }

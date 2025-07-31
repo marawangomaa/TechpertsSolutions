@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class WishListConfiguration : IEntityTypeConfiguration<WishList>
+    public class WishListConfiguration : BaseEntityConfiguration<WishList>
     {
-        public void Configure(EntityTypeBuilder<WishList> builder)
+        public override void Configure(EntityTypeBuilder<WishList> builder)
         {
+            base.Configure(builder);
             builder.HasOne(wl => wl.Customer)
                    .WithOne(c => c.WishList)
                    .HasForeignKey<WishList>(wl => wl.CustomerId)

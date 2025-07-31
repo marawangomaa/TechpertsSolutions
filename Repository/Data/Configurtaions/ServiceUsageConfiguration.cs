@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class ServiceUsageConfiguration : IEntityTypeConfiguration<ServiceUsage>
+    public class ServiceUsageConfiguration : BaseEntityConfiguration<ServiceUsage>
     {
-        public void Configure(EntityTypeBuilder<ServiceUsage> builder)
+        public override void Configure(EntityTypeBuilder<ServiceUsage> builder)
         {
+            base.Configure(builder);
             builder.HasOne(su => su.Maintenance)
                    .WithMany(m => m.ServiceUsages)
                    .HasForeignKey(su => su.MaintenanceId)

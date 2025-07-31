@@ -1,5 +1,5 @@
 using Core.DTOs.MaintenanceDTOs;
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities

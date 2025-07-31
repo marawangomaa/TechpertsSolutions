@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class MaintainenceConfiguration : IEntityTypeConfiguration<Maintenance>
+    public class MaintainenceConfiguration : BaseEntityConfiguration<Maintenance>
     {
-        public void Configure(EntityTypeBuilder<Maintenance> builder)
+        public override void Configure(EntityTypeBuilder<Maintenance> builder)
         {
+            base.Configure(builder);
             builder.HasOne(m => m.Customer)
                    .WithMany(c => c.Maintenances)
                    .HasForeignKey(m => m.CustomerId)

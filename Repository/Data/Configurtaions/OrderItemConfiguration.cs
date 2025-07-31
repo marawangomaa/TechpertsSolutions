@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+    public class OrderItemConfiguration : BaseEntityConfiguration<OrderItem>
     {
-        public void Configure(EntityTypeBuilder<OrderItem> builder)
+        public override void Configure(EntityTypeBuilder<OrderItem> builder)
         {
+            base.Configure(builder);
             builder.HasOne(oi => oi.Order)
                    .WithMany(o => o.OrderItems)
                    .HasForeignKey(oi => oi.OrderId)

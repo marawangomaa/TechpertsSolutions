@@ -1,6 +1,7 @@
 using Core.DTOs.DeliveryDTOs;
-using TechpertsSolutions.Core.DTOs;
-using Core.Entities;
+using Core.DTOs;
+using Core.Enums;
+using TechpertsSolutions.Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -24,16 +25,20 @@ namespace Service
         {
             try
             {
+                // Optimized includes for delivery listing with essential related data
                 var deliveries = await _deliveryrepo.GetAllWithIncludesAsync(
-                    d => d.DeliveryPerson, 
-                    d => d.Customer, 
-                    d => d.TechCompanies
-                );
+                    d => d.Customer,
+                    d => d.Customer.User,
+                    d => d.DeliveryPerson,
+                    d => d.DeliveryPerson.User);
+
+                var deliveryDtos = deliveries.Select(DeliveryMapper.MapToDeliveryDTO).ToList();
+
                 return new GeneralResponse<IEnumerable<DeliveryDTO>>
                 {
                     Success = true,
                     Message = "Deliveries retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
+                    Data = deliveryDtos
                 };
             }
             catch (Exception ex)
@@ -72,11 +77,13 @@ namespace Service
 
             try
             {
-                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id, 
-                    d => d.DeliveryPerson, 
-                    d => d.Customer, 
-                    d => d.TechCompanies
-                );
+                // Comprehensive includes for detailed delivery view
+                var delivery = await _deliveryrepo.GetByIdWithIncludesAsync(id,
+                    d => d.Customer,
+                    d => d.Customer.User,
+                    d => d.DeliveryPerson,
+                    d => d.DeliveryPerson.User);
+
                 if (delivery == null)
                 {
                     return new GeneralResponse<DeliveryDTO>
@@ -347,18 +354,31 @@ namespace Service
 
             try
             {
-                var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                    d => d.DeliveryStatus == status,
-                    d => d.DeliveryPerson,
-                    d => d.Customer
-                );
-
-                return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                // Parse the string status to enum
+                if (Enum.TryParse<DeliveryStatus>(status, out var deliveryStatus))
                 {
-                    Success = true,
-                    Message = $"Deliveries with status '{status}' retrieved successfully.",
-                    Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
-                };
+                    var deliveries = await _deliveryrepo.FindWithIncludesAsync(
+                        d => d.Status == deliveryStatus,
+                        d => d.DeliveryPerson,
+                        d => d.Customer
+                    );
+
+                    return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                    {
+                        Success = true,
+                        Message = $"Deliveries with status '{status}' retrieved successfully.",
+                        Data = DeliveryMapper.MapToDeliveryDTOList(deliveries)
+                    };
+                }
+                else
+                {
+                    return new GeneralResponse<IEnumerable<DeliveryDTO>>
+                    {
+                        Success = false,
+                        Message = $"Invalid status: {status}",
+                        Data = null
+                    };
+                }
             }
             catch (Exception ex)
             {
@@ -397,7 +417,7 @@ namespace Service
                 }
 
                 delivery.DeliveryPersonId = deliveryPersonId;
-                delivery.DeliveryStatus = "Assigned";
+                delivery.Status = DeliveryStatus.Assigned;
                 _deliveryrepo.Update(delivery);
                 await _deliveryrepo.SaveChangesAsync();
 
@@ -444,7 +464,20 @@ namespace Service
                     };
                 }
 
-                delivery.DeliveryStatus = newStatus;
+                // Parse the string status to enum
+                if (Enum.TryParse<DeliveryStatus>(newStatus, out var status))
+                {
+                    delivery.Status = status;
+                }
+                else
+                {
+                    return new GeneralResponse<DeliveryDTO>
+                    {
+                        Success = false,
+                        Message = $"Invalid status: {newStatus}",
+                        Data = null
+                    };
+                }
                 _deliveryrepo.Update(delivery);
                 await _deliveryrepo.SaveChangesAsync();
 
@@ -501,7 +534,7 @@ namespace Service
                     };
                 }
 
-                delivery.DeliveryStatus = "Delivered";
+                delivery.Status = DeliveryStatus.Delivered;
                 delivery.ActualDeliveryDate = DateTime.UtcNow;
                 _deliveryrepo.Update(delivery);
                 await _deliveryrepo.SaveChangesAsync();
@@ -529,7 +562,7 @@ namespace Service
             try
             {
                 var deliveries = await _deliveryrepo.FindWithIncludesAsync(
-                    d => d.DeliveryStatus == "Pending" && d.DeliveryPersonId == null,
+                    d => d.Status == DeliveryStatus.Assigned && d.DeliveryPersonId == null,
                     d => d.Customer
                 );
 
@@ -576,7 +609,7 @@ namespace Service
                     };
                 }
 
-                if (delivery.DeliveryStatus != "Pending" || delivery.DeliveryPersonId != null)
+                if (delivery.Status != DeliveryStatus.Assigned || delivery.DeliveryPersonId != null)
                 {
                     return new GeneralResponse<DeliveryDTO>
                     {
@@ -587,7 +620,7 @@ namespace Service
                 }
 
                 delivery.DeliveryPersonId = deliveryPersonId;
-                delivery.DeliveryStatus = "InTransit";
+                delivery.Status = DeliveryStatus.PickedUp;
                 _deliveryrepo.Update(delivery);
                 await _deliveryrepo.SaveChangesAsync();
 

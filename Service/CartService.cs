@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using Microsoft.EntityFrameworkCore;
@@ -63,9 +63,10 @@ namespace Service
                 return null; 
             }
 
+            // Optimized includes for cart with items and their products
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
-                includeProperties: "CartItems.Product" 
+                includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany" 
             );
 
             if (cart == null)
@@ -121,9 +122,10 @@ namespace Service
                     };
                 }
 
+                // Optimized includes for cart with items and their products
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.CustomerId == customerId,
-                    includeProperties: "CartItems.Product" 
+                    includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany" 
                 );
 
                 if (cart == null)
@@ -159,7 +161,7 @@ namespace Service
                 return new GeneralResponse<CartReadDTO>
                 {
                     Success = false,
-                    Message = $"An error occurred while getting or creating cart: {ex.Message}",
+                    Message = "An unexpected error occurred while retrieving the cart.",
                     Data = null
                 };
             }
@@ -518,9 +520,8 @@ namespace Service
                     Id = Guid.NewGuid().ToString(),
                     CustomerId = customerId,
                     OrderDate = DateTime.UtcNow,
-                    Status = OrderStatus.Pending,
+                    Status = OrderStatus.Ordered,
                     OrderItems = new List<OrderItem>(),
-                    DeliveryId = deliveryId,
                     ServiceUsageId = serviceUsageId
                 };
 

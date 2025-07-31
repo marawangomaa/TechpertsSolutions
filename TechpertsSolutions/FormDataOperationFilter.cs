@@ -14,14 +14,11 @@ namespace TechpertsSolutions
 
             foreach (var parameter in parameters)
             {
-                if (parameter.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.FromFormAttribute), false).Any())
-                {
-                    
-                    operation.RequestBody = null;
-
-                    
-                    if (operation.Parameters == null)
-                        operation.Parameters = new List<OpenApiParameter>();
+                                    if (parameter.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.FromFormAttribute), false).Any())
+                    {
+                        
+                        if (operation.Parameters == null)
+                            operation.Parameters = new List<OpenApiParameter>();
 
                     
                     if (parameter.ParameterType.Name == "CategoryCreateDTO")
@@ -181,6 +178,40 @@ namespace TechpertsSolutions
                             Schema = new OpenApiSchema { Type = "string" },
                             Description = "Parent category ID"
                         });
+                    }
+
+                    
+                    if (parameter.ParameterType.Name == "RegisterDTO")
+                    {
+                        
+                        operation.RequestBody = new OpenApiRequestBody
+                        {
+                            Content = new Dictionary<string, OpenApiMediaType>
+                            {
+                                ["multipart/form-data"] = new OpenApiMediaType
+                                {
+                                    Schema = new OpenApiSchema
+                                    {
+                                        Type = "object",
+                                        Properties = new Dictionary<string, OpenApiSchema>
+                                        {
+                                            ["fullName"] = new OpenApiSchema { Type = "string", Description = "User's full name" },
+                                            ["userName"] = new OpenApiSchema { Type = "string", Description = "Username" },
+                                            ["email"] = new OpenApiSchema { Type = "string", Description = "Email address" },
+                                            ["password"] = new OpenApiSchema { Type = "string", Description = "Password" },
+                                            ["confirmPassword"] = new OpenApiSchema { Type = "string", Description = "Password confirmation" },
+                                            ["address"] = new OpenApiSchema { Type = "string", Description = "User's address" },
+                                            ["phoneNumber"] = new OpenApiSchema { Type = "string", Description = "Phone number" },
+                                            ["city"] = new OpenApiSchema { Type = "string", Description = "City" },
+                                            ["country"] = new OpenApiSchema { Type = "string", Description = "Country" },
+                                            ["profilePhoto"] = new OpenApiSchema { Type = "string", Format = "binary", Description = "Profile photo file" },
+                                            ["role"] = new OpenApiSchema { Type = "string", Description = "User role (Customer, Admin, TechCompany, DeliveryPerson)" }
+                                        },
+                                        Required = new HashSet<string> { "fullName", "userName", "email", "password", "confirmPassword", "address", "phoneNumber", "role" }
+                                    }
+                                }
+                            }
+                        };
                     }
                 }
             }

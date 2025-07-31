@@ -1,4 +1,3 @@
-using Core.Entities;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -17,12 +16,16 @@ namespace TechpertsSolutions.Core.Entities
         public decimal? DiscountPrice { get; set; }
         public string? Description { get; set; }
         public int Stock { get; set; }
-        public string? ImageUrl { get; set; }
+        public string? ImageUrl { get; set; } // Keep for backward compatibility
+        public string? Image1Url { get; set; }
+        public string? Image2Url { get; set; }
+        public string? Image3Url { get; set; }
+        public string? Image4Url { get; set; }
         public string CategoryId { get; set; }
         public Category? Category { get; set; }
         public string? SubCategoryId { get; set; }
         public SubCategory? SubCategory { get; set; }
-        public string? TechCompanyId { get; set; }
+        public string TechCompanyId { get; set; } // Made required
         public TechCompany? TechCompany { get; set; }
         public ProductPendingStatus status { get; set; } = ProductPendingStatus.Pending;
         public List<Specification>? Specifications { get; set; } = new List<Specification>();

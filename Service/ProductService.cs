@@ -1,7 +1,6 @@
 using Core.DTOs.ProductDTOs;
 using TechpertsSolutions.Core.DTOs;
 using Core.Enums;
-using Core.Entities;
 using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
 using Core.Interfaces.Services;
@@ -20,21 +19,27 @@ namespace Service
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<Category> _categoryRepo;
         private readonly IRepository<SubCategory> _subCategoryRepo;
+        private readonly IRepository<TechCompany> _techCompanyRepo;
         private readonly IFileService _fileService;
+        private readonly INotificationService _notificationService;
 
         public ProductService(IRepository<Product> productRepo,
             IRepository<Specification> specRepo,
             IRepository<Warranty> warrantyRepo,
             IRepository<Category> categoryRepo,
             IRepository<SubCategory> subCategoryRepo,
-            IFileService fileService)
+            IRepository<TechCompany> techCompanyRepo,
+            IFileService fileService,
+            INotificationService notificationService)
         {
             _productRepo = productRepo;
             _specRepo = specRepo;
             _warrantyRepo = warrantyRepo;
             _categoryRepo = categoryRepo;
             _subCategoryRepo = subCategoryRepo;
+            _techCompanyRepo = techCompanyRepo;
             _fileService = fileService;
+            _notificationService = notificationService;
         }
 
         public async Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllAsync(
@@ -70,7 +75,11 @@ namespace Service
 
             try
             {
-                var allProducts = (await _productRepo.GetAllWithIncludesAsync(p => p.Category, p => p.SubCategory)).AsQueryable();
+                // Optimized includes for product listing - only include what's needed for ProductCardDTO
+                var allProducts = (await _productRepo.GetAllWithIncludesAsync(
+                    p => p.Category, 
+                    p => p.SubCategory, 
+                    p => p.TechCompany)).AsQueryable();
 
                 
                 if (status.HasValue)
@@ -96,30 +105,33 @@ namespace Service
                     "price" => sortDescending ? allProducts.OrderByDescending(p => p.Price) : allProducts.OrderBy(p => p.Price),
                     "name" => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name),
                     "stock" => sortDescending ? allProducts.OrderByDescending(p => p.Stock) : allProducts.OrderBy(p => p.Stock),
-                    _ => allProducts.OrderBy(p => p.Id)
+                    "createdat" => sortDescending ? allProducts.OrderByDescending(p => p.CreatedAt) : allProducts.OrderBy(p => p.CreatedAt),
+                    _ => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name)
                 };
 
-                int totalItems = allProducts.Count();
+                var totalCount = allProducts.Count();
+                var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
-                var items = allProducts
+                var products = allProducts
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(ProductMapper.MapToProductCardDTO)
                     .ToList();
 
-                var result = new PaginatedDTO<ProductCardDTO>
+                var productDtos = products.Select(ProductMapper.MapToProductCardDTO).ToList();
+
+                var paginatedResult = new PaginatedDTO<ProductCardDTO>
                 {
+                    Items = productDtos,
+                    TotalItems = totalCount,
                     PageNumber = pageNumber,
-                    PageSize = pageSize,
-                    TotalItems = totalItems,
-                    Items = items
+                    PageSize = pageSize
                 };
 
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = true,
                     Message = "Products retrieved successfully.",
-                    Data = result
+                    Data = paginatedResult
                 };
             }
             catch (Exception ex)
@@ -158,11 +170,14 @@ namespace Service
 
             try
             {
+                // Comprehensive includes for detailed product view
                 var product = await _productRepo.GetByIdWithIncludesAsync(id,
                     p => p.Category,
                     p => p.SubCategory,
-                    p => p.Warranties,
-                    p => p.Specifications);
+                    p => p.TechCompany,
+                    p => p.TechCompany.User,
+                    p => p.Specifications,
+                    p => p.Warranties);
 
                 if (product == null)
                 {
@@ -235,9 +250,63 @@ namespace Service
                 };
             }
 
+            if (string.IsNullOrWhiteSpace(dto.TechCompanyId))
+            {
+                return new GeneralResponse<ProductDTO>
+                {
+                    Success = false,
+                    Message = "Tech Company ID is required.",
+                    Data = null
+                };
+            }
+
+            // Validate TechCompany ID format
+            if (!Guid.TryParse(dto.TechCompanyId, out _))
+            {
+                return new GeneralResponse<ProductDTO>
+                {
+                    Success = false,
+                    Message = "Invalid Tech Company ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
             try
             {
-                
+                // Validate TechCompany exists and is active
+                var techCompany = await _techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.Id == dto.TechCompanyId);
+                if (techCompany == null)
+                {
+                    return new GeneralResponse<ProductDTO>
+                    {
+                        Success = false,
+                        Message = $"Tech Company with ID '{dto.TechCompanyId}' not found.",
+                        Data = null
+                    };
+                }
+
+                if (!techCompany.IsActive)
+                {
+                    return new GeneralResponse<ProductDTO>
+                    {
+                        Success = false,
+                        Message = $"Tech Company '{techCompany.User?.UserName ?? dto.TechCompanyId}' is not active and cannot create products.",
+                        Data = null
+                    };
+                }
+
+                // Validate discount price
+                if (dto.DiscountPrice.HasValue && dto.DiscountPrice >= dto.Price)
+                {
+                    return new GeneralResponse<ProductDTO>
+                    {
+                        Success = false,
+                        Message = "Discount price must be less than the regular price.",
+                        Data = null
+                    };
+                }
+
+                // Find the category by enum value
                 var categoryName = category.GetStringValue();
                 var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
                 if (categoryEntity == null)
@@ -250,51 +319,152 @@ namespace Service
                     };
                 }
 
-                
-                SubCategory? subCategory = null;
+                // Find subcategory if provided
+                SubCategory? subCategoryEntity = null;
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
-                    subCategory = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName && sc.CategoryId == categoryEntity.Id);
-                    if (subCategory == null)
+                    subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName);
+                    if (subCategoryEntity == null)
                     {
                         return new GeneralResponse<ProductDTO>
                         {
                             Success = false,
-                            Message = $"SubCategory '{dto.SubCategoryName}' not found in category '{categoryName}'.",
+                            Message = $"SubCategory '{dto.SubCategoryName}' not found.",
                             Data = null
                         };
                     }
                 }
 
-                
-                var product = ProductMapper.MapToProduct(dto);
-                if (product == null)
+                // Validate TechCompany exists and is active (already validated above, but double-check)
+                if (techCompany == null)
                 {
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
-                        Message = "Failed to map product data.",
+                        Message = $"Tech Company with ID '{dto.TechCompanyId}' not found.",
                         Data = null
                     };
                 }
 
-                
-                product.status = status;
-                product.CategoryId = categoryEntity.Id;
-                if (subCategory != null)
-                    product.SubCategoryId = subCategory.Id;
+                var product = new Product
+                {
+                    Name = dto.Name,
+                    Price = dto.Price,
+                    DiscountPrice = dto.DiscountPrice,
+                    Description = dto.Description,
+                    Stock = dto.Stock,
+                    CategoryId = categoryEntity.Id,
+                    SubCategoryId = subCategoryEntity?.Id,
+                    TechCompanyId = dto.TechCompanyId,
+                    status = status,
+                    Image1Url = dto.Image1Url,
+                    Image2Url = dto.Image2Url,
+                    Image3Url = dto.Image3Url,
+                    Image4Url = dto.Image4Url
+                };
 
                 await _productRepo.AddAsync(product);
                 await _productRepo.SaveChangesAsync();
 
+                // Get the created product with all necessary includes for DTO mapping
                 var addedProduct = await _productRepo.GetByIdWithIncludesAsync(
-                    product.Id, p => p.Category, p => p.SubCategory, p => p.Warranties, p => p.Specifications, p => p.TechCompany);
+                    product.Id,
+                    p => p.Category,
+                    p => p.SubCategory,
+                    p => p.TechCompany,
+                    p => p.TechCompany.User,
+                    p => p.Specifications,
+                    p => p.Warranties);
+
+                // Add specifications if provided
+                if (dto.Specifications != null && dto.Specifications.Any())
+                {
+                    foreach (var specDto in dto.Specifications)
+                    {
+                        if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Specification key and value cannot be null or empty.",
+                                Data = null
+                            };
+                        }
+
+                        var specification = new Specification
+                        {
+                            Key = specDto.Key.Trim(),
+                            Value = specDto.Value.Trim(),
+                            ProductId = product.Id
+                        };
+                        await _specRepo.AddAsync(specification);
+                    }
+                }
+
+                // Add warranties if provided
+                if (dto.Warranties != null && dto.Warranties.Any())
+                {
+                    foreach (var warrantyDto in dto.Warranties)
+                    {
+                        if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Warranty type and duration are required.",
+                                Data = null
+                            };
+                        }
+
+                        if (warrantyDto.StartDate >= warrantyDto.EndDate)
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Warranty start date must be before end date.",
+                                Data = null
+                            };
+                        }
+
+                        var warranty = new Warranty
+                        {
+                            Type = warrantyDto.Type.Trim(),
+                            Duration = warrantyDto.Duration,
+                            Description = warrantyDto.Description?.Trim(),
+                            StartDate = warrantyDto.StartDate,
+                            EndDate = warrantyDto.EndDate,
+                            ProductId = product.Id
+                        };
+                        await _warrantyRepo.AddAsync(warranty);
+                    }
+                }
+
+                await _productRepo.SaveChangesAsync();
+
+                // Get the final product with all specifications and warranties
+                var finalProduct = await _productRepo.GetByIdWithIncludesAsync(
+                    product.Id,
+                    p => p.Category,
+                    p => p.SubCategory,
+                    p => p.TechCompany,
+                    p => p.TechCompany.User,
+                    p => p.Specifications,
+                    p => p.Warranties);
+
+                // Send notification to admin about new pending product
+                await _notificationService.SendNotificationToRoleAsync(
+                    "Admin",
+                    $"New product '{product.Name}' has been added and is pending approval.",
+                    NotificationType.ProductPending,
+                    product.Id,
+                    "Product"
+                );
 
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = true,
-                    Message = "Product created successfully.",
-                    Data = ProductMapper.MapToProductDTO(addedProduct)
+                    Message = "Product created successfully and is pending approval.",
+                    Data = ProductMapper.MapToProductDTO(finalProduct)
                 };
             }
             catch (Exception ex)
@@ -302,7 +472,7 @@ namespace Service
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
-                    Message = $"Unexpected error: {ex.Message}",
+                    Message = $"An unexpected error occurred while creating the product {ex}.",
                     Data = null
                 };
             }
@@ -336,11 +506,12 @@ namespace Service
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
-                    Message = "Update data cannot be null.",
+                    Message = "Product update data cannot be null.",
                     Data = null
                 };
             }
 
+            // Validate required fields
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
                 return new GeneralResponse<ProductDTO>
@@ -374,7 +545,12 @@ namespace Service
             try
             {
                 var product = await _productRepo.GetByIdWithIncludesAsync(
-                    id, p => p.Category, p => p.SubCategory, p => p.Warranties, p => p.Specifications);
+                    id,
+                    p => p.Category,
+                    p => p.SubCategory,
+                    p => p.TechCompany,
+                    p => p.Specifications,
+                    p => p.Warranties);
 
                 if (product == null)
                 {
@@ -386,55 +562,156 @@ namespace Service
                     };
                 }
 
-                
-                var categoryName = category.GetStringValue();
-                var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
-                if (categoryEntity == null)
+                // Validate TechCompany is still active
+                if (product.TechCompany != null && !product.TechCompany.IsActive)
                 {
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
-                        Message = $"Category '{categoryName}' not found.",
+                        Message = $"Cannot update product. Tech Company '{product.TechCompany.User?.UserName ?? product.TechCompanyId}' is not active.",
                         Data = null
                     };
                 }
 
-                
-                SubCategory? subCategory = null;
-                if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
+                // Validate discount price
+                if (dto.DiscountPrice.HasValue && dto.DiscountPrice >= dto.Price)
                 {
-                    subCategory = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName && sc.CategoryId == categoryEntity.Id);
-                    if (subCategory == null)
+                    return new GeneralResponse<ProductDTO>
                     {
-                        return new GeneralResponse<ProductDTO>
-                        {
-                            Success = false,
-                            Message = $"SubCategory '{dto.SubCategoryName}' not found in category '{categoryName}'.",
-                            Data = null
-                        };
+                        Success = false,
+                        Message = "Discount price must be less than the regular price.",
+                        Data = null
+                    };
+                }
+
+                // Update basic properties
+                product.Name = dto.Name;
+                product.Price = dto.Price;
+                product.DiscountPrice = dto.DiscountPrice;
+                product.Description = dto.Description;
+                product.Stock = dto.Stock;
+                product.status = status;
+
+                // Update category if changed
+                if (category != ProductCategory.None)
+                {
+                    var categoryName = category.GetStringValue();
+                    var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
+                    if (categoryEntity != null)
+                    {
+                        product.CategoryId = categoryEntity.Id;
                     }
                 }
 
-                
-                ProductMapper.MapToProduct(dto, product);
-                product.status = status;
-                product.CategoryId = categoryEntity.Id;
-                product.SubCategoryId = subCategory?.Id;
+                // Update subcategory if provided
+                if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
+                {
+                    var subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName);
+                    if (subCategoryEntity != null)
+                    {
+                        product.SubCategoryId = subCategoryEntity.Id;
+                    }
+                }
+
+                // Update specifications if provided
+                if (dto.Specifications != null)
+                {
+                    // Validate specifications
+                    foreach (var specDto in dto.Specifications)
+                    {
+                        if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Specification key and value cannot be null or empty.",
+                                Data = null
+                            };
+                        }
+                    }
+
+                    // Remove existing specifications
+                    var existingSpecs = await _specRepo.FindAsync(s => s.ProductId == id);
+                    foreach (var spec in existingSpecs)
+                    {
+                        _specRepo.Remove(spec);
+                    }
+
+                    // Add new specifications
+                    foreach (var specDto in dto.Specifications)
+                    {
+                        var specification = new Specification
+                        {
+                            Key = specDto.Key.Trim(),
+                            Value = specDto.Value.Trim(),
+                            ProductId = id
+                        };
+                        await _specRepo.AddAsync(specification);
+                    }
+                }
+
+                // Update warranties if provided
+                if (dto.Warranties != null)
+                {
+                    // Validate warranties
+                    foreach (var warrantyDto in dto.Warranties)
+                    {
+                        if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Warranty type and duration are required.",
+                                Data = null
+                            };
+                        }
+
+                        if (warrantyDto.StartDate >= warrantyDto.EndDate)
+                        {
+                            return new GeneralResponse<ProductDTO>
+                            {
+                                Success = false,
+                                Message = "Warranty start date must be before end date.",
+                                Data = null
+                            };
+                        }
+                    }
+
+                    // Remove existing warranties
+                    var existingWarranties = await _warrantyRepo.FindAsync(w => w.ProductId == id);
+                    foreach (var warranty in existingWarranties)
+                    {
+                        _warrantyRepo.Remove(warranty);
+                    }
+
+                    // Add new warranties
+                    foreach (var warrantyDto in dto.Warranties)
+                    {
+                        var warranty = new Warranty
+                        {
+                            Type = warrantyDto.Type.Trim(),
+                            Duration = warrantyDto.Duration,
+                            Description = warrantyDto.Description?.Trim(),
+                            StartDate = warrantyDto.StartDate,
+                            EndDate = warrantyDto.EndDate,
+                            ProductId = id
+                        };
+                        await _warrantyRepo.AddAsync(warranty);
+                    }
+                }
 
                 _productRepo.Update(product);
-
-                
                 await _productRepo.SaveChangesAsync();
 
-                
+                // Get the updated product with all includes for DTO mapping
                 var updatedProduct = await _productRepo.GetByIdWithIncludesAsync(
-                    product.Id, 
-                    p => p.Category, 
-                    p => p.SubCategory, 
-                    p => p.Warranties, 
-                    p => p.Specifications, 
-                    p => p.TechCompany
-                );
+                    id,
+                    p => p.Category,
+                    p => p.SubCategory,
+                    p => p.TechCompany,
+                    p => p.TechCompany.User,
+                    p => p.Specifications,
+                    p => p.Warranties);
 
                 return new GeneralResponse<ProductDTO>
                 {
@@ -448,7 +725,7 @@ namespace Service
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
-                    Message = $"Unexpected error: {ex.Message}",
+                    Message = "An unexpected error occurred while updating the product.",
                     Data = null
                 };
             }
@@ -561,6 +838,15 @@ namespace Service
                 _productRepo.Update(product);
                 await _productRepo.SaveChangesAsync();
 
+                // Send notification to TechCompany about product approval
+                await _notificationService.SendNotificationAsync(
+                    product.TechCompanyId,
+                    $"Your product '{product.Name}' has been approved by admin",
+                    NotificationType.ProductApproved,
+                    product.Id,
+                    "Product"
+                );
+
                 return new GeneralResponse<bool>
                 {
                     Success = true,
@@ -639,6 +925,15 @@ namespace Service
                 _productRepo.Update(product);
                 await _productRepo.SaveChangesAsync();
 
+                // Send notification to TechCompany about product rejection
+                await _notificationService.SendNotificationAsync(
+                    product.TechCompanyId,
+                    $"Your product '{product.Name}' has been rejected. Reason: {reason}",
+                    NotificationType.ProductRejected,
+                    product.Id,
+                    "Product"
+                );
+
                 return new GeneralResponse<bool>
                 {
                     Success = true,
@@ -691,6 +986,7 @@ namespace Service
                     p => p.Category,
                     p => p.SubCategory,
                     p => p.TechCompany,
+                    p => p.TechCompany.User,
                     p => p.Specifications,
                     p => p.Warranties);
 

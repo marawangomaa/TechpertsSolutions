@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +20,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<MaintenanceDTO>> CompleteMaintenanceAsync(string maintenanceId, string techCompanyId, string notes);
         Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAvailableMaintenanceRequestsAsync();
         Task<GeneralResponse<MaintenanceDTO>> UpdateMaintenanceStatusAsync(string maintenanceId, string newStatus);
+        Task<GeneralResponse<MaintenanceNearestDTO>> GetNearestMaintenanceAsync(string customerId);
     }
 }

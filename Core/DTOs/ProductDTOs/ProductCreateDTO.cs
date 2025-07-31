@@ -5,10 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core.DTOs.ProductDTOs;
 
 namespace Core.DTOs.ProductDTOs
 {
-    public class ProductCreateDTO
+    public class ProductCreateDTO : IValidatableObject
     {
         [Required(ErrorMessage = "Product name is required")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
@@ -30,9 +31,28 @@ namespace Core.DTOs.ProductDTOs
         [Range(0, double.MaxValue, ErrorMessage = "Discount price cannot be negative")]
         public decimal? DiscountPrice { get; set; }
 
-        
+        // Custom validation method
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (DiscountPrice.HasValue && DiscountPrice >= Price)
+            {
+                yield return new ValidationResult(
+                    "Discount price must be less than the regular price",
+                    new[] { nameof(DiscountPrice) });
+            }
+        }
+
+        [Required(ErrorMessage = "TechCompany ID is required")]
+        [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", 
+            ErrorMessage = "TechCompany ID must be a valid GUID format")]
         public string TechCompanyId { get; set; } = null!;
-        public List<SpecificationDTO>? Specifications { get; set; }
-        public List<WarrantyDTO>? Warranties { get; set; }
+
+        public string? Image1Url { get; set; }
+        public string? Image2Url { get; set; }
+        public string? Image3Url { get; set; }
+        public string? Image4Url { get; set; }
+
+        public List<SpecificationCreateDTO>? Specifications { get; set; }
+        public List<WarrantyCreateDTO>? Warranties { get; set; }
     }
 }

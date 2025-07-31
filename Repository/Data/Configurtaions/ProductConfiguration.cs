@@ -9,10 +9,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class ProductConfiguration : IEntityTypeConfiguration<Product>
+    public class ProductConfiguration : BaseEntityConfiguration<Product>
     {
-        public void Configure(EntityTypeBuilder<Product> builder)
+        public override void Configure(EntityTypeBuilder<Product> builder)
         {
+            base.Configure(builder);
             builder.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)

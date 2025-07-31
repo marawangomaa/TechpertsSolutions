@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -7,13 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class WishListItemConfiguration : IEntityTypeConfiguration<WishListItem>
+    public class WishListItemConfiguration : BaseEntityConfiguration<WishListItem>
     {
-        public void Configure(EntityTypeBuilder<WishListItem> builder)
+        public override void Configure(EntityTypeBuilder<WishListItem> builder)
         {
+            base.Configure(builder);
             builder.HasOne(wli => wli.WishList)
                    .WithMany(wl => wl.WishListItems)
                    .HasForeignKey(wli => wli.WishListId)

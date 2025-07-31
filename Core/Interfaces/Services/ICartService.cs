@@ -1,7 +1,7 @@
-﻿using Core.DTOs.CartDTOs;
+using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 
 namespace Core.Interfaces.Services
 {

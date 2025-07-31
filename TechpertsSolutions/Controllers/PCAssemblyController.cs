@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {

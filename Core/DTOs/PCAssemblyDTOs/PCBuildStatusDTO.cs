@@ -9,12 +9,10 @@ namespace Core.DTOs.PCAssemblyDTOs
     public class PCBuildStatusDTO
     {
         public string AssemblyId { get; set; }
-        public string CustomerId { get; set; }
-        public string? Name { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public decimal TotalPrice { get; set; }
-        public List<PCBuildComponentDTO> Components { get; set; } = new List<PCBuildComponentDTO>();
-        public Dictionary<string, bool> ComponentStatus { get; set; } = new Dictionary<string, bool>();
+        public string Status { get; set; }
+        public int ComponentCount { get; set; }
+        public decimal TotalCost { get; set; }
+        public bool IsComplete { get; set; }
     }
 
     public class PCBuildComponentDTO
@@ -36,21 +34,16 @@ namespace Core.DTOs.PCAssemblyDTOs
     {
         public string AssemblyId { get; set; }
         public decimal Subtotal { get; set; }
-        public decimal Discount { get; set; }
-        public decimal Total { get; set; }
-        public int TotalComponents { get; set; }
-        public int SelectedComponents { get; set; }
+        public decimal AssemblyFee { get; set; }
+        public decimal TotalAmount { get; set; }
     }
 
     public class CompatibleComponentDTO
     {
         public string ProductId { get; set; }
         public string ProductName { get; set; }
-        public string ProductImage { get; set; }
         public string Category { get; set; }
         public decimal Price { get; set; }
-        public decimal? DiscountPrice { get; set; }
-        public string CompatibilityReason { get; set; }
-        public double CompatibilityScore { get; set; }
+        public decimal CompatibilityScore { get; set; }
     }
 } 

@@ -1,11 +1,10 @@
 using Core.DTOs.PCAssemblyDTOs;
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
 {
@@ -52,6 +51,7 @@ namespace Service.Utilities
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     Price = item.Price,
+                    UnitPrice = item.Price,
                     Total = item.Quantity * item.Price
                 }).ToList() ?? new List<PCAssemblyItem>()
             };

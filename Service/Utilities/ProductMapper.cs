@@ -1,5 +1,4 @@
 using Core.DTOs.ProductDTOs;
-using Core.Entities;
 using TechpertsSolutions.Core.Entities;
 using System.Linq;
 using Core.Utilities;
@@ -40,10 +39,15 @@ namespace Service.Utilities
                 SubCategoryName = product.SubCategory?.Name,
                 CategoryEnum = categoryEnum,
                 ImageUrl = product.ImageUrl,
+                Image1Url = product.Image1Url,
+                Image2Url = product.Image2Url,
+                Image3Url = product.Image3Url,
+                Image4Url = product.Image4Url,
                 Status = product.status,
                 DiscountPrice = product.DiscountPrice,
                 TechCompanyId = product.TechCompanyId, 
-                TechCompanyName = product.TechCompany?.User?.UserName ?? string.Empty,
+                TechCompanyName = product.TechCompany?.User?.FullName ?? string.Empty,
+                TechCompanyAddress = product.TechCompany?.User?.Address ?? string.Empty,
                 Specifications = product.Specifications?.Select(s => new SpecificationDTO
                 {
                     Id = s.Id,
@@ -53,6 +57,8 @@ namespace Service.Utilities
                 Warranties = product.Warranties?.Select(w => new WarrantyDTO
                 {
                     Id = w.Id,
+                    Type = w.Type,
+                    Duration = w.Duration,
                     Description = w.Description,
                     StartDate = w.StartDate,
                     EndDate = w.EndDate
@@ -72,7 +78,11 @@ namespace Service.Utilities
                 Stock = dto.Stock,
                 ImageUrl = null, 
                 DiscountPrice = dto.DiscountPrice,
-                TechCompanyId = dto.TechCompanyId, 
+                TechCompanyId = dto.TechCompanyId,
+                Image1Url = dto.Image1Url,
+                Image2Url = dto.Image2Url,
+                Image3Url = dto.Image3Url,
+                Image4Url = dto.Image4Url,
                 Specifications = dto.Specifications?.Select(s => new Specification
                 {
                     Key = s.Key,
@@ -80,6 +90,8 @@ namespace Service.Utilities
                 }).ToList(),
                 Warranties = dto.Warranties?.Select(w => new Warranty
                 {
+                    Type = w.Type,
+                    Duration = w.Duration,
                     Description = w.Description,
                     StartDate = w.StartDate,
                     EndDate = w.EndDate

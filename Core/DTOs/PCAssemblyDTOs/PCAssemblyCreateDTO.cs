@@ -14,6 +14,10 @@ namespace Core.DTOs.PCAssemblyDTOs
 
         public string? Name { get; set; }
 
+        public string? Description { get; set; }
+
+        public decimal? Budget { get; set; }
+
         public string? ServiceUsageId { get; set; }
 
         public List<PCAssemblyItemCreateDTO>? Items { get; set; } = new List<PCAssemblyItemCreateDTO>();

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Profile Photo Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .profile-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        .profile-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #007bff;
+            margin-bottom: 10px;
+        }
+        .user-info {
+            margin-top: 15px;
+        }
+        .user-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Login Profile Photo Test</h1>
+        <p>This test demonstrates how the profile photo URL is returned in the login result and can be used in the frontend.</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" id="loginBtn">Login</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;">
+            <h3>Login Result:</h3>
+            <div id="resultContent"></div>
+            
+            <div id="profileSection" class="profile-section" style="display: none;">
+                <h4>Profile Display Example:</h4>
+                <img id="profilePhoto" class="profile-photo" alt="Profile Photo">
+                <div class="user-info" id="userInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            const profileSection = document.getElementById('profileSection');
+            
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('email', document.getElementById('email').value);
+                formData.append('password', document.getElementById('password').value);
+                
+                const response = await fetch('/api/Authentication/Login', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                // Show result
+                resultDiv.style.display = 'block';
+                
+                if (result.success) {
+                    resultContent.innerHTML = `
+                        <div class="success">
+                            <strong>Login Successful!</strong><br>
+                            <strong>Token:</strong> ${result.data.token.substring(0, 50)}...<br>
+                            <strong>User ID:</strong> ${result.data.userId}<br>
+                            <strong>Username:</strong> ${result.data.userName}<br>
+                            <strong>Roles:</strong> ${result.data.roleName.join(', ')}<br>
+                            <strong>Profile Photo URL:</strong> ${result.data.profilePhotoUrl || 'No profile photo'}<br>
+                            <strong>Customer ID:</strong> ${result.data.customerId || 'N/A'}<br>
+                            <strong>Cart ID:</strong> ${result.data.cartId || 'N/A'}<br>
+                            <strong>Wish List ID:</strong> ${result.data.wishListId || 'N/A'}<br>
+                            <strong>PC Assembly ID:</strong> ${result.data.pcAssemblyId || 'N/A'}
+                        </div>
+                    `;
+                    
+                    // Show profile section
+                    profileSection.style.display = 'block';
+                    
+                    // Set profile photo
+                    const profilePhoto = document.getElementById('profilePhoto');
+                    if (result.data.profilePhotoUrl) {
+                        profilePhoto.src = result.data.profilePhotoUrl;
+                        profilePhoto.onerror = function() {
+                            this.src = '/assets/profiles/default-profile.jpg';
+                        };
+                    } else {
+                        profilePhoto.src = '/assets/profiles/default-profile.jpg';
+                    }
+                    
+                    // Set user info
+                    document.getElementById('userInfo').innerHTML = `
+                        <p><strong>Name:</strong> ${result.data.userName}</p>
+                        <p><strong>Roles:</strong> ${result.data.roleName.join(', ')}</p>
+                        <p><strong>User ID:</strong> ${result.data.userId}</p>
+                    `;
+                    
+                } else {
+                    resultContent.innerHTML = `
+                        <div class="error">
+                            <strong>Login Failed:</strong><br>
+                            ${result.message}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultContent.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                // Re-enable button
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+        
+        // Example of how to use the profile photo in a navigation bar
+        function updateNavBarProfilePhoto(profilePhotoUrl) {
+            // This is an example of how you might update a navigation bar
+            const navProfilePhoto = document.querySelector('.nav-profile-photo');
+            if (navProfilePhoto) {
+                if (profilePhotoUrl) {
+                    navProfilePhoto.src = profilePhotoUrl;
+                    navProfilePhoto.onerror = function() {
+                        this.src = '/assets/profiles/default-profile.jpg';
+                    };
+                } else {
+                    navProfilePhoto.src = '/assets/profiles/default-profile.jpg';
+                }
+            }
+        }
+        
+        // Example of storing user data in localStorage
+        function storeUserData(loginResult) {
+            localStorage.setItem('userToken', loginResult.token);
+            localStorage.setItem('userId', loginResult.userId);
+            localStorage.setItem('userName', loginResult.userName);
+            localStorage.setItem('userRoles', JSON.stringify(loginResult.roleName));
+            localStorage.setItem('profilePhotoUrl', loginResult.profilePhotoUrl || '/assets/profiles/default-profile.jpg');
+            localStorage.setItem('customerId', loginResult.customerId || '');
+            localStorage.setItem('cartId', loginResult.cartId || '');
+            localStorage.setItem('wishListId', loginResult.wishListId || '');
+            localStorage.setItem('pcAssemblyId', loginResult.pcAssemblyId || '');
+        }
+    </script>
+</body>
+</html> 

@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 
 namespace Core.Interfaces.Services

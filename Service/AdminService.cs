@@ -1,5 +1,5 @@
 using Core.DTOs.AdminDTOs;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -26,15 +26,21 @@ namespace Service
         {
             try
             {
-                var admins = await adminRepository.GetAllWithIncludesAsync(a=>a.User, a => a.Role);
+                // Optimized includes for admin listing with user and role information
+                var admins = await adminRepository.GetAllWithIncludesAsync(
+                    a => a.User, 
+                    a => a.Role);
+
+                var adminDtos = admins.Select(AdminMapper.MapToAdminReadDTO).ToList();
+
                 return new GeneralResponse<IEnumerable<AdminReadDTO>>
                 {
                     Success = true,
                     Message = "Admins retrieved successfully.",
-                    Data = admins.Select(AdminMapper.AdminReadDTOMapper).ToList()
+                    Data = adminDtos
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<IEnumerable<AdminReadDTO>>
                 {
@@ -70,7 +76,11 @@ namespace Service
 
             try
             {
-                var admin = await adminRepository.GetByIdWithIncludesAsync(id, a => a.User, a => a.Role);
+                // Comprehensive includes for detailed admin view with user and role information
+                var admin = await adminRepository.GetByIdWithIncludesAsync(id, 
+                    a => a.User, 
+                    a => a.Role);
+
                 if (admin == null)
                 {
                     return new GeneralResponse<AdminReadDTO>
@@ -85,10 +95,10 @@ namespace Service
                 {
                     Success = true,
                     Message = "Admin retrieved successfully.",
-                    Data = AdminMapper.AdminReadDTOMapper(admin)
+                    Data = AdminMapper.MapToAdminReadDTO(admin)
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<AdminReadDTO>
                 {

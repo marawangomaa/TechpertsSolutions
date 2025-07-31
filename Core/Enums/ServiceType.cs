@@ -4,11 +4,19 @@ namespace Core.Enums
 {
     public enum ServiceType
     {
-        [StringValue("PCBuild")]
-        PCBuild,
+        [StringValue("ProductSale")]
+        ProductSale = 0,
+        
         [StringValue("Maintenance")]
-        Maintenance,
+        Maintenance = 1,
+        
+        [StringValue("PCAssembly")]
+        PCAssembly = 2,
+        
         [StringValue("Delivery")]
-        Delivery
+        Delivery = 3,
+        
+        [StringValue("PCBuild")]
+        PCBuild = 4
     }
 }

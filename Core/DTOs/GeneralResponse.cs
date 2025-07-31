@@ -1,4 +1,4 @@
-namespace TechpertsSolutions.Core.DTOs
+namespace Core.DTOs
 {
     public class GeneralResponse<T>
     {

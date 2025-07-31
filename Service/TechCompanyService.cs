@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -37,34 +37,89 @@ namespace Service
 
         public async Task<GeneralResponse<TechCompanyReadDTO>> GetByIdAsync(string id)
         {
-            var entity = await _techCompanyRepo.GetByIdWithIncludesAsync(id, t => t.User, t => t.Role);
-            if (entity == null)
+            
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<TechCompanyReadDTO>
                 {
                     Success = false,
-                    Message = "TechCompany not found.",
+                    Message = "TechCompany ID cannot be null or empty.",
                     Data = null
                 };
             }
 
-            return new GeneralResponse<TechCompanyReadDTO>
+            if (!Guid.TryParse(id, out _))
             {
-                Success = true,
-                Message = "Retrieved successfully.",
-                Data = TechCompanyMapper.ToReadDTO(entity)
-            };
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid TechCompany ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Comprehensive includes for detailed tech company view with user and role information
+                var entity = await _techCompanyRepo.GetByIdWithIncludesAsync(id, 
+                    t => t.User, 
+                    t => t.Role);
+
+                if (entity == null)
+                {
+                    return new GeneralResponse<TechCompanyReadDTO>
+                    {
+                        Success = false,
+                        Message = $"TechCompany with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = true,
+                    Message = "TechCompany retrieved successfully.",
+                    Data = TechCompanyMapper.MapToTechCompanyReadDTO(entity)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the tech company.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<IEnumerable<TechCompanyReadDTO>>> GetAllAsync()
         {
-            var entities = await _techCompanyRepo.GetAllWithIncludesAsync(t => t.User, t => t.Role);
-            return new GeneralResponse<IEnumerable<TechCompanyReadDTO>>
+            try
             {
-                Success = true,
-                Message = "All TechCompanies retrieved successfully.",
-                Data = entities.Select(TechCompanyMapper.ToReadDTO)
-            };
+                // Optimized includes for tech company listing with user and role information
+                var entities = await _techCompanyRepo.GetAllWithIncludesAsync(
+                    t => t.User, 
+                    t => t.Role);
+
+                var techCompanyDtos = entities.Select(TechCompanyMapper.MapToTechCompanyReadDTO).ToList();
+
+                return new GeneralResponse<IEnumerable<TechCompanyReadDTO>>
+                {
+                    Success = true,
+                    Message = "TechCompanies retrieved successfully.",
+                    Data = techCompanyDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<TechCompanyReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving tech companies.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto)

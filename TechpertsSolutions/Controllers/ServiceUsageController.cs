@@ -2,6 +2,7 @@ using Core.DTOs.ServiceUsageDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Core.Enums;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -14,9 +15,17 @@ namespace TechpertsSolutions.Controllers
         public ServiceUsageController(IServiceUsageService service) => _service = service;
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ServiceUsageCreateDTO dto)
+        public async Task<IActionResult> Create([FromBody] ServiceUsageCreateDTO dto, [FromQuery] ServiceType serviceType)
         {
-            var result = await _service.CreateAsync(dto);
+            // Create a new DTO with the serviceType from query parameter
+            var dtoWithServiceType = new ServiceUsageCreateDTO
+            {
+                ServiceType = serviceType.ToString(),
+                UsedOn = dto.UsedOn,
+                CallCount = dto.CallCount
+            };
+
+            var result = await _service.CreateAsync(dtoWithServiceType);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
@@ -35,9 +44,17 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTO dto, [FromQuery] ServiceType? serviceType = null)
         {
-            var result = await _service.UpdateAsync(id, dto);
+            // Create a new DTO with the serviceType from query parameter if provided
+            var dtoWithServiceType = new ServiceUsageUpdateDTO
+            {
+                ServiceType = serviceType?.ToString() ?? dto.ServiceType,
+                UsedOn = dto.UsedOn,
+                CallCount = dto.CallCount
+            };
+
+            var result = await _service.UpdateAsync(id, dtoWithServiceType);
             return result.Success ? Ok(result) : NotFound(result);
         }
 

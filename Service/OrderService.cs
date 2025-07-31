@@ -1,6 +1,6 @@
 using Core.DTOs.OrderDTOs;
-using TechpertsSolutions.Core.DTOs;
-using Core.Entities;
+using Core.DTOs;
+using TechpertsSolutions.Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -19,11 +18,13 @@ namespace Service
     {
         private readonly IRepository<Order> _orderRepo;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
+        private readonly INotificationService _notificationService;
 
-        public OrderService(IRepository<Order> orderRepo, IRepository<OrderHistory> orderHistoryRepo)
+        public OrderService(IRepository<Order> orderRepo, IRepository<OrderHistory> orderHistoryRepo, INotificationService notificationService)
         {
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
+            _notificationService = notificationService;
         }
 
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
@@ -83,6 +84,15 @@ namespace Service
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
+                // Send notification to admin about new order
+                await _notificationService.SendNotificationToRoleAsync(
+                    "Admin",
+                    $"New order #{order.Id} has been created by customer {order.CustomerId}",
+                    NotificationType.OrderCreated,
+                    order.Id,
+                    "Order"
+                );
+
                 // Get the created order with all includes to return proper data
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
@@ -131,13 +141,14 @@ namespace Service
 
             try
             {
-                // Use FindWithStringIncludesAsync to get the order with all necessary includes
-                var orders = await _orderRepo.FindWithStringIncludesAsync(
-                    o => o.Id == id,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
-                
-                var order = orders.FirstOrDefault();
-                
+                // Comprehensive includes for detailed order view
+                var order = await _orderRepo.GetByIdWithIncludesAsync(id,
+                    o => o.OrderItems,
+                    o => o.Customer,
+                    o => o.OrderHistory,
+                    o => o.Delivery,
+                    o => o.ServiceUsage);
+
                 if (order == null)
                 {
                     return new GeneralResponse<OrderReadDTO>
@@ -147,12 +158,28 @@ namespace Service
                         Data = null
                     };
                 }
-                
+
+                // Get order items with their products using string includes for nested properties
+                var orderWithItems = await _orderRepo.FindWithStringIncludesAsync(
+                    o => o.Id == id,
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
+
+                var orderEntity = orderWithItems.FirstOrDefault();
+                if (orderEntity == null)
+                {
+                    return new GeneralResponse<OrderReadDTO>
+                    {
+                        Success = false,
+                        Message = $"Order with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
                     Message = "Order retrieved successfully.",
-                    Data = OrderMapper.ToReadDTO(order)
+                    Data = OrderMapper.ToReadDTO(orderEntity)
                 };
             }
             catch (Exception ex)
@@ -170,16 +197,10 @@ namespace Service
         {
             try
             {
-                var orders = await _orderRepo.GetAllWithIncludesAsync(
-                    o => o.OrderItems, 
-                    o => o.Customer,
-                    o => o.OrderHistory);
-                
-                // Since GetAllWithIncludesAsync doesn't support nested includes, we need to use a different approach
-                // Let's use FindWithStringIncludesAsync with a predicate that matches all orders
+                // Optimized includes for order listing with all necessary related data
                 var allOrders = await _orderRepo.FindWithStringIncludesAsync(
                     o => true, // This will match all orders
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
                 
                 var orderDtos = allOrders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
@@ -226,9 +247,10 @@ namespace Service
 
             try
             {
+                // Optimized includes for customer orders with all necessary related data
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId, 
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage");
                 
                 var orderDtos = orders.Where(o => o != null).Select(OrderMapper.ToReadDTO).Where(dto => dto != null);
                 
@@ -366,6 +388,15 @@ namespace Service
                 order.Status = newStatus;
                 _orderRepo.Update(order);
                 await _orderRepo.SaveChangesAsync();
+
+                // Send notification to customer about order status change
+                await _notificationService.SendNotificationAsync(
+                    order.CustomerId,
+                    $"Your order #{order.Id} status has been updated to '{newStatus.GetStringValue()}'",
+                    NotificationType.OrderStatusChanged,
+                    order.Id,
+                    "Order"
+                );
 
                 return new GeneralResponse<bool>
                 {

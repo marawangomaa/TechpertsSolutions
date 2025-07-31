@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
@@ -32,6 +32,7 @@ namespace Service
         private readonly IEmailService emailService;
         private readonly IConfiguration configuration;
         private readonly TechpertsContext context;
+        private readonly IFileService fileService;
 
         public AuthService(
             UserManager<AppUser> userManager,
@@ -46,7 +47,8 @@ namespace Service
             IPCAssemblyService pcAssemblyService,
             IEmailService emailService,
             IConfiguration configuration,
-            TechpertsContext context)
+            TechpertsContext context,
+            IFileService fileService)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
@@ -61,6 +63,7 @@ namespace Service
             this.emailService = emailService;
             this.configuration = configuration;
             this.context = context;
+            this.fileService = fileService;
         }
 
         public async Task<GeneralResponse<LoginResultDTO>> LoginAsync(LoginDTO loginDTO)
@@ -159,7 +162,10 @@ namespace Service
                     UserId = user.Id,
                     UserName = user.UserName,
                     RoleName = roles,
-                    PCAssemblyId = null 
+                    PCAssemblyId = null,
+                    ProfilePhotoUrl = !string.IsNullOrEmpty(user.ProfilePhotoUrl) 
+                        ? user.ProfilePhotoUrl 
+                        : "/assets/profiles/default-profile.jpg"
                 };
 
                 foreach (var role in roles)
@@ -353,9 +359,27 @@ namespace Service
                     FullName = registerDTO.FullName.Trim(),
                     Address = registerDTO.Address.Trim(),
                     PhoneNumber = registerDTO.PhoneNumber.Trim(),
+                    City = registerDTO.City?.Trim(),
+                    Country = registerDTO.Country?.Trim(),
                     EmailConfirmed = false, 
-                    PhoneNumberConfirmed = false
+                    PhoneNumberConfirmed = false,
+                    CreatedAt = DateTime.UtcNow
                 };
+
+                // Handle profile photo upload if provided
+                if (registerDTO.ProfilePhoto != null && registerDTO.ProfilePhoto.Length > 0)
+                {
+                    try
+                    {
+                        var photoUrl = await fileService.UploadImageAsync(registerDTO.ProfilePhoto, "profiles");
+                        user.ProfilePhotoUrl = photoUrl;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error but continue with registration
+                        // The photo upload failed but we can still create the user
+                    }
+                }
 
                 var result = await userManager.CreateAsync(user, registerDTO.Password);
                 if (!result.Succeeded)
@@ -470,7 +494,10 @@ namespace Service
                     RoleName = roles,
                     CustomerId = roleName == RoleType.Customer ? entityId : null,
                     CartId = cartId,
-                    PCAssemblyId = null 
+                    PCAssemblyId = null,
+                    ProfilePhotoUrl = !string.IsNullOrEmpty(user.ProfilePhotoUrl) 
+                        ? user.ProfilePhotoUrl 
+                        : "/assets/profiles/default-profile.jpg"
                 };
 
                 return new GeneralResponse<string>

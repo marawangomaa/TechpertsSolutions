@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,13 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    public class OrderConfiguration : BaseEntityConfiguration<Order>
     {
-        public void Configure(EntityTypeBuilder<Order> builder)
+        public override void Configure(EntityTypeBuilder<Order> builder)
         {
+            base.Configure(builder);
             builder.HasOne(o => o.Customer)
                   .WithMany(c => c.Orders)
                   .HasForeignKey(o => o.CustomerId)
@@ -36,10 +38,7 @@ namespace Repository.Data.Configurtaions
                    .HasForeignKey(o => o.ServiceUsageId)
                    .OnDelete(DeleteBehavior.SetNull); 
 
-            builder.HasOne(o => o.Delivery)
-                   .WithMany()
-                   .HasForeignKey(o => o.DeliveryId)
-                   .OnDelete(DeleteBehavior.SetNull); 
+ 
 
             
             builder.Property(o => o.Status)

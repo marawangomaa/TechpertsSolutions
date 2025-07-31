@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Update Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .json-example {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .test-form {
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .specification-item, .warranty-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            float: right;
+        }
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Update Endpoint Test</h1>
+        
+        <div class="section">
+            <h2>❌ Common JSON Format Errors</h2>
+            <div class="error">
+                <strong>Error 1:</strong> Malformed JSON in specifications array<br>
+                <strong>Error 2:</strong> Missing required fields<br>
+                <strong>Error 3:</strong> Incorrect data types
+            </div>
+            
+            <h3>❌ WRONG JSON Format (This will cause errors):</h3>
+            <div class="json-example">{
+  "name": "Test Product",
+  "price": 100.00,
+  "stock": 10,
+  "specifications": [
+    {key: "Brand", value: "Intel"},  // ❌ Missing quotes around property names
+    {"key": "Model", "value": "i7-10700K"}
+  ],
+  "warranties": [
+    {type: "Standard", duration: "2 years"}  // ❌ Missing quotes around property names
+  ]
+}</div>
+        </div>
+
+        <div class="section">
+            <h2>✅ Correct JSON Format</h2>
+            <div class="success">
+                <strong>Key Points:</strong><br>
+                • All property names must be in double quotes<br>
+                • All string values must be in double quotes<br>
+                • Numbers should not be quoted<br>
+                • Arrays and objects must be properly formatted
+            </div>
+            
+            <h3>✅ CORRECT JSON Format:</h3>
+            <div class="json-example">{
+  "name": "Intel Core i7-10700K Processor",
+  "price": 299.99,
+  "stock": 50,
+  "description": "High-performance desktop processor",
+  "subCategoryName": "Desktop Processors",
+  "discountPrice": 279.99,
+  "specifications": [
+    {
+      "key": "Brand",
+      "value": "Intel"
+    },
+    {
+      "key": "Model",
+      "value": "i7-10700K"
+    },
+    {
+      "key": "Cores",
+      "value": "8"
+    },
+    {
+      "key": "Threads",
+      "value": "16"
+    }
+  ],
+  "warranties": [
+    {
+      "type": "Standard Warranty",
+      "duration": "3 years",
+      "description": "Manufacturer warranty",
+      "startDate": "2024-01-01T00:00:00",
+      "endDate": "2027-01-01T00:00:00"
+    }
+  ]
+}</div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Interactive Test Form</h2>
+            <div class="test-form">
+                <form id="updateProductForm">
+                    <div class="form-group">
+                        <label for="productId">Product ID (GUID):</label>
+                        <input type="text" id="productId" placeholder="e.g., 12345678-1234-1234-1234-123456789012" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productName">Product Name:</label>
+                        <input type="text" id="productName" placeholder="Product name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productPrice">Price:</label>
+                        <input type="number" id="productPrice" step="0.01" min="0.01" placeholder="299.99" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productStock">Stock:</label>
+                        <input type="number" id="productStock" min="0" placeholder="50" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Description:</label>
+                        <textarea id="productDescription" placeholder="Product description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subCategoryName">Sub Category Name:</label>
+                        <input type="text" id="subCategoryName" placeholder="e.g., Desktop Processors">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="discountPrice">Discount Price:</label>
+                        <input type="number" id="discountPrice" step="0.01" min="0" placeholder="279.99">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Specifications:</label>
+                        <div id="specificationsContainer">
+                            <div class="specification-item">
+                                <button type="button" class="remove-btn" onclick="removeSpecification(this)">Remove</button>
+                                <label>Key:</label>
+                                <input type="text" class="spec-key" placeholder="e.g., Brand">
+                                <label>Value:</label>
+                                <input type="text" class="spec-value" placeholder="e.g., Intel">
+                            </div>
+                        </div>
+                        <button type="button" class="add-btn" onclick="addSpecification()">Add Specification</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Warranties:</label>
+                        <div id="warrantiesContainer">
+                            <div class="warranty-item">
+                                <button type="button" class="remove-btn" onclick="removeWarranty(this)">Remove</button>
+                                <label>Type:</label>
+                                <input type="text" class="warranty-type" placeholder="e.g., Standard Warranty">
+                                <label>Duration:</label>
+                                <input type="text" class="warranty-duration" placeholder="e.g., 3 years">
+                                <label>Description:</label>
+                                <input type="text" class="warranty-description" placeholder="e.g., Manufacturer warranty">
+                                <label>Start Date:</label>
+                                <input type="datetime-local" class="warranty-start-date">
+                                <label>End Date:</label>
+                                <input type="datetime-local" class="warranty-end-date">
+                            </div>
+                        </div>
+                        <button type="button" class="add-btn" onclick="addWarranty()">Add Warranty</button>
+                    </div>
+                    
+                    <button type="submit">Generate JSON & Test</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Generated JSON</h2>
+            <div class="json-example" id="generatedJson">Fill out the form above and click "Generate JSON & Test"</div>
+        </div>
+
+        <div class="section">
+            <h2>🌐 API Endpoint Information</h2>
+            <div class="json-example">PUT /api/Product/{id}
+
+Headers:
+Content-Type: application/json
+Authorization: Bearer {your-jwt-token}
+
+Query Parameters:
+- category (optional): ProductCategory enum value
+- status (optional): ProductPendingStatus enum value
+
+Example URL:
+PUT /api/Product/12345678-1234-1234-1234-123456789012?category=Processor&status=Pending</div>
+        </div>
+    </div>
+
+    <script>
+        function addSpecification() {
+            const container = document.getElementById('specificationsContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'specification-item';
+            newItem.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeSpecification(this)">Remove</button>
+                <label>Key:</label>
+                <input type="text" class="spec-key" placeholder="e.g., Brand">
+                <label>Value:</label>
+                <input type="text" class="spec-value" placeholder="e.g., Intel">
+            `;
+            container.appendChild(newItem);
+        }
+
+        function removeSpecification(button) {
+            button.parentElement.remove();
+        }
+
+        function addWarranty() {
+            const container = document.getElementById('warrantiesContainer');
+            const newItem = document.createElement('div');
+            newItem.className = 'warranty-item';
+            newItem.innerHTML = `
+                <button type="button" class="remove-btn" onclick="removeWarranty(this)">Remove</button>
+                <label>Type:</label>
+                <input type="text" class="warranty-type" placeholder="e.g., Standard Warranty">
+                <label>Duration:</label>
+                <input type="text" class="warranty-duration" placeholder="e.g., 3 years">
+                <label>Description:</label>
+                <input type="text" class="warranty-description" placeholder="e.g., Manufacturer warranty">
+                <label>Start Date:</label>
+                <input type="datetime-local" class="warranty-start-date">
+                <label>End Date:</label>
+                <input type="datetime-local" class="warranty-end-date">
+            `;
+            container.appendChild(newItem);
+        }
+
+        function removeWarranty(button) {
+            button.parentElement.remove();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            const date = new Date(dateString);
+            return date.toISOString();
+        }
+
+        document.getElementById('updateProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect specifications
+            const specifications = [];
+            document.querySelectorAll('.specification-item').forEach(item => {
+                const key = item.querySelector('.spec-key').value.trim();
+                const value = item.querySelector('.spec-value').value.trim();
+                if (key && value) {
+                    specifications.push({ key, value });
+                }
+            });
+
+            // Collect warranties
+            const warranties = [];
+            document.querySelectorAll('.warranty-item').forEach(item => {
+                const type = item.querySelector('.warranty-type').value.trim();
+                const duration = item.querySelector('.warranty-duration').value.trim();
+                const description = item.querySelector('.warranty-description').value.trim();
+                const startDate = item.querySelector('.warranty-start-date').value;
+                const endDate = item.querySelector('.warranty-end-date').value;
+                
+                if (type && duration && startDate && endDate) {
+                    warranties.push({
+                        type,
+                        duration,
+                        description: description || null,
+                        startDate: formatDate(startDate),
+                        endDate: formatDate(endDate)
+                    });
+                }
+            });
+
+            // Build the JSON object
+            const jsonData = {
+                name: document.getElementById('productName').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                description: document.getElementById('productDescription').value || null,
+                subCategoryName: document.getElementById('subCategoryName').value || null,
+                discountPrice: document.getElementById('discountPrice').value ? parseFloat(document.getElementById('discountPrice').value) : null,
+                specifications: specifications.length > 0 ? specifications : null,
+                warranties: warranties.length > 0 ? warranties : null
+            };
+
+            // Display the generated JSON
+            document.getElementById('generatedJson').textContent = JSON.stringify(jsonData, null, 2);
+
+            // Show the API call information
+            const productId = document.getElementById('productId').value;
+            if (productId) {
+                console.log('API Call Information:');
+                console.log('URL:', `PUT /api/Product/${productId}`);
+                console.log('Headers:', {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer {your-jwt-token}'
+                });
+                console.log('Body:', jsonData);
+            }
+        });
+    </script>
+</body>
+</html> 

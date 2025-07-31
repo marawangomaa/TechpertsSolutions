@@ -5,14 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 using TechpertsSolutions.Core.Entities;
 
 namespace Repository.Data.Configurtaions
 {
-    class TechCompanyConfiguration : IEntityTypeConfiguration<TechCompany>
+    class TechCompanyConfiguration : BaseEntityConfiguration<TechCompany>
     {
-        public void Configure(EntityTypeBuilder<TechCompany> builder)
+        public override void Configure(EntityTypeBuilder<TechCompany> builder)
         {
+            base.Configure(builder);
             builder.HasOne(t => t.User)
                     .WithOne(u => u.TechCompany)
                     .HasForeignKey<TechCompany>(t => t.UserId)

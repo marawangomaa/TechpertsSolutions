@@ -5,14 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 using TechpertsSolutions.Core.Entities;
 
 namespace Repository.Data.Configurtaions
 {
-    public class DeliveryPersonConfiguration : IEntityTypeConfiguration<DeliveryPerson>
+    public class DeliveryPersonConfiguration : BaseEntityConfiguration<DeliveryPerson>
     {
-        public void Configure(EntityTypeBuilder<DeliveryPerson> builder)
+        public override void Configure(EntityTypeBuilder<DeliveryPerson> builder)
         {
+            base.Configure(builder);
             builder.HasOne(dp => dp.User)
                  .WithOne(u => u.DeliveryPerson)
                  .HasForeignKey<DeliveryPerson>(dp => dp.UserId)

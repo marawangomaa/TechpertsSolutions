@@ -1,5 +1,5 @@
 using Core.DTOs.ServiceUsageDTOs;
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

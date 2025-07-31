@@ -1,7 +1,7 @@
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
+using Core.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Threading.Tasks;
 using Core.Interfaces.Services;

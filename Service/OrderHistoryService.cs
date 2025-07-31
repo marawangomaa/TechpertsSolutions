@@ -1,5 +1,5 @@
 using Core.DTOs.OrderDTOs;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;

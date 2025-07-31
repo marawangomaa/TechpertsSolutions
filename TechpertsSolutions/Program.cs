@@ -17,7 +17,9 @@ using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;
-using Core.Entities;
+using TechpertsSolutions.Hubs;
+using TechpertsSolutions.Services;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace TechpertsSolutions
 {
@@ -34,6 +36,9 @@ namespace TechpertsSolutions
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             builder.Services.AddEndpointsApiExplorer();
+            
+            // Add SignalR
+            builder.Services.AddSignalR();
 
             
             builder.Services.AddSwaggerGen(c =>
@@ -41,16 +46,8 @@ namespace TechpertsSolutions
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
                 c.CustomSchemaIds(type => type.FullName); 
                 c.SchemaFilter<EnumSchemaFilter>(); 
-                
-                
-                c.MapType<RoleType>(() => new OpenApiSchema 
-                { 
-                    Type = "string",
-                    Enum = Enum.GetValues<RoleType>().Select(e => new Microsoft.OpenApi.Any.OpenApiString(e.GetStringValue())).Cast<Microsoft.OpenApi.Any.IOpenApiAny>().ToList()
-                });
-                
-                
                 c.OperationFilter<FormDataOperationFilter>();
+                c.OperationFilter<EnumOperationFilter>();
                 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -75,9 +72,6 @@ namespace TechpertsSolutions
                         Array.Empty<string>()
                     }
                 });
-                
-                
-                
             });
 
             
@@ -100,7 +94,8 @@ namespace TechpertsSolutions
                     provider.GetRequiredService<IPCAssemblyService>(),
                     provider.GetRequiredService<IEmailService>(),
                     provider.GetRequiredService<IConfiguration>(),
-                    provider.GetRequiredService<TechpertsContext>()
+                    provider.GetRequiredService<TechpertsContext>(),
+                    provider.GetRequiredService<IFileService>()
                 );
             });
             builder.Services.AddScoped<IRoleService>(provider =>
@@ -130,7 +125,19 @@ namespace TechpertsSolutions
                     provider.GetRequiredService<TechpertsContext>()
                 );
             });
-            builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IProductService>(provider =>
+            {
+                return new ProductService(
+                    provider.GetRequiredService<IRepository<Product>>(),
+                    provider.GetRequiredService<IRepository<Specification>>(),
+                    provider.GetRequiredService<IRepository<Warranty>>(),
+                    provider.GetRequiredService<IRepository<Category>>(),
+                    provider.GetRequiredService<IRepository<SubCategory>>(),
+                    provider.GetRequiredService<IRepository<TechCompany>>(),
+                    provider.GetRequiredService<IFileService>(),
+                    provider.GetRequiredService<INotificationService>()
+                );
+            });
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
             builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
             builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
@@ -143,7 +150,11 @@ namespace TechpertsSolutions
             {
                 return new PCAssemblyService(
                     provider.GetRequiredService<IRepository<PCAssembly>>(),
-                    provider.GetRequiredService<IRepository<Product>>()
+                    provider.GetRequiredService<IRepository<PCAssemblyItem>>(),
+                    provider.GetRequiredService<IRepository<Product>>(),
+                    provider.GetRequiredService<IRepository<Customer>>(),
+                    provider.GetRequiredService<IRepository<ServiceUsage>>(),
+                    provider.GetRequiredService<INotificationService>()
                 );
             });
             builder.Services.AddScoped<IServiceUsageService, ServiceUsageService>();
@@ -152,6 +163,17 @@ namespace TechpertsSolutions
             builder.Services.AddScoped<IWarrantyService, WarrantyService>();
             builder.Services.AddScoped<IWishListService, WishListService>();
             builder.Services.AddScoped<IFileService, FileService>();
+            
+            // Register new services
+            builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+            builder.Services.AddScoped<IAdminUserManagementService, AdminUserManagementService>();
+            builder.Services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<INotificationHub, NotificationHubService>();
+            
+            // Register new commission and location services
+            builder.Services.AddScoped<ICommissionService, CommissionService>();
+            builder.Services.AddScoped<ILocationService, LocationService>();
 
 
 
@@ -216,6 +238,7 @@ namespace TechpertsSolutions
                 var services = scope.ServiceProvider;
                 await SeedRoles.SeedRolesAsync(services);
                 await SeedCategories.SeedCategoriesAsync(services);
+                await SeedAdminUser.SeedAdminUserAsync(services);
                 SeedEnums.LogEnumValues();
             }
             if (app.Environment.IsDevelopment())
@@ -232,6 +255,10 @@ namespace TechpertsSolutions
             app.UseAuthentication();
 
             app.UseAuthorization();
+            
+            // Add SignalR hubs
+            app.MapHub<NotificationHub>("/notificationHub");
+            app.MapHub<ChatHub>("/chatHub");
 
             app.MapControllers();
 

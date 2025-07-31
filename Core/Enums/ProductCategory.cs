@@ -4,31 +4,46 @@ namespace Core.Enums
 {
     public enum ProductCategory
     {
+        [StringValue("None")]
+        None = -1,
+        
         [StringValue("Processor")]
-        Processor,
+        Processor = 0,
+        
         [StringValue("Motherboard")]
-        Motherboard,
+        Motherboard = 1,
+        
         [StringValue("CPUCooler")]
-        CPUCooler,
+        CPUCooler = 2,
+        
         [StringValue("Case")]
-        Case,
+        Case = 3,
+        
         [StringValue("GraphicsCard")]
-        GraphicsCard,
+        GraphicsCard = 4,
+        
         [StringValue("RAM")]
-        RAM,
+        RAM = 5,
+        
         [StringValue("Storage")]
-        Storage,
+        Storage = 6,
+        
         [StringValue("CaseCooler")]
-        CaseCooler,
+        CaseCooler = 7,
+        
         [StringValue("PowerSupply")]
-        PowerSupply,
+        PowerSupply = 8,
+        
         [StringValue("Monitor")]
-        Monitor,
+        Monitor = 9,
+        
         [StringValue("Accessories")]
-        Accessories,
+        Accessories = 10,
+        
         [StringValue("PreBuildPC")]
-        PreBuildPC,
+        PreBuildPC = 11,
+        
         [StringValue("Laptop")]
-        Laptop
+        Laptop = 12
     }
 }

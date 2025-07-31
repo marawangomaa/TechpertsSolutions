@@ -6,6 +6,8 @@ using Core.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -140,23 +142,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("orders/status/{status}")]
         public async Task<IActionResult> GetOrdersByStatus(OrderStatus status)
         {
-            if (string.IsNullOrWhiteSpace(status.GetStringValue()))
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Status cannot be null or empty.",
-                    Data = "Invalid input"
-                });
-
-            if (!Enum.TryParse<OrderStatus>(status.GetStringValue(), true, out var orderStatus))
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid order status. Valid values are: Pending, InProgress, Delivered",
-                    Data = "Invalid status"
-                });
-
-            var response = await _orderService.GetOrdersByStatusAsync(orderStatus);
+            var response = await _orderService.GetOrdersByStatusAsync(status);
             return Ok(response);
         }
 
@@ -167,7 +153,7 @@ namespace TechpertsSolutions.Controllers
         
         
         [HttpPut("orders/{orderId}/status")]
-        public async Task<IActionResult> UpdateOrderStatus(string orderId, OrderStatus statusUpdate)
+        public async Task<IActionResult> UpdateOrderStatus(string orderId,OrderStatus status)
         {
             if (string.IsNullOrWhiteSpace(orderId))
                 return BadRequest(new GeneralResponse<string>
@@ -185,15 +171,7 @@ namespace TechpertsSolutions.Controllers
                     Data = "Invalid GUID format"
                 });
 
-            if (statusUpdate == null)
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Status update data cannot be null.",
-                    Data = "Invalid input"
-                });
-
-            var response = await _orderService.UpdateOrderStatusAsync(orderId, statusUpdate);
+            var response = await _orderService.UpdateOrderStatusAsync(orderId, status);
             return Ok(response);
         }
 

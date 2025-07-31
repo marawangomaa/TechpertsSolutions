@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.ProductDTOs
 {
-    public class ProductUpdateDTO
+    public class ProductUpdateDTO : IValidatableObject
     {
         [Required(ErrorMessage = "Product name is required")]
         [StringLength(100, MinimumLength = 2, ErrorMessage = "Product name must be between 2 and 100 characters")]
@@ -30,7 +30,18 @@ namespace Core.DTOs.ProductDTOs
         [Range(0, double.MaxValue, ErrorMessage = "Discount price cannot be negative")]
         public decimal? DiscountPrice { get; set; }
 
-        public List<SpecificationDTO>? Specifications { get; set; }
-        public List<WarrantyDTO>? Warranties { get; set; }
+        public List<SpecificationCreateDTO>? Specifications { get; set; }
+        public List<WarrantyCreateDTO>? Warranties { get; set; }
+
+        // Custom validation method
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (DiscountPrice.HasValue && DiscountPrice >= Price)
+            {
+                yield return new ValidationResult(
+                    "Discount price must be less than the regular price",
+                    new[] { nameof(DiscountPrice) });
+            }
+        }
     }
 }

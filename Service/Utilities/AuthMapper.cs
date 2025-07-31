@@ -1,4 +1,4 @@
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;

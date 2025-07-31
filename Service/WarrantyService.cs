@@ -1,23 +1,26 @@
 using Core.DTOs.WarrantyDTOs;
+using Core.DTOs;
+using TechpertsSolutions.Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
-using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
     public class WarrantyService : IWarrantyService
     {
         private readonly IRepository<Warranty> _warrantyRepo;
+        private readonly IRepository<Product> _productRepo;
 
-        public WarrantyService(IRepository<Warranty> warrantyRepo)
+        public WarrantyService(IRepository<Warranty> warrantyRepo, IRepository<Product> productRepo)
         {
             _warrantyRepo = warrantyRepo;
+            _productRepo = productRepo;
         }
 
         public async Task<GeneralResponse<WarrantyReadDTO>> CreateAsync(WarrantyCreateDTO dto)
@@ -34,11 +37,12 @@ namespace Service
 
             var warranty = new Warranty
             {
-                Id = Guid.NewGuid().ToString(),
+                Type = dto.Type,
+                Duration = dto.Duration,
                 Description = dto.Description,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
-                ProductId = dto.ProductId
+                ProductId = dto.ProductId,
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddMonths(int.Parse(dto.Duration))
             };
 
             await _warrantyRepo.AddAsync(warranty);
@@ -48,73 +52,99 @@ namespace Service
             {
                 Success = true,
                 Message = "Warranty created successfully.",
-                Data = new WarrantyReadDTO
-                {
-                    Id = warranty.Id,
-                    Description = warranty.Description,
-                    StartDate = warranty.StartDate,
-                    EndDate = warranty.EndDate,
-                    ProductId = warranty.ProductId
-                }
+                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
             };
         }
 
         public async Task<GeneralResponse<WarrantyReadDTO>> GetByIdAsync(string id)
         {
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<WarrantyReadDTO>
                 {
                     Success = false,
-                    Message = "ID cannot be null or empty.",
+                    Message = "Warranty ID cannot be null or empty.",
                     Data = null
                 };
             }
 
-            var warranty = await _warrantyRepo.GetByIdWithIncludesAsync(id, w => w.Product);
-
-            if (warranty == null)
+            if (!Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<WarrantyReadDTO>
                 {
                     Success = false,
-                    Message = "Warranty not found.",
+                    Message = "Invalid Warranty ID format. Expected GUID format.",
                     Data = null
                 };
             }
 
-            return new GeneralResponse<WarrantyReadDTO>
+            try
             {
-                Success = true,
-                Message = "Warranty retrieved successfully.",
-                Data = new WarrantyReadDTO
+                // Comprehensive includes for detailed warranty view with product information
+                var warranty = await _warrantyRepo.GetByIdWithIncludesAsync(id, 
+                    w => w.Product,
+                    w => w.Product.Category,
+                    w => w.Product.SubCategory,
+                    w => w.Product.TechCompany);
+
+                if (warranty == null)
                 {
-                    Id = warranty.Id,
-                    Description = warranty.Description,
-                    StartDate = warranty.StartDate,
-                    EndDate = warranty.EndDate,
-                    ProductId = warranty.ProductId
+                    return new GeneralResponse<WarrantyReadDTO>
+                    {
+                        Success = false,
+                        Message = $"Warranty with ID '{id}' not found.",
+                        Data = null
+                    };
                 }
-            };
+
+                return new GeneralResponse<WarrantyReadDTO>
+                {
+                    Success = true,
+                    Message = "Warranty retrieved successfully.",
+                    Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<WarrantyReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the warranty.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<IEnumerable<WarrantyReadDTO>>> GetAllAsync()
         {
-            var warranties = await _warrantyRepo.GetAllWithIncludesAsync(w => w.Product);
-
-            return new GeneralResponse<IEnumerable<WarrantyReadDTO>>
+            try
             {
-                Success = true,
-                Message = "Warranties retrieved successfully.",
-                Data = warranties.Select(w => new WarrantyReadDTO
+                // Optimized includes for warranty listing with product information
+                var warranties = await _warrantyRepo.GetAllWithIncludesAsync(
+                    w => w.Product,
+                    w => w.Product.Category,
+                    w => w.Product.SubCategory,
+                    w => w.Product.TechCompany);
+
+                var warrantyDtos = warranties.Select(WarrantyMapper.MapToWarrantyReadDTO).ToList();
+
+                return new GeneralResponse<IEnumerable<WarrantyReadDTO>>
                 {
-                    Id = w.Id,
-                    Description = w.Description,
-                    StartDate = w.StartDate,
-                    EndDate = w.EndDate,
-                    ProductId = w.ProductId
-                })
-            };
+                    Success = true,
+                    Message = "Warranties retrieved successfully.",
+                    Data = warrantyDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<WarrantyReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving warranties.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<WarrantyReadDTO>> UpdateAsync(string id, WarrantyUpdateDTO dto)
@@ -124,7 +154,7 @@ namespace Service
                 return new GeneralResponse<WarrantyReadDTO>
                 {
                     Success = false,
-                    Message = "Invalid input.",
+                    Message = "Invalid input data.",
                     Data = null
                 };
             }
@@ -140,10 +170,11 @@ namespace Service
                 };
             }
 
-            if (!string.IsNullOrWhiteSpace(dto.Description)) warranty.Description = dto.Description;
-            if (dto.StartDate.HasValue) warranty.StartDate = dto.StartDate.Value;
-            if (dto.EndDate.HasValue) warranty.EndDate = dto.EndDate.Value;
-            if (!string.IsNullOrWhiteSpace(dto.ProductId)) warranty.ProductId = dto.ProductId;
+            warranty.Type = dto.Type;
+            warranty.Duration = dto.Duration;
+            warranty.Description = dto.Description;
+            if (dto.Duration != null && int.TryParse(dto.Duration, out int duration))
+                warranty.EndDate = warranty.StartDate.AddMonths(duration);
 
             _warrantyRepo.Update(warranty);
             await _warrantyRepo.SaveChangesAsync();
@@ -152,14 +183,7 @@ namespace Service
             {
                 Success = true,
                 Message = "Warranty updated successfully.",
-                Data = new WarrantyReadDTO
-                {
-                    Id = warranty.Id,
-                    Description = warranty.Description,
-                    StartDate = warranty.StartDate,
-                    EndDate = warranty.EndDate,
-                    ProductId = warranty.ProductId
-                }
+                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
             };
         }
 
@@ -170,7 +194,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "ID cannot be null or empty.",
+                    Message = "Warranty ID cannot be null or empty.",
                     Data = false
                 };
             }

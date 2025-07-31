@@ -21,9 +21,30 @@ namespace Service.Utilities
                 RoleId = entity.RoleId,
                 VehicleNumber = entity.VehicleNumber,
                 VehicleType = entity.VehicleType,
-                PhoneNumber = entity.PhoneNumber,
-                City = entity.City,
-                Country = entity.Country,
+                PhoneNumber = entity.User.PhoneNumber,
+                City = entity.User.City,
+                Country = entity.User.Country,
+                IsAvailable = entity.IsAvailable,
+                UserName = entity.User?.UserName,
+                UserFullName = entity.User?.FullName,
+                RoleName = entity.Role?.Name
+            };
+        }
+
+        public static DeliveryPersonReadDTO MapToDeliveryPersonReadDTO(DeliveryPerson entity)
+        {
+            if (entity == null) return null;
+
+            return new DeliveryPersonReadDTO
+            {
+                Id = entity.Id,
+                UserId = entity.UserId,
+                RoleId = entity.RoleId,
+                VehicleNumber = entity.VehicleNumber,
+                VehicleType = entity.VehicleType,
+                PhoneNumber = entity.User?.PhoneNumber,
+                City = entity.User?.City,
+                Country = entity.User?.Country,
                 IsAvailable = entity.IsAvailable,
                 UserName = entity.User?.UserName,
                 UserFullName = entity.User?.FullName,
@@ -42,9 +63,6 @@ namespace Service.Utilities
                 RoleId = dto.RoleId,
                 VehicleNumber = dto.VehicleNumber,
                 VehicleType = dto.VehicleType,
-                PhoneNumber = dto.PhoneNumber,
-                City = dto.City,
-                Country = dto.Country,
                 IsAvailable = true
             };
         }
@@ -58,15 +76,6 @@ namespace Service.Utilities
 
             if (!string.IsNullOrWhiteSpace(dto.VehicleType))
                 entity.VehicleType = dto.VehicleType;
-
-            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
-                entity.PhoneNumber = dto.PhoneNumber;
-
-            if (!string.IsNullOrWhiteSpace(dto.City))
-                entity.City = dto.City;
-
-            if (!string.IsNullOrWhiteSpace(dto.Country))
-                entity.Country = dto.Country;
 
             if (dto.IsAvailable.HasValue)
                 entity.IsAvailable = dto.IsAvailable.Value;

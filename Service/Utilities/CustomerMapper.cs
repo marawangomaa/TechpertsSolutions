@@ -14,8 +14,8 @@ namespace Service.Utilities
 
             return new CustomerEditDTO
             {
-                City = customer.City,
-                Country = customer.Country,
+                City = customer.User.City,
+                Country = customer.User.Country,
             };
         }
 
@@ -29,8 +29,8 @@ namespace Service.Utilities
             return new CustomerDTO
             {
                 Id = customer.Id,
-                City = customer.City,
-                Country = customer.Country,
+                City = customer.User.City,
+                Country = customer.User.Country,
 
                 
                 Email = user?.Email,

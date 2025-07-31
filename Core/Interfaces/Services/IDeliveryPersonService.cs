@@ -1,5 +1,5 @@
 using Core.DTOs.DeliveryPersonDTOs;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

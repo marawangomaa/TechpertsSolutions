@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +9,12 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class Customer : BaseEntity
     {
-        public string? City { get; set; }
-        public string? Country { get; set; }
         public string UserId { get; set; }
         public AppUser User { get; set; }
         public string RoleId { get; set; }
         public AppRole Role { get; set; }
+        
+        // Role-specific dashboard data
         public Cart? Cart { get; set; }
         public WishList? WishList { get; set; }
         public List<PCAssembly>? PCAssembly { get; set; } = new List<PCAssembly>();

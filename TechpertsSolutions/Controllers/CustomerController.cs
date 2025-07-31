@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using Core.Interfaces.Services;
 using Core.Interfaces;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {

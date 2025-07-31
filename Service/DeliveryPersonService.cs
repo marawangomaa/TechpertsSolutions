@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -47,46 +47,89 @@ namespace Service
 
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id)
         {
+            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<DeliveryPersonReadDTO>
                 {
                     Success = false,
-                    Message = "ID cannot be null or empty.",
+                    Message = "DeliveryPerson ID cannot be null or empty.",
                     Data = null
                 };
             }
 
-            var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, dp => dp.User, dp => dp.Role);
-
-            if (deliveryPerson == null)
+            if (!Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<DeliveryPersonReadDTO>
                 {
                     Success = false,
-                    Message = "Delivery person not found.",
+                    Message = "Invalid DeliveryPerson ID format. Expected GUID format.",
                     Data = null
                 };
             }
 
-            return new GeneralResponse<DeliveryPersonReadDTO>
+            try
             {
-                Success = true,
-                Message = "Delivery person retrieved successfully.",
-                Data = DeliveryPersonMapper.ToReadDTO(deliveryPerson)
-            };
+                // Comprehensive includes for detailed delivery person view with user and role information
+                var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, 
+                    dp => dp.User, 
+                    dp => dp.Role);
+
+                if (deliveryPerson == null)
+                {
+                    return new GeneralResponse<DeliveryPersonReadDTO>
+                    {
+                        Success = false,
+                        Message = $"DeliveryPerson with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                return new GeneralResponse<DeliveryPersonReadDTO>
+                {
+                    Success = true,
+                    Message = "DeliveryPerson retrieved successfully.",
+                    Data = DeliveryPersonMapper.MapToDeliveryPersonReadDTO(deliveryPerson)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<DeliveryPersonReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the delivery person.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAllAsync()
         {
-            var deliveryPersons = await _deliveryPersonRepo.GetAllWithIncludesAsync(dp => dp.User, dp => dp.Role);
-
-            return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+            try
             {
-                Success = true,
-                Message = "Delivery persons retrieved successfully.",
-                Data = deliveryPersons.Select(DeliveryPersonMapper.ToReadDTO)
-            };
+                // Optimized includes for delivery person listing with user and role information
+                var deliveryPersons = await _deliveryPersonRepo.GetAllWithIncludesAsync(
+                    dp => dp.User, 
+                    dp => dp.Role);
+
+                var deliveryPersonDtos = deliveryPersons.Select(DeliveryPersonMapper.MapToDeliveryPersonReadDTO).ToList();
+
+                return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+                {
+                    Success = true,
+                    Message = "DeliveryPersons retrieved successfully.",
+                    Data = deliveryPersonDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving delivery persons.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(string id, DeliveryPersonUpdateDTO dto)

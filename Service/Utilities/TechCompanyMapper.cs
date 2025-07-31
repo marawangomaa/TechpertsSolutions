@@ -16,8 +16,23 @@ namespace Service.Utilities
             {
                 Id = entity.Id,
                 MapLocation = entity.MapLocation,
-                City = entity.City,
-                Country = entity.Country,
+                City = entity.User.City,
+                Country = entity.User.Country,
+                UserId = entity.UserId,
+                RoleId = entity.RoleId,
+                UserName = entity.User?.UserName,
+                RoleName = entity.Role?.Name
+            };
+        }
+
+        public static TechCompanyReadDTO MapToTechCompanyReadDTO(TechCompany entity)
+        {
+            return new TechCompanyReadDTO
+            {
+                Id = entity.Id,
+                MapLocation = entity.MapLocation,
+                City = entity.User?.City,
+                Country = entity.User?.Country,
                 UserId = entity.UserId,
                 RoleId = entity.RoleId,
                 UserName = entity.User?.UserName,
@@ -31,8 +46,6 @@ namespace Service.Utilities
             {
                 Id = Guid.NewGuid().ToString(),
                 MapLocation = dto.MapLocation,
-                City = dto.City,
-                Country = dto.Country,
                 UserId = dto.UserId,
                 RoleId = dto.RoleId
             };
@@ -42,12 +55,6 @@ namespace Service.Utilities
         {
             if (!string.IsNullOrWhiteSpace(dto.MapLocation))
                 entity.MapLocation = dto.MapLocation;
-
-            if (!string.IsNullOrWhiteSpace(dto.City))
-                entity.City = dto.City;
-
-            if (!string.IsNullOrWhiteSpace(dto.Country))
-                entity.Country = dto.Country;
 
             if (!string.IsNullOrWhiteSpace(dto.UserId))
                 entity.UserId = dto.UserId;

@@ -1,5 +1,4 @@
 using Core.DTOs.WishListDTOs;
-using Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using System;
@@ -7,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -63,16 +62,63 @@ namespace Service
 
         public async Task<GeneralResponse<WishListReadDTO>> GetByIdAsync(string id)
         {
-            var wishList = await _wishListRepo.GetByIdWithIncludesAsync(id, w => w.WishListItems);
-            if (wishList == null)
-                return new GeneralResponse<WishListReadDTO> { Success = false, Message = "Wishlist not found.", Data = null };
-
-            return new GeneralResponse<WishListReadDTO>
+            
+            if (string.IsNullOrWhiteSpace(id))
             {
-                Success = true,
-                Message = "Wishlist retrieved successfully.",
-                Data = ToReadDTO(wishList)
-            };
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = "WishList ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(id, out _))
+            {
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid WishList ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Comprehensive includes for detailed wishlist view with products and their details
+                var wishList = await _wishListRepo.GetByIdWithIncludesAsync(id, 
+                    w => w.WishListItems,
+                    w => w.WishListItems.Select(wi => wi.Product),
+                    w => w.WishListItems.Select(wi => wi.Product.Category),
+                    w => w.WishListItems.Select(wi => wi.Product.SubCategory),
+                    w => w.WishListItems.Select(wi => wi.Product.TechCompany));
+
+                if (wishList == null)
+                {
+                    return new GeneralResponse<WishListReadDTO>
+                    {
+                        Success = false,
+                        Message = $"WishList with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = true,
+                    Message = "WishList retrieved successfully.",
+                    Data = ToReadDTO(wishList)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<WishListReadDTO>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving the WishList.",
+                    Data = null
+                };
+            }
         }
 
         public async Task<GeneralResponse<IEnumerable<WishListReadDTO>>> GetByCustomerIdAsync(string customerId)

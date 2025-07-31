@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Core.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace TechpertsSolutions.Core.DTOs.RegisterDTOs
 {
@@ -37,9 +38,13 @@ namespace TechpertsSolutions.Core.DTOs.RegisterDTOs
         [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string PhoneNumber { get; set; } = null!;
 
-        
-        
-        
+        [StringLength(50, ErrorMessage = "City cannot exceed 50 characters")]
+        public string? City { get; set; }
+
+        [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
+        public string? Country { get; set; }
+
+        public IFormFile? ProfilePhoto { get; set; }
     }
 }
 

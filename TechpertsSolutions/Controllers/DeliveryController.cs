@@ -2,6 +2,9 @@ using Core.DTOs.DeliveryDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Core.DTOs;
+using Core.Enums;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -70,9 +73,23 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] DeliveryCreateDTO dto)
+        public async Task<IActionResult> Create([FromBody] DeliveryCreateDTO dto, [FromQuery] DeliveryStatus deliveryStatus = DeliveryStatus.Pending)
         {
-            var response = await _service.AddAsync(dto);
+            // Create a new DTO with the deliveryStatus from query parameter
+            var dtoWithStatus = new DeliveryCreateDTO
+            {
+                TrackingNumber = dto.TrackingNumber,
+                DeliveryAddress = dto.DeliveryAddress,
+                CustomerPhone = dto.CustomerPhone,
+                CustomerName = dto.CustomerName,
+                EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
+                Notes = dto.Notes,
+                DeliveryFee = dto.DeliveryFee,
+                DeliveryPersonId = dto.DeliveryPersonId,
+                CustomerId = dto.CustomerId
+            };
+
+            var response = await _service.AddAsync(dtoWithStatus);
             if (!response.Success)
             {
                 return BadRequest(response);
@@ -81,7 +98,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] DeliveryUpdateDTO dto)
+        public async Task<IActionResult> Update(string id, [FromBody] DeliveryUpdateDTO dto, [FromQuery] DeliveryStatus? deliveryStatus = null)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
@@ -93,7 +110,22 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _service.UpdateAsync(id, dto);
+            // Create a new DTO with the deliveryStatus from query parameter if provided
+            var dtoWithStatus = new DeliveryUpdateDTO
+            {
+                TrackingNumber = dto.TrackingNumber,
+                DeliveryAddress = dto.DeliveryAddress,
+                CustomerPhone = dto.CustomerPhone,
+                CustomerName = dto.CustomerName,
+                EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
+                ActualDeliveryDate = dto.ActualDeliveryDate,
+                DeliveryStatus = deliveryStatus?.ToString() ?? dto.DeliveryStatus,
+                Notes = dto.Notes,
+                DeliveryFee = dto.DeliveryFee,
+                DeliveryPersonId = dto.DeliveryPersonId
+            };
+
+            var response = await _service.UpdateAsync(id, dtoWithStatus);
             if (!response.Success)
             {
                 return NotFound(response);
@@ -144,19 +176,9 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetByStatus(string status)
+        public async Task<IActionResult> GetByStatus([FromRoute] DeliveryStatus status)
         {
-            if (string.IsNullOrWhiteSpace(status))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Status cannot be null or empty",
-                    Data = status
-                });
-            }
-
-            var response = await _service.GetByStatusAsync(status);
+            var response = await _service.GetByStatusAsync(status.ToString());
             if (!response.Success)
             {
                 return NotFound(response);

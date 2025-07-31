@@ -100,8 +100,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        
-        public async Task<IActionResult> AddProduct([FromBody] ProductCreateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
+        public async Task<IActionResult> AddProduct([FromBody] ProductCreateDTO dto, [FromQuery] ProductCategory category, [FromQuery] ProductPendingStatus status)
         {
             if (!ModelState.IsValid)
             {
@@ -115,7 +114,7 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                var response = await _productService.AddAsync(dto, categorySelect, statusSelect);
+                var response = await _productService.AddAsync(dto, category, status);
                 if (!response.Success)
                 {
                     return BadRequest(response);
@@ -134,16 +133,32 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        
-        public async Task<IActionResult> UpdateProduct(string id, [FromBody] ProductUpdateDTO dto, [FromQuery] ProductCategory categorySelect, [FromQuery] ProductPendingStatus statusSelect)
+        public async Task<IActionResult> UpdateProduct(string id, [FromBody] ProductUpdateDTO dto, [FromQuery] ProductCategory? category = null, [FromQuery] ProductPendingStatus? status = null)
         {
-            if (!ModelState.IsValid)
+            // Debug: Log the incoming request
+            if (dto == null)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Validation failed: " + string.Join("; ", errors)
+                    Message = "Request body is null or invalid. Please ensure you're sending valid JSON.",
+                    Data = "Expected ProductUpdateDTO object"
+                });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                var detailedErrors = ModelState.Keys
+                    .Where(key => ModelState[key].Errors.Count > 0)
+                    .Select(key => $"{key}: {string.Join(", ", ModelState[key].Errors.Select(e => e.ErrorMessage))}")
+                    .ToList();
+                
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Validation failed. Please check the following fields:",
+                    Data = string.Join("; ", detailedErrors)
                 });
             }
 
@@ -159,6 +174,8 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
+                var categorySelect = category ?? ProductCategory.Processor;
+                var statusSelect = status ?? ProductPendingStatus.Pending;
                 var response = await _productService.UpdateAsync(id, dto, categorySelect, statusSelect);
                 if (!response.Success)
                 {

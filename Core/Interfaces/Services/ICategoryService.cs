@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs;
+using TechpertsSolutions.Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;

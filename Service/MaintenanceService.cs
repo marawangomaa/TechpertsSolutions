@@ -1,6 +1,5 @@
 using Core.DTOs.MaintenanceDTOs;
-using TechpertsSolutions.Core.DTOs;
-using Core.Entities;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Core.Enums;
 
 namespace Service
 {
@@ -20,31 +20,39 @@ namespace Service
         private readonly IRepository<TechCompany> _techCompanyRepo;
         private readonly IRepository<Warranty> _warrantyRepo;
         private readonly IRepository<ServiceUsage> _serviceUsageRepo;
+        private readonly INotificationService _notificationService;
 
         public MaintenanceService(
             IRepository<Maintenance> maintenanceRepo, IRepository<Customer> customerRepo, IRepository<TechCompany> techCompanyRepo, 
-            IRepository<Warranty> warrantyRepo, IRepository<ServiceUsage> serviceUsageRepo)
+            IRepository<Warranty> warrantyRepo, IRepository<ServiceUsage> serviceUsageRepo, INotificationService notificationService)
         {
             _maintenanceRepo = maintenanceRepo;
             _customerRepo = customerRepo;
             _techCompanyRepo = techCompanyRepo;
             _warrantyRepo = warrantyRepo;
             _serviceUsageRepo = serviceUsageRepo;
+            _notificationService = notificationService;
         }
 
         public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAllAsync()
         {
             try
             {
-                var maintenances = await _maintenanceRepo.FindWithStringIncludesAsync(
-                    m => true,
-                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
-                );
+                // Optimized includes for maintenance listing with essential related data
+                var maintenances = await _maintenanceRepo.GetAllWithIncludesAsync(
+                    m => m.Customer,
+                    m => m.Customer.User,
+                    m => m.TechCompany,
+                    m => m.TechCompany.User,
+                    m => m.Warranty);
+
+                var maintenanceDtos = maintenances.Select(MaintenanceMapper.MapToMaintenanceDTO).ToList();
+
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = true,
-                    Message = "Maintenances retrieved successfully.",
-                    Data = MaintenanceMapper.MapToMaintenanceDTOList(maintenances)
+                    Message = "Maintenance requests retrieved successfully.",
+                    Data = maintenanceDtos
                 };
             }
             catch (Exception ex)
@@ -52,7 +60,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<MaintenanceDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving maintenances.",
+                    Message = "An unexpected error occurred while retrieving maintenance requests.",
                     Data = null
                 };
             }
@@ -83,27 +91,29 @@ namespace Service
 
             try
             {
-                var maintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
-                    m => m.Id == id,
-                    includeProperties: "Customer,Customer.User,TechCompany,TechCompany.User,Warranty,Warranty.Product,ServiceUsages"
-                );
+                // Comprehensive includes for detailed maintenance view
+                var maintenance = await _maintenanceRepo.GetByIdWithIncludesAsync(id,
+                    m => m.Customer,
+                    m => m.Customer.User,
+                    m => m.TechCompany,
+                    m => m.TechCompany.User,
+                    m => m.Warranty,
+                    m => m.ServiceUsages);
+
                 if (maintenance == null)
                 {
                     return new GeneralResponse<MaintenanceDetailsDTO>
                     {
                         Success = false,
-                        Message = $"Maintenance with ID '{id}' not found.",
+                        Message = $"Maintenance request with ID '{id}' not found.",
                         Data = null
                     };
                 }
 
-                // Ensure the maintenance has a ServiceUsage record
-                await EnsureMaintenanceHasServiceUsage(maintenance);
-
                 return new GeneralResponse<MaintenanceDetailsDTO>
                 {
                     Success = true,
-                    Message = "Maintenance retrieved successfully.",
+                    Message = "Maintenance request retrieved successfully.",
                     Data = MaintenanceMapper.MapToMaintenanceDetailsDTO(maintenance)
                 };
             }
@@ -112,7 +122,7 @@ namespace Service
                 return new GeneralResponse<MaintenanceDetailsDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving the maintenance.",
+                    Message = "An unexpected error occurred while retrieving the maintenance request.",
                     Data = null
                 };
             }
@@ -190,6 +200,15 @@ namespace Service
                 await _maintenanceRepo.AddAsync(entity);
                 await _serviceUsageRepo.AddAsync(serviceUsage);
                 await _maintenanceRepo.SaveChangesAsync();
+
+                // Send notification to TechCompany about new maintenance request
+                await _notificationService.SendNotificationAsync(
+                    entity.TechCompanyId,
+                    $"New maintenance request #{entity.Id} has been created by customer {entity.CustomerId}",
+                    NotificationType.MaintenanceRequestCreated,
+                    entity.Id,
+                    "Maintenance"
+                );
 
                 // Get the created maintenance with all includes to return proper names
                 var createdMaintenance = await _maintenanceRepo.GetFirstOrDefaultAsync(
@@ -479,9 +498,18 @@ namespace Service
                 await EnsureMaintenanceHasServiceUsage(maintenance);
 
                 maintenance.TechCompanyId = techCompanyId;
-                maintenance.Status = "InProgress";
+                maintenance.Status = MaintenanceStatus.InProgress;
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
+
+                // Send notification to customer about maintenance request acceptance
+                await _notificationService.SendNotificationAsync(
+                    maintenance.CustomerId,
+                    $"Your maintenance request #{maintenance.Id} has been accepted by TechCompany",
+                    NotificationType.MaintenanceRequestAccepted,
+                    maintenance.Id,
+                    "Maintenance"
+                );
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
@@ -542,11 +570,20 @@ namespace Service
                 // Ensure the maintenance has a ServiceUsage record
                 await EnsureMaintenanceHasServiceUsage(maintenance);
 
-                maintenance.Status = "Completed";
+                maintenance.Status = MaintenanceStatus.Completed;
                 maintenance.Notes = notes;
                 maintenance.CompletedDate = DateTime.UtcNow;
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
+
+                // Send notification to customer about maintenance completion
+                await _notificationService.SendNotificationAsync(
+                    maintenance.CustomerId,
+                    $"Your maintenance request #{maintenance.Id} has been completed by TechCompany",
+                    NotificationType.MaintenanceRequestCompleted,
+                    maintenance.Id,
+                    "Maintenance"
+                );
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
@@ -571,7 +608,7 @@ namespace Service
             try
             {
                 var maintenances = await _maintenanceRepo.FindWithStringIncludesAsync(
-                    m => m.TechCompanyId == null && m.Status == "Pending",
+                    m => m.TechCompanyId == null && m.Status == MaintenanceStatus.Requested,
                     includeProperties: "Customer,Customer.User,Warranty,Warranty.Product,ServiceUsages"
                 );
 
@@ -624,7 +661,20 @@ namespace Service
                 // Ensure the maintenance has a ServiceUsage record
                 await EnsureMaintenanceHasServiceUsage(maintenance);
 
-                maintenance.Status = newStatus;
+                // Parse the string status to enum
+                if (Enum.TryParse<MaintenanceStatus>(newStatus, out var status))
+                {
+                    maintenance.Status = status;
+                }
+                else
+                {
+                    return new GeneralResponse<MaintenanceDTO>
+                    {
+                        Success = false,
+                        Message = $"Invalid status: {newStatus}",
+                        Data = null
+                    };
+                }
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
@@ -663,6 +713,121 @@ namespace Service
                 await _serviceUsageRepo.AddAsync(serviceUsage);
                 maintenance.ServiceUsages = new List<ServiceUsage> { serviceUsage };
             }
+        }
+
+        public async Task<GeneralResponse<MaintenanceNearestDTO>> GetNearestMaintenanceAsync(string customerId)
+        {
+            try
+            {
+                var customer = await _customerRepo.GetFirstOrDefaultAsync(
+                    c => c.Id == customerId,
+                    includeProperties: "User"
+                );
+
+                if (customer == null)
+                {
+                    return new GeneralResponse<MaintenanceNearestDTO>
+                    {
+                        Success = false,
+                        Message = "Customer not found."
+                    };
+                }
+
+                // Get all tech companies that provide maintenance services
+                var techCompanies = await _techCompanyRepo.GetAllAsync();
+                var maintenanceTechCompanies = techCompanies.ToList();
+
+                if (!maintenanceTechCompanies.Any())
+                {
+                    return new GeneralResponse<MaintenanceNearestDTO>
+                    {
+                        Success = false,
+                        Message = "No maintenance centers found."
+                    };
+                }
+
+                // Simple distance calculation based on address matching
+                // In a real implementation, you would use geocoding and distance calculation
+                var customerAddress = customer.User?.Address?.ToLower() ?? "";
+                var customerRegion = ExtractRegionFromAddress(customerAddress);
+                var customerPostalCode = ExtractPostalCodeFromAddress(customerAddress);
+
+                var nearestMaintenance = maintenanceTechCompanies
+                    .Select(tc => new
+                    {
+                        TechCompany = tc,
+                        Distance = CalculateDistance(customerAddress, customerRegion, customerPostalCode, tc.User?.Address ?? "")
+                    })
+                    .OrderBy(x => x.Distance)
+                    .First();
+
+                var result = new MaintenanceNearestDTO
+                {
+                    Id = nearestMaintenance.TechCompany.Id,
+                    Name = nearestMaintenance.TechCompany.User?.FullName ?? "Unknown",
+                    Address = nearestMaintenance.TechCompany.User?.Address ?? "Unknown",
+                    TechCompanyName = nearestMaintenance.TechCompany.User?.FullName ?? "Unknown",
+                    TechCompanyAddress = nearestMaintenance.TechCompany.User?.Address ?? "Unknown",
+                    TechCompanyPhone = nearestMaintenance.TechCompany.User?.PhoneNumber ?? "Unknown",
+                    Distance = nearestMaintenance.Distance,
+                    Region = ExtractRegionFromAddress(nearestMaintenance.TechCompany.User?.Address ?? ""),
+                    PostalCode = ExtractPostalCodeFromAddress(nearestMaintenance.TechCompany.User?.Address ?? "")
+                };
+
+                return new GeneralResponse<MaintenanceNearestDTO>
+                {
+                    Success = true,
+                    Message = "Nearest maintenance center found successfully.",
+                    Data = result
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<MaintenanceNearestDTO>
+                {
+                    Success = false,
+                    Message = "An error occurred while finding nearest maintenance center.",
+                    Data = null
+                };
+            }
+        }
+
+        private string ExtractRegionFromAddress(string address)
+        {
+            // Simple region extraction - can be enhanced with more sophisticated logic
+            var parts = address.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 1 ? parts[1].Trim() : "";
+        }
+
+        private string ExtractPostalCodeFromAddress(string address)
+        {
+            // Simple postal code extraction - can be enhanced with regex patterns
+            var parts = address.Split(',', StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 2 ? parts[2].Trim() : "";
+        }
+
+        private double CalculateDistance(string customerAddress, string customerRegion, string customerPostalCode, string techCompanyAddress)
+        {
+            // Simple distance calculation based on address matching
+            // In a real implementation, you would use geocoding APIs and calculate actual distances
+            
+            var techCompanyRegion = ExtractRegionFromAddress(techCompanyAddress);
+            var techCompanyPostalCode = ExtractPostalCodeFromAddress(techCompanyAddress);
+
+            // If same region, give lower distance
+            if (customerRegion.Equals(techCompanyRegion, StringComparison.OrdinalIgnoreCase))
+            {
+                return 5.0; // 5 km
+            }
+
+            // If same postal code, give very low distance
+            if (customerPostalCode.Equals(techCompanyPostalCode, StringComparison.OrdinalIgnoreCase))
+            {
+                return 1.0; // 1 km
+            }
+
+            // Default distance
+            return 50.0; // 50 km
         }
     }
 }

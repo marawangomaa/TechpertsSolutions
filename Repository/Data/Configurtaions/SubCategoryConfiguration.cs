@@ -9,10 +9,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class SubCategoryConfiguration : IEntityTypeConfiguration<SubCategory>
+    public class SubCategoryConfiguration : BaseEntityConfiguration<SubCategory>
     {
-        public void Configure(EntityTypeBuilder<SubCategory> builder)
+        public override void Configure(EntityTypeBuilder<SubCategory> builder)
         {
+            base.Configure(builder);
             builder.HasOne(sc => sc.Category)
                   .WithMany(c => c.SubCategories)
                   .HasForeignKey(sc => sc.CategoryId)

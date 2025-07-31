@@ -1,4 +1,4 @@
-﻿using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using Core.Enums;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.ProductDTOs;
 using Microsoft.AspNetCore.Http;
-using Core.DTOs;
 
 namespace Core.Interfaces.Services
 {

@@ -8,7 +8,7 @@ using TechpertsSolutions.Core.Entities;
 
 namespace Core.Interfaces
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<T> where T : class, IEntity
     {
         Task<T> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();

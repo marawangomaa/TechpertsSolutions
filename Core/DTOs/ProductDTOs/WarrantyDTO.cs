@@ -12,6 +12,14 @@ namespace Core.DTOs.ProductDTOs
         public string Id { get; set; } = string.Empty;
         
         [Required]
+        [StringLength(100)]
+        public string Type { get; set; } = string.Empty;
+        
+        [Required]
+        [StringLength(100)]
+        public string Duration { get; set; } = string.Empty;
+        
+        [Required]
         [StringLength(200)]
         public string Description { get; set; } = string.Empty;
         

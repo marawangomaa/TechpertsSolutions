@@ -9,10 +9,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
+    public class CustomerConfiguration : BaseEntityConfiguration<Customer>
     {
-        public void Configure(EntityTypeBuilder<Customer> builder)
+        public override void Configure(EntityTypeBuilder<Customer> builder)
         {
+            base.Configure(builder);
             builder.HasOne(c => c.User)
                    .WithOne(u => u.Customer)
                    .HasForeignKey<Customer>(c => c.Id)

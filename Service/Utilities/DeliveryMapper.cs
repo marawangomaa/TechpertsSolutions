@@ -1,5 +1,5 @@
 using Core.DTOs.DeliveryDTOs;
-using Core.Entities;
+using Core.Enums;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -19,7 +19,7 @@ namespace Service.Utilities
                 CustomerName = delivery.CustomerName,
                 EstimatedDeliveryDate = delivery.EstimatedDeliveryDate,
                 ActualDeliveryDate = delivery.ActualDeliveryDate,
-                DeliveryStatus = delivery.DeliveryStatus,
+                DeliveryStatus = delivery.Status.ToString(),
                 Notes = delivery.Notes,
                 DeliveryFee = delivery.DeliveryFee,
                 DeliveryPersonId = delivery.DeliveryPersonId,
@@ -39,7 +39,7 @@ namespace Service.Utilities
                 CustomerPhone = dto.CustomerPhone,
                 CustomerName = dto.CustomerName,
                 EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
-                DeliveryStatus = "Pending",
+                Status = DeliveryStatus.Assigned,
                 Notes = dto.Notes,
                 DeliveryFee = dto.DeliveryFee,
                 DeliveryPersonId = dto.DeliveryPersonId,
@@ -70,7 +70,12 @@ namespace Service.Utilities
                 delivery.ActualDeliveryDate = dto.ActualDeliveryDate;
 
             if (!string.IsNullOrWhiteSpace(dto.DeliveryStatus))
-                delivery.DeliveryStatus = dto.DeliveryStatus;
+            {
+                if (Enum.TryParse<DeliveryStatus>(dto.DeliveryStatus, out var status))
+                {
+                    delivery.Status = status;
+                }
+            }
 
             if (!string.IsNullOrWhiteSpace(dto.Notes))
                 delivery.Notes = dto.Notes;
@@ -95,7 +100,7 @@ namespace Service.Utilities
                 CustomerName = delivery.CustomerName,
                 EstimatedDeliveryDate = delivery.EstimatedDeliveryDate,
                 ActualDeliveryDate = delivery.ActualDeliveryDate,
-                DeliveryStatus = delivery.DeliveryStatus,
+                DeliveryStatus = delivery.Status.ToString(),
                 Notes = delivery.Notes,
                 DeliveryFee = delivery.DeliveryFee,
                 DeliveryPerson = delivery.DeliveryPerson != null ? new DeliveryPersonDTO
@@ -104,16 +109,16 @@ namespace Service.Utilities
                     UserFullName = delivery.DeliveryPerson.User?.FullName,
                     VehicleNumber = delivery.DeliveryPerson.VehicleNumber,
                     VehicleType = delivery.DeliveryPerson.VehicleType,
-                    PhoneNumber = delivery.DeliveryPerson.PhoneNumber,
-                    City = delivery.DeliveryPerson.City,
-                    Country = delivery.DeliveryPerson.Country,
+                    PhoneNumber = delivery.DeliveryPerson.User.PhoneNumber,
+                    City = delivery.DeliveryPerson.User.City,
+                    Country = delivery.DeliveryPerson.User.Country,
                     IsAvailable = delivery.DeliveryPerson.IsAvailable
                 } : null,
                 TechCompanies = delivery.TechCompanies?.Select(tc => new DeliveryTechCompanyDTO
                 {
                     Id = tc.Id,
-                    City = tc.City,
-                    Country = tc.Country,
+                    City = tc.User.City,
+                    Country = tc.User.Country,
                     UserFullName = tc.User?.FullName
                 }).ToList()
             };

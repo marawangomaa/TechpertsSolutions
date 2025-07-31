@@ -7,10 +7,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class SpecificationConfiguration : IEntityTypeConfiguration<Specification>
+    public class SpecificationConfiguration : BaseEntityConfiguration<Specification>
     {
-        public void Configure(EntityTypeBuilder<Specification> builder)
+        public override void Configure(EntityTypeBuilder<Specification> builder)
         {
+            base.Configure(builder);
             builder.HasOne(s => s.Product)
                    .WithMany(p => p.Specifications)
                    .HasForeignKey(s => s.ProductId)

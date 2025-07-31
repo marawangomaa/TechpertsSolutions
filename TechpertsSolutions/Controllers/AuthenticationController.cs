@@ -15,6 +15,7 @@ using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Utilities;
+using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -30,7 +31,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDTO dto, RoleType role)
+        public async Task<IActionResult> Register([FromForm] RegisterDTO dto, [FromForm] RoleType role)
         {
             
             if (!ModelState.IsValid)
@@ -48,12 +49,12 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _authService.RegisterAsync(dto,role);
+            var response = await _authService.RegisterAsync(dto, role);
             return StatusCode(response.Success ? 200 : 400, response);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO dto)
+        public async Task<IActionResult> Login([FromForm] LoginDTO dto)
         {
             
             if (!ModelState.IsValid)
@@ -76,7 +77,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("forgot-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTO dto)
+        public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDTO dto)
         {
             
             if (!ModelState.IsValid)
@@ -117,7 +118,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO dto)
+        public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDTO dto)
         {
             
             if (!ModelState.IsValid)
@@ -141,7 +142,7 @@ namespace TechpertsSolutions.Controllers
 
         [HttpDelete("delete-account")]
         [Authorize]
-        public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountDTO dto)
+        public async Task<IActionResult> DeleteAccount([FromForm] DeleteAccountDTO dto)
         {
             
             if (!ModelState.IsValid)

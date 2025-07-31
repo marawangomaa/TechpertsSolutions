@@ -9,10 +9,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class WarrantyConfiguration : IEntityTypeConfiguration<Warranty>
+    public class WarrantyConfiguration : BaseEntityConfiguration<Warranty>
     {
-        public void Configure(EntityTypeBuilder<Warranty> builder)
+        public override void Configure(EntityTypeBuilder<Warranty> builder)
         {
+            base.Configure(builder);
             builder.HasOne(w => w.Product)
                    .WithMany(p => p.Warranties)
                    .HasForeignKey(w => w.ProductId)

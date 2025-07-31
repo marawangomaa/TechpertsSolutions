@@ -13,5 +13,6 @@ namespace TechpertsSolutions.Core.DTOs.LoginDTOs
         public string? CartId { get; set; }
         public string? WishListId { get; set; }
         public string? PCAssemblyId { get; set; }
+        public string? ProfilePhotoUrl { get; set; }
     }
 }

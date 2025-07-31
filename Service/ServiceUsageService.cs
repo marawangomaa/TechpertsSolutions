@@ -1,5 +1,5 @@
 using Core.DTOs.ServiceUsageDTOs;
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 
 namespace Service
 {

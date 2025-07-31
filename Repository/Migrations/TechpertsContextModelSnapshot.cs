@@ -22,143 +22,6 @@ namespace Repository.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Core.Entities.Delivery", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("ActualDeliveryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CustomerName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CustomerPhone")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("DeliveryFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("DeliveryPersonId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("DeliveryStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("EstimatedDeliveryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TrackingNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("DeliveryPersonId");
-
-                    b.ToTable("Deliveries");
-                });
-
-            modelBuilder.Entity("Core.Entities.Maintenance", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("CompletedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TechCompanyId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("WarrantyId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("TechCompanyId");
-
-                    b.HasIndex("WarrantyId");
-
-                    b.ToTable("Maintenances");
-                });
-
-            modelBuilder.Entity("Core.Entities.PCAssembly", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ServiceUsageId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("ServiceUsageId");
-
-                    b.ToTable("PCAssemblies");
-                });
-
-            modelBuilder.Entity("Core.Entities.ServiceUsage", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("CallCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("MaintenanceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UsedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MaintenanceId");
-
-                    b.ToTable("ServiceUsages");
-                });
-
             modelBuilder.Entity("DeliveryTechCompany", b =>
                 {
                     b.Property<string>("DeliveriesId")
@@ -345,9 +208,18 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -360,11 +232,17 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -383,11 +261,17 @@ namespace Repository.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -410,9 +294,6 @@ namespace Repository.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -471,16 +352,55 @@ namespace Repository.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionPlan", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("City")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DeliveryCommission")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Country")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaintenanceCommission")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("MonthlySubscriptionFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("PCAssemblyCommission")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ProductSaleCommission")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CommissionPlan");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -500,22 +420,73 @@ namespace Repository.Migrations
                     b.ToTable("Customers");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Delivery", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ActualDeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CustomerName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeliveryAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("DeliveryFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DeliveryPersonId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PickupAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PickupDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("DeliveryPersonId");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique()
+                        .HasFilter("[OrderId] IS NOT NULL");
+
+                    b.ToTable("Deliveries");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -541,6 +512,91 @@ namespace Repository.Migrations
                     b.ToTable("DeliveryPersons");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Maintenance", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DeviceImages")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeviceType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Issue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Priority")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("ServiceFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechCompanyId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WarrantyId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("TechCompanyId");
+
+                    b.HasIndex("WarrantyId");
+
+                    b.ToTable("Maintenances");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Notification", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReceiverUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RelatedEntityId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RelatedEntityType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Order", b =>
                 {
                     b.Property<string>("Id")
@@ -548,9 +604,6 @@ namespace Repository.Migrations
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("DeliveryId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("OrderDate")
@@ -572,8 +625,6 @@ namespace Repository.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DeliveryId");
-
                     b.HasIndex("OrderHistoryId");
 
                     b.HasIndex("ServiceUsageId");
@@ -585,6 +636,12 @@ namespace Repository.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -622,6 +679,51 @@ namespace Repository.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.PCAssembly", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("AssemblyFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("Budget")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ServiceUsageId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechCompanyId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ServiceUsageId");
+
+                    b.HasIndex("TechCompanyId");
+
+                    b.ToTable("PCAssemblies");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.PCAssemblyItem", b =>
                 {
                     b.Property<string>("Id")
@@ -645,6 +747,9 @@ namespace Repository.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Total")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -688,6 +793,7 @@ namespace Repository.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TechCompanyId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("status")
@@ -702,6 +808,31 @@ namespace Repository.Migrations
                     b.HasIndex("TechCompanyId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ServiceUsage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("CallCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaintenanceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UsedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaintenanceId");
+
+                    b.ToTable("ServiceUsages");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Specification", b =>
@@ -756,13 +887,37 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("City")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CommissionPlanId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
+
                     b.Property<string>("MapLocation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
@@ -773,7 +928,12 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CommissionPlanId");
 
                     b.HasIndex("RoleId");
 
@@ -792,6 +952,10 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Duration")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
@@ -801,6 +965,10 @@ namespace Repository.Migrations
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -813,9 +981,6 @@ namespace Repository.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
@@ -851,75 +1016,9 @@ namespace Repository.Migrations
                     b.ToTable("WishListItems");
                 });
 
-            modelBuilder.Entity("Core.Entities.Delivery", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
-                        .WithMany("Deliveries")
-                        .HasForeignKey("DeliveryPersonId");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("DeliveryPerson");
-                });
-
-            modelBuilder.Entity("Core.Entities.Maintenance", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
-                        .WithMany("Maintenances")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
-                        .WithMany("Maintenances")
-                        .HasForeignKey("TechCompanyId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.Warranty", "Warranty")
-                        .WithMany()
-                        .HasForeignKey("WarrantyId");
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("TechCompany");
-
-                    b.Navigation("Warranty");
-                });
-
-            modelBuilder.Entity("Core.Entities.PCAssembly", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
-                        .WithMany("PCAssembly")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Core.Entities.ServiceUsage", "ServiceUsage")
-                        .WithMany("PCAssemblies")
-                        .HasForeignKey("ServiceUsageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("ServiceUsage");
-                });
-
-            modelBuilder.Entity("Core.Entities.ServiceUsage", b =>
-                {
-                    b.HasOne("Core.Entities.Maintenance", "Maintenance")
-                        .WithMany("ServiceUsages")
-                        .HasForeignKey("MaintenanceId");
-
-                    b.Navigation("Maintenance");
-                });
-
             modelBuilder.Entity("DeliveryTechCompany", b =>
                 {
-                    b.HasOne("Core.Entities.Delivery", null)
+                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", null)
                         .WithMany()
                         .HasForeignKey("DeliveriesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1051,6 +1150,27 @@ namespace Repository.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Delivery", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
+                        .WithMany("Deliveries")
+                        .HasForeignKey("DeliveryPersonId");
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.Order", "Order")
+                        .WithOne("Delivery")
+                        .HasForeignKey("TechpertsSolutions.Core.Entities.Delivery", "OrderId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("DeliveryPerson");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.AppRole", "Role")
@@ -1070,6 +1190,38 @@ namespace Repository.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Maintenance", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
+                        .WithMany("Maintenances")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
+                        .WithMany("Maintenances")
+                        .HasForeignKey("TechCompanyId");
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.Warranty", "Warranty")
+                        .WithMany()
+                        .HasForeignKey("WarrantyId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("TechCompany");
+
+                    b.Navigation("Warranty");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Notification", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId");
+
+                    b.Navigation("Receiver");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Order", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
@@ -1078,21 +1230,15 @@ namespace Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Entities.Delivery", "Delivery")
-                        .WithMany()
-                        .HasForeignKey("DeliveryId");
-
                     b.HasOne("TechpertsSolutions.Core.Entities.OrderHistory", "OrderHistory")
                         .WithMany("Orders")
                         .HasForeignKey("OrderHistoryId");
 
-                    b.HasOne("Core.Entities.ServiceUsage", "ServiceUsage")
+                    b.HasOne("TechpertsSolutions.Core.Entities.ServiceUsage", "ServiceUsage")
                         .WithMany("Orders")
                         .HasForeignKey("ServiceUsageId");
 
                     b.Navigation("Customer");
-
-                    b.Navigation("Delivery");
 
                     b.Navigation("OrderHistory");
 
@@ -1118,9 +1264,34 @@ namespace Repository.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.PCAssembly", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
+                        .WithMany("PCAssembly")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.ServiceUsage", "ServiceUsage")
+                        .WithMany("PCAssemblies")
+                        .HasForeignKey("ServiceUsageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
+                        .WithMany("PCAssemblies")
+                        .HasForeignKey("TechCompanyId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("ServiceUsage");
+
+                    b.Navigation("TechCompany");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.PCAssemblyItem", b =>
                 {
-                    b.HasOne("Core.Entities.PCAssembly", "PCAssembly")
+                    b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
                         .WithMany("PCAssemblyItems")
                         .HasForeignKey("PCAssemblyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1151,13 +1322,24 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
                         .WithMany("Products")
-                        .HasForeignKey("TechCompanyId");
+                        .HasForeignKey("TechCompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
 
                     b.Navigation("SubCategory");
 
                     b.Navigation("TechCompany");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ServiceUsage", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.Maintenance", "Maintenance")
+                        .WithMany("ServiceUsages")
+                        .HasForeignKey("MaintenanceId");
+
+                    b.Navigation("Maintenance");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Specification", b =>
@@ -1184,6 +1366,10 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.TechCompany", b =>
                 {
+                    b.HasOne("TechpertsSolutions.Core.Entities.CommissionPlan", "CommissionPlan")
+                        .WithMany("TechCompanies")
+                        .HasForeignKey("CommissionPlanId");
+
                     b.HasOne("TechpertsSolutions.Core.Entities.AppRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -1195,6 +1381,8 @@ namespace Repository.Migrations
                         .HasForeignKey("TechpertsSolutions.Core.Entities.TechCompany", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CommissionPlan");
 
                     b.Navigation("Role");
 
@@ -1242,23 +1430,6 @@ namespace Repository.Migrations
                     b.Navigation("WishList");
                 });
 
-            modelBuilder.Entity("Core.Entities.Maintenance", b =>
-                {
-                    b.Navigation("ServiceUsages");
-                });
-
-            modelBuilder.Entity("Core.Entities.PCAssembly", b =>
-                {
-                    b.Navigation("PCAssemblyItems");
-                });
-
-            modelBuilder.Entity("Core.Entities.ServiceUsage", b =>
-                {
-                    b.Navigation("Orders");
-
-                    b.Navigation("PCAssemblies");
-                });
-
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.AppUser", b =>
                 {
                     b.Navigation("Admin");
@@ -1282,6 +1453,11 @@ namespace Repository.Migrations
                     b.Navigation("SubCategories");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionPlan", b =>
+                {
+                    b.Navigation("TechCompanies");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
                 {
                     b.Navigation("Cart");
@@ -1300,14 +1476,26 @@ namespace Repository.Migrations
                     b.Navigation("Deliveries");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Maintenance", b =>
+                {
+                    b.Navigation("ServiceUsages");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Order", b =>
                 {
+                    b.Navigation("Delivery");
+
                     b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.OrderHistory", b =>
                 {
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.PCAssembly", b =>
+                {
+                    b.Navigation("PCAssemblyItems");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Product", b =>
@@ -1325,6 +1513,13 @@ namespace Repository.Migrations
                     b.Navigation("WishListItems");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ServiceUsage", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("PCAssemblies");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.SubCategory", b =>
                 {
                     b.Navigation("Products");
@@ -1333,6 +1528,8 @@ namespace Repository.Migrations
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.TechCompany", b =>
                 {
                     b.Navigation("Maintenances");
+
+                    b.Navigation("PCAssemblies");
 
                     b.Navigation("Products");
                 });

@@ -1,4 +1,4 @@
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs;
 using Microsoft.AspNetCore.Identity;
 using TechpertsSolutions.Core.Entities;
 using System.Collections.Generic;

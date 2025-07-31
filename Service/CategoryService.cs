@@ -36,21 +36,20 @@ namespace Service
         {
             try
             {
+                // Optimized includes for category listing with subcategories
                 var categories = await _categoryRepository.GetAllWithIncludesAsync(
-                    c => c.SubCategories,
-                    c => c.Products
-                );
+                    c => c.SubCategories);
 
-                
-                var mappedCategories = CategoryMapper.MapToCategoryDTOList(categories);
+                var categoryDtos = categories.Select(CategoryMapper.MapToCategoryDTO).ToList();
+
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
                     Success = true,
                     Message = "Categories retrieved successfully.",
-                    Data = mappedCategories ?? Enumerable.Empty<CategoryDTO>()
+                    Data = categoryDtos
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
@@ -61,7 +60,6 @@ namespace Service
             }
         }
 
-        
         public async Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string id)
         {
             
@@ -87,11 +85,10 @@ namespace Service
 
             try
             {
+                // Comprehensive includes for detailed category view with subcategories
                 var category = await _categoryRepository.GetByIdWithIncludesAsync(
                     id,
-                    c => c.SubCategories,
-                    c => c.Products
-                );
+                    c => c.SubCategories);
 
                 if (category == null)
                 {
@@ -103,26 +100,14 @@ namespace Service
                     };
                 }
 
-                
-                var mappedCategory = CategoryMapper.MapToCategoryDTO(category);
-                if (mappedCategory == null)
-                {
-                    return new GeneralResponse<CategoryDTO>
-                    {
-                        Success = false,
-                        Message = "Failed to map category data.",
-                        Data = null
-                    };
-                }
-                
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category retrieved successfully.",
-                    Data = mappedCategory
+                    Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<CategoryDTO>
                 {

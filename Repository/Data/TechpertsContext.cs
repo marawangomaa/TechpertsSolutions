@@ -1,4 +1,3 @@
-using Core.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +8,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {
@@ -18,6 +18,38 @@ namespace TechpertsSolutions.Repository.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            
+            // Explicitly ignore CreatedAt and UpdatedAt properties for all BaseEntity types
+            modelBuilder.Entity<Admin>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Cart>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<CartItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Category>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Customer>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Delivery>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<DeliveryPerson>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Maintenance>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Order>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<OrderItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<PCAssembly>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<PCAssemblyItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Product>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<ServiceUsage>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Specification>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<SubCategory>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<TechCompany>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<Warranty>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<WishList>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            modelBuilder.Entity<WishListItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            
+            // Ignore AppUser properties that are not in the database
+            modelBuilder.Entity<AppUser>().Ignore(e => e.IsActive).Ignore(e => e.ProfilePhotoUrl);
+            
+            // Ignore Product image properties that are not in the database
+            modelBuilder.Entity<Product>().Ignore(e => e.Image1Url).Ignore(e => e.Image2Url).Ignore(e => e.Image3Url).Ignore(e => e.Image4Url);
+            
+            // Ignore Notification properties that are not in the database
+            modelBuilder.Entity<Notification>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
+            
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
         }
         public DbSet<Admin> Admins { get; set; }
@@ -40,5 +72,6 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<Warranty> Warranties { get; set; }
         public DbSet<WishList> WishLists { get; set; }
         public DbSet<WishListItem> WishListItems { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -10,10 +10,11 @@ using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data.Configurtaions
 {
-    public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
+    public class CartItemConfiguration : BaseEntityConfiguration<CartItem>
     {
-        public void Configure(EntityTypeBuilder<CartItem> builder)
+        public override void Configure(EntityTypeBuilder<CartItem> builder)
         {
+            base.Configure(builder);
             builder.HasOne(ci => ci.Product)
                    .WithMany(p => p.CartItems)
                    .HasForeignKey(ci => ci.ProductId)

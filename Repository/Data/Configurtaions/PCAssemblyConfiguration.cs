@@ -1,4 +1,4 @@
-using Core.Entities;
+using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
 {
-    public class PCAssemblyConfiguration : IEntityTypeConfiguration<PCAssembly>
+    public class PCAssemblyConfiguration : BaseEntityConfiguration<PCAssembly>
     {
-        public void Configure(EntityTypeBuilder<PCAssembly> builder)
+        public override void Configure(EntityTypeBuilder<PCAssembly> builder)
         {
+            base.Configure(builder);
             builder.HasOne(pc => pc.Customer)
                    .WithMany(c => c.PCAssembly)
                    .HasForeignKey(pc => pc.CustomerId)
