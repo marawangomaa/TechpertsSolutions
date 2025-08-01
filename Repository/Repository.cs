@@ -23,6 +23,21 @@ namespace Repository
 
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
+        public async Task<IEnumerable<T>> GetAllAsync(string? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var include in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(include.Trim());
+                }
+            }
+
+            return await query.ToListAsync();
+        }
+
         public async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet;

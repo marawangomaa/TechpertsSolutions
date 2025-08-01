@@ -39,18 +39,9 @@ namespace Service
         {
             try
             {
-                // Get all categories with includes using string-based approach
-                var allCategories = await _categoryRepository.GetAllAsync();
-                var categoryDtos = new List<CategoryDTO>();
+                var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
 
-                foreach (var category in allCategories)
-                {
-                    var categoryWithIncludes = await _categoryRepository.GetFirstOrDefaultAsync(
-                        c => c.Id == category.Id,
-                        "SubCategories,SubCategories.Products,Products");
-                    
-                    categoryDtos.Add(CategoryMapper.MapToCategoryDTO(categoryWithIncludes));
-                }
+                var categoryDtos = categories.Select(CategoryMapper.MapToCategoryDTO).ToList();
 
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
@@ -64,7 +55,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving categories.",
+                    Message = $"An unexpected error occurred while retrieving categories.{ex}",
                     Data = null
                 };
             }
@@ -95,9 +86,8 @@ namespace Service
 
             try
             {
-                // Use the same approach as GetAllCategoriesAsync for consistency
-                var allCategories = await _categoryRepository.GetAllAsync();
-                var category = allCategories.FirstOrDefault(c => c.Id == id);
+                var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
+                var category = categories.FirstOrDefault(c => c.Id == id);
 
                 if (category == null)
                 {
@@ -109,18 +99,11 @@ namespace Service
                     };
                 }
 
-                // Get the category with includes using FindWithStringIncludesAsync
-                var categoryWithIncludes = await _categoryRepository.FindWithStringIncludesAsync(
-                    c => c.Id == category.Id,
-                    "SubCategories,SubCategories.Products,Products");
-                
-                var categoryWithIncludesResult = categoryWithIncludes.FirstOrDefault();
-
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category retrieved successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(categoryWithIncludesResult)
+                    Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
             catch (Exception ex)
@@ -144,11 +127,9 @@ namespace Service
                     Data = null
                 };
             }
-            
-            // Use the same approach as GetAllCategoriesAsync for consistency
-            var allCategories = await _categoryRepository.GetAllAsync();
-            var category = allCategories.FirstOrDefault(c => c.Name == name);
-            
+            var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
+            var category = categories.FirstOrDefault(c => c.Name == name);
+
             if (category == null) 
             {
                 return new GeneralResponse<CategoryDTO>()
@@ -158,15 +139,8 @@ namespace Service
                    Data = null
                 };
             }
-
-            // Get the category with includes using FindWithStringIncludesAsync
-            var categoryWithIncludes = await _categoryRepository.FindWithStringIncludesAsync(
-                c => c.Id == category.Id,
-                "SubCategories,SubCategories.Products,Products");
-            
-            var categoryWithIncludesResult = categoryWithIncludes.FirstOrDefault();
  
-            var categoryDTO = CategoryMapper.MapToCategoryDTO(categoryWithIncludesResult);
+            var categoryDTO = CategoryMapper.MapToCategoryDTO(category);
             return new GeneralResponse<CategoryDTO>() 
             {
                 Success = true,
@@ -205,19 +179,19 @@ namespace Service
                 await _categoryRepository.SaveChangesAsync(); 
 
                 
-                var createdCategory = await _categoryRepository.FindWithStringIncludesAsync(
-                    c => c.Id == category.Id,
-                    "SubCategories,SubCategories.Products,Products"
+                var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
+                    category.Id,
+                    c => c.SubCategories,
+                    c => c.SubCategories.Select(sc => sc.Products),
+                    c => c.Products
                 );
-                
-                var createdCategoryResult = createdCategory.FirstOrDefault();
 
                 
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category created successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(createdCategoryResult)
+                    Data = CategoryMapper.MapToCategoryDTO(createdCategory)
                 };
             }
             catch (Exception)
@@ -295,18 +269,17 @@ namespace Service
                 await _categoryRepository.SaveChangesAsync(); 
 
                 
-                var updatedCategory = await _categoryRepository.FindWithStringIncludesAsync(
-                    c => c.Id == category.Id,
-                    "SubCategories,SubCategories.Products,Products"
+                var updatedCategory = await _categoryRepository.GetByIdWithIncludesAsync(
+                    category.Id,
+                    c => c.SubCategories,
+                    c => c.Products
                 );
-                
-                var updatedCategoryResult = updatedCategory.FirstOrDefault();
                 
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category updated successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(updatedCategoryResult)
+                    Data = CategoryMapper.MapToCategoryDTO(updatedCategory)
                 };
             }
             catch (Exception)

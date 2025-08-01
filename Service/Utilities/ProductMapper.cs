@@ -156,7 +156,11 @@ namespace Service.Utilities
                 Id = product.Id,
                 Name = product.Name,
                 Price = product.Price,
-                ImageUrl = product.ImageUrl
+                ImageUrl = product.ImageUrl,
+                Image1Url = product.Image1Url,
+                Image2Url = product.Image2Url,
+                Image3Url = product.Image3Url,
+                Image4Url = product.Image4Url
             };
         }
     }

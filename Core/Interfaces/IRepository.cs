@@ -12,6 +12,7 @@ namespace Core.Interfaces
     {
         Task<T> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();
+        Task<IEnumerable<T>> GetAllAsync(string? includeProperties = null);
         Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
 
         Task<T?> GetFirstOrDefaultAsync(
