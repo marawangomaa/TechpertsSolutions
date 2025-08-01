@@ -134,7 +134,7 @@ namespace Service
                     Data = paginatedResult
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {

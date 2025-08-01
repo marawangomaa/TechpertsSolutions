@@ -1,17 +1,12 @@
+using Core.DTOs;
 using Core.DTOs.SubCategoryDTOs;
-using TechpertsSolutions.Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
-using Service.Utilities;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TechpertsSolutions.Core.Entities;
 using Microsoft.AspNetCore.Http;
-using Core.DTOs;
+using Microsoft.Extensions.Logging;
+using Service.Utilities;
+
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -43,7 +38,8 @@ namespace Service
             {
                 // Optimized includes for subcategory listing with category information
                 var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
-                    sc => sc.Category);
+                    sc => sc.Category,
+                    sc => sc.Products);
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -93,7 +89,8 @@ namespace Service
                 // Comprehensive includes for detailed subcategory view with category information
                 var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     id,
-                    sc => sc.Category);
+                    sc => sc.Category,
+                    sc => sc.Products);
 
                 if (subCategory == null)
                 {
@@ -122,7 +119,36 @@ namespace Service
                 };
             }
         }
-
+        public async Task<GeneralResponse<SubCategoryDTO>> GetSubCategoryByNameAsync(string name) 
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return new GeneralResponse<SubCategoryDTO>
+                {
+                    Success = false,
+                    Message = "SubCategory name must be provided.",
+                    Data = null
+                };
+            }
+            var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultAsync(sc => sc.Name == name,
+                includeProperties: "Category,Products");
+            if (subCategoryByName == null) 
+            {
+                return new GeneralResponse<SubCategoryDTO>
+                {
+                    Success = false,
+                    Message = $"SubCategory Name {name} not found",
+                    Data = null
+                };
+            }
+            var subCategoryDTO = SubCategoryMapper.MapToSubCategoryDTO(subCategoryByName);
+            return new GeneralResponse<SubCategoryDTO> 
+            {
+                Success = true,
+                Message = $"The SubCategory with name ${name} found successfully",
+                Data = subCategoryDTO
+            };
+        }
         public async Task<GeneralResponse<SubCategoryDTO>> CreateSubCategoryAsync(CreateSubCategoryDTO createDto)
         {
             

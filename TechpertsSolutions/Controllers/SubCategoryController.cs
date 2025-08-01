@@ -1,14 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
-using Core.Interfaces.Services;
+using Core.DTOs;
+using Core.DTOs.CategoryDTOs;
 using Core.DTOs.SubCategoryDTOs;
-using TechpertsSolutions.Core.DTOs;
+using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Core.DTOs;
+using System.Threading.Tasks;
+using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -89,11 +90,21 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
-        
-        
+
+        [HttpGet("GetByName/{name}")]
+        [ProducesResponseType(typeof(GeneralResponse<SubCategoryDTO>), 200)]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<SubCategoryDTO>))]
+        public async Task<IActionResult> GetByName(string name) 
+        {
+            var response = await _subCategoryService.GetSubCategoryByNameAsync(name);
+            if (!response.Success) 
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+
         [HttpGet("byCategory/{categoryId}")]
         [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 400)]

@@ -45,6 +45,18 @@ namespace TechpertsSolutions.Controllers
             }
             return Ok(response);
         }
+        [HttpGet("GetByName/{name}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<CategoryDTO>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<CategoryDTO>))]
+        public async Task<IActionResult> GetByName(string name) 
+        {
+            var response = await _categoryService.GetCategoryByNameAsync(name);
+            if (!response.Success)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
 
         [HttpPost("Create")]
         [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(GeneralResponse<CategoryDTO>))]

@@ -8,7 +8,6 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {

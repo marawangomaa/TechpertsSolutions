@@ -14,6 +14,7 @@ namespace Core.Interfaces.Services
     {
         Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetAllSubCategoriesAsync();
         Task<GeneralResponse<SubCategoryDTO>> GetSubCategoryByIdAsync(string id);
+        Task<GeneralResponse<SubCategoryDTO>> GetSubCategoryByNameAsync(string name);
         Task<GeneralResponse<SubCategoryDTO>> CreateSubCategoryAsync(CreateSubCategoryDTO createDto);
         Task<GeneralResponse<bool>> UpdateSubCategoryAsync(UpdateSubCategoryDTO updateDto);
         Task<GeneralResponse<bool>> DeleteSubCategoryAsync(string id);
