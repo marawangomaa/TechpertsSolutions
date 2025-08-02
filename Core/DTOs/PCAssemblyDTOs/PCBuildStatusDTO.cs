@@ -8,8 +8,8 @@ namespace Core.DTOs.PCAssemblyDTOs
 {
     public class PCBuildStatusDTO
     {
-        public string AssemblyId { get; set; }
-        public string Status { get; set; }
+        public string AssemblyId { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public int ComponentCount { get; set; }
         public decimal TotalCost { get; set; }
         public bool IsComplete { get; set; }
@@ -17,12 +17,12 @@ namespace Core.DTOs.PCAssemblyDTOs
 
     public class PCBuildComponentDTO
     {
-        public string Id { get; set; }
-        public string ProductId { get; set; }
-        public string ProductName { get; set; }
-        public string ProductImage { get; set; }
-        public string Category { get; set; }
-        public string SubCategory { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string ProductId { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductImage { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string SubCategory { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }
         public int Quantity { get; set; }
@@ -32,7 +32,7 @@ namespace Core.DTOs.PCAssemblyDTOs
 
     public class PCBuildTotalDTO
     {
-        public string AssemblyId { get; set; }
+        public string AssemblyId { get; set; } = string.Empty;
         public decimal Subtotal { get; set; }
         public decimal AssemblyFee { get; set; }
         public decimal TotalAmount { get; set; }
@@ -40,9 +40,9 @@ namespace Core.DTOs.PCAssemblyDTOs
 
     public class CompatibleComponentDTO
     {
-        public string ProductId { get; set; }
-        public string ProductName { get; set; }
-        public string Category { get; set; }
+        public string ProductId { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal CompatibilityScore { get; set; }
     }

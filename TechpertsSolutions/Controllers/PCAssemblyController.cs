@@ -1,13 +1,15 @@
+using Core.DTOs;
 using Core.DTOs.PCAssemblyDTOs;
+using Core.DTOs.CartDTOs;
 using Core.DTOs.ProductDTOs;
 using Core.Enums;
 using Core.Interfaces.Services;
 using Core.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Service;
 using System.ComponentModel.DataAnnotations;
 using TechpertsSolutions.Core.DTOs;
-using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -17,11 +19,12 @@ namespace TechpertsSolutions.Controllers
     {
         private readonly IPCAssemblyService _pcAssemblyService;
         private readonly IProductService _productService;
-
-        public PCAssemblyController(IPCAssemblyService pcAssemblyService, IProductService productService)
+        private readonly ICartService _cartService;
+        public PCAssemblyController(IPCAssemblyService pcAssemblyService, IProductService productService, ICartService cartService)
         {
             _pcAssemblyService = pcAssemblyService;
             _productService = productService;
+            _cartService = cartService;
         }
 
         [HttpPost]
@@ -59,11 +62,16 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        
 
-        
-        
-        
+        [HttpGet("build/{assemblyId}/components")]
+        public async Task<IActionResult> GetBuildComponents(string assemblyId)
+        {
+            var result = await _pcAssemblyService.GetAllComponentsAsync(assemblyId);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
+
+
+
         [HttpGet("build/components/{category}")]
         public async Task<IActionResult> GetComponentsByCategory(
             ProductCategory category,
@@ -96,9 +104,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
+
+
+
         [HttpGet("build/categories")]
         public IActionResult GetPCComponentCategories()
         {
@@ -121,13 +129,27 @@ namespace TechpertsSolutions.Controllers
             });
         }
 
-        
-        
-        
+        private string GetComponentDisplayName(ProductCategory category)
+        {
+            return category switch
+            {
+                ProductCategory.Processor => "Processor",
+                ProductCategory.Motherboard => "Motherboard",
+                ProductCategory.CPUCooler => "CPU Cooler",
+                ProductCategory.Case => "Case",
+                ProductCategory.GraphicsCard => "Graphics Card",
+                ProductCategory.RAM => "RAM",
+                ProductCategory.Storage => "Storage",
+                ProductCategory.CaseCooler => "Case Cooler",
+                ProductCategory.PowerSupply => "Power Supply",
+                ProductCategory.Monitor => "Monitor",
+                ProductCategory.Accessories => "Accessories",
+                _ => category.ToString()
+            };
+        }
+
         [HttpPost("build/{assemblyId}/add-component")]
-        public async Task<IActionResult> AddComponentToBuild(
-            string assemblyId,
-            [FromBody] AddComponentToBuildDTO dto)
+        public async Task<IActionResult> AddComponentToBuild(string assemblyId, [FromForm] AddComponentToBuildDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -141,9 +163,8 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                
                 var productResponse = await _productService.GetByIdAsync(dto.ProductId);
-                if (!productResponse.Success)
+                if (!productResponse.Success || productResponse.Data == null)
                 {
                     return BadRequest(new GeneralResponse<string>
                     {
@@ -152,16 +173,23 @@ namespace TechpertsSolutions.Controllers
                     });
                 }
 
-                
-                var assemblyItem = new PCAssemblyItemCreateDTO
+                var product = productResponse.Data;
+
+                // Replace existing component in the same category
+                var existingComponent = await _pcAssemblyService.GetComponentByCategoryAsync(assemblyId, dto.Category);
+                if (existingComponent != null)
+                {
+                    await _pcAssemblyService.RemoveComponentFromAssemblyAsync(assemblyId, existingComponent.ItemId);
+                }
+
+                var newItem = new PCAssemblyItemCreateDTO
                 {
                     ProductId = dto.ProductId,
                     Quantity = 1,
-                    Price = productResponse.Data?.Price ?? 0
+                    Price = product.Price
                 };
 
-                
-                var result = await _pcAssemblyService.AddComponentToAssemblyAsync(assemblyId, assemblyItem);
+                var result = await _pcAssemblyService.AddComponentToAssemblyAsync(assemblyId, newItem);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
@@ -175,9 +203,6 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
         [HttpDelete("build/{assemblyId}/remove-component/{itemId}")]
         public async Task<IActionResult> RemoveComponentFromBuild(string assemblyId, string itemId)
         {
@@ -197,9 +222,8 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
+
+
         [HttpGet("build/{assemblyId}/status")]
         public async Task<IActionResult> GetPCBuildStatus(string assemblyId)
         {
@@ -241,6 +265,25 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
+        [HttpGet("build/{assemblyId}/table")]
+        public async Task<IActionResult> GetPCBuildTable(string assemblyId)
+        {
+            try
+            {
+                var result = await _pcAssemblyService.GetPCBuildTableAsync(assemblyId);
+                return result.Success ? Ok(result) : NotFound(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to get PC build table.",
+                    Data = ex.Message
+                });
+            }
+        }
+
         
         
         
@@ -263,30 +306,36 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        private string GetComponentDisplayName(ProductCategory category)
+        [HttpPost("build/{assemblyId}/add-to-cart")]
+        public async Task<IActionResult> AddBuildToCart(string assemblyId, [FromQuery] decimal assemblyFee, [FromQuery] string customerId)
         {
-            return category switch
+            try
             {
-                ProductCategory.Processor => "Processor",
-                ProductCategory.Motherboard => "Motherboard",
-                ProductCategory.CPUCooler => "CPU Cooler",
-                ProductCategory.Case => "Case",
-                ProductCategory.GraphicsCard => "Graphics Card",
-                ProductCategory.RAM => "RAM",
-                ProductCategory.Storage => "Storage",
-                ProductCategory.CaseCooler => "Case Cooler",
-                ProductCategory.PowerSupply => "Power Supply",
-                ProductCategory.Monitor => "Monitor",
-                ProductCategory.Accessories => "Accessories",
-                _ => category.ToString()
-            };
-        }
-    }
+                if (string.IsNullOrWhiteSpace(customerId))
+                {
+                    return BadRequest(new GeneralResponse<string> 
+                    { 
+                        Success = false, 
+                        Message = "Customer ID is required." 
+                    });
+                }
 
-    
-    public class AddComponentToBuildDTO
-    {
-        [Required]
-        public string ProductId { get; set; } = string.Empty;
+                var result = await _pcAssemblyService.SaveBuildToCartAsync(assemblyId, customerId, assemblyFee);
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Failed to add PC build to cart.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+
+
+
     }
 }

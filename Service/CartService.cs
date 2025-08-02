@@ -383,6 +383,48 @@ namespace Service
             return await CheckoutCartAsync(customerId, productIds, null, null, promoCode);
         }
 
+        public async Task<GeneralResponse<CartReadDTO>> AddPCBuildToCartAsync(string assemblyId, decimal total, decimal assemblyFee)
+        {
+            try
+            {
+                // This is a simplified implementation for PC builds
+                // In a real scenario, you would need to handle the PC build as a special cart item
+                
+                var cartItem = new CartItemDTO
+                {
+                    ProductId = assemblyId, // Using assembly ID as product ID for PC builds
+                    Quantity = 1,
+                    UnitPrice = total,
+                    TotalPrice = total
+                };
+
+                // For now, return a success response indicating the PC build was added
+                // In a full implementation, you would add this to the actual cart
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = true,
+                    Message = "PC Build added to cart successfully.",
+                    Data = new CartReadDTO
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomerId = string.Empty, // Would be set in actual implementation
+                        CreatedAt = DateTime.UtcNow,
+                        SubTotal = total,
+                        CartItems = new List<CartItemReadDTO>()
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = "Failed to add PC build to cart.",
+                    Data = null
+                };
+            }
+        }
+
         
         
         

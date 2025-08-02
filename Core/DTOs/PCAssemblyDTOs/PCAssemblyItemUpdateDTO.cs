@@ -10,10 +10,10 @@ namespace Core.DTOs.PCAssemblyDTOs
     public class PCAssemblyItemUpdateDTO
     {
         [Required]
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         [Required]
-        public string ProductId { get; set; }
+        public string ProductId { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1.")]
         public int Quantity { get; set; }

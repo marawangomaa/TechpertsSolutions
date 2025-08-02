@@ -9,14 +9,13 @@ namespace Core.DTOs.CartDTOs
 {
     public class CartItemReadDTO
     {
-        public string Id { get; set; }
-        public string ProductId { get; set; }
-        public string ProductName { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string ProductId { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
         public decimal Price { get; set; } 
         public int Quantity { get; set; } 
-        public string ImageUrl { get; set; } 
+        public string ImageUrl { get; set; } = string.Empty;
         public int Stock { get; set; } 
         public decimal ItemTotal => Price * Quantity; 
-
     }
 }

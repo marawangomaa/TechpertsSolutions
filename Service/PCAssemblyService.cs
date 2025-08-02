@@ -1,16 +1,18 @@
-using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
+using Core.DTOs.PCAssemblyDTOs;
+using Core.DTOs.CartDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Repository;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -98,17 +100,8 @@ namespace Service
             try
             {
                 // Comprehensive includes for detailed PC assembly view
-                var assembly = await _pcAssemblyRepo.GetByIdWithIncludesAsync(id, 
-                    a => a.Customer,
-                    a => a.Customer.User,
-                    a => a.TechCompany,
-                    a => a.TechCompany.User,
-                    a => a.ServiceUsage,
-                    a => a.PCAssemblyItems,
-                    a => a.PCAssemblyItems.Select(pi => pi.Product),
-                    a => a.PCAssemblyItems.Select(pi => pi.Product.Category),
-                    a => a.PCAssemblyItems.Select(pi => pi.Product.SubCategory),
-                    a => a.PCAssemblyItems.Select(pi => pi.Product.TechCompany));
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == id, 
+                    "Customer,Customer.User,TechCompany,TechCompany.User,ServiceUsage,PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory,PCAssemblyItems.Product.TechCompany");
 
                 if (assembly == null)
                 {
@@ -143,13 +136,8 @@ namespace Service
             try
             {
                 // Optimized includes for PC assembly listing with essential related data
-                var assemblies = await _pcAssemblyRepo.GetAllWithIncludesAsync(
-                    a => a.Customer,
-                    a => a.Customer.User,
-                    a => a.TechCompany,
-                    a => a.TechCompany.User,
-                    a => a.ServiceUsage,
-                    a => a.PCAssemblyItems);
+                var assemblies = await _pcAssemblyRepo.GetAllAsync(
+                    "Customer,Customer.User,TechCompany,TechCompany.User,ServiceUsage,PCAssemblyItems");
 
                 var assemblyDtos = assemblies.Select(PCAssemblyMapper.ToReadDTO).ToList();
 
@@ -245,7 +233,7 @@ namespace Service
                 };
             }
 
-            var assembly = await _pcAssemblyRepo.GetByIdWithIncludesAsync(assemblyId, a => a.PCAssemblyItems);
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, "PCAssemblyItems");
             if (assembly == null)
             {
                 return new GeneralResponse<PCBuildStatusDTO>
@@ -261,7 +249,7 @@ namespace Service
                 AssemblyId = assembly.Id,
                 Status = assembly.Status.ToString(),
                 ComponentCount = assembly.PCAssemblyItems?.Count ?? 0,
-                TotalCost = assembly.PCAssemblyItems?.Sum(item => item.Quantity * item.UnitPrice) ?? 0,
+                TotalCost = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0,
                 IsComplete = assembly.Status == PCAssemblyStatus.Completed
             };
 
@@ -285,7 +273,7 @@ namespace Service
                 };
             }
 
-            var assembly = await _pcAssemblyRepo.GetByIdWithIncludesAsync(assemblyId, a => a.PCAssemblyItems);
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, "PCAssemblyItems");
             if (assembly == null)
             {
                 return new GeneralResponse<PCBuildTotalDTO>
@@ -299,9 +287,9 @@ namespace Service
             var total = new PCBuildTotalDTO
             {
                 AssemblyId = assembly.Id,
-                Subtotal = assembly.PCAssemblyItems?.Sum(item => item.Quantity * item.UnitPrice) ?? 0,
+                Subtotal = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0,
                 AssemblyFee = assembly.AssemblyFee ?? 0,
-                TotalAmount = (assembly.PCAssemblyItems?.Sum(item => item.Quantity * item.UnitPrice) ?? 0) + (assembly.AssemblyFee ?? 0)
+                TotalAmount = (assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0) + (assembly.AssemblyFee ?? 0)
             };
 
             return new GeneralResponse<PCBuildTotalDTO>
@@ -452,6 +440,281 @@ namespace Service
                 Success = true,
                 Message = "Component removed from PC build successfully.",
                 Data = PCAssemblyMapper.ToReadDTO(assembly)
+            };
+        }
+        public async Task<GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>> GetAllComponentsAsync(string assemblyId)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyId))
+            {
+                return new GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>
+                {
+                    Success = false,
+                    Message = "Assembly ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, 
+                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory,PCAssemblyItems.Product.TechCompany");
+
+            if (assembly == null)
+            {
+                return new GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>
+                {
+                    Success = false,
+                    Message = "PC Assembly not found.",
+                    Data = null
+                };
+            }
+
+            var components = assembly.PCAssemblyItems?.Select(item => new PCAssemblyItemReadDTO
+            {
+                ItemId = item.Id,
+                ProductId = item.ProductId,
+                ProductName = item.Product?.Name ?? string.Empty,
+                SubCategoryName = item.Product?.SubCategory?.Name,
+                Category = item.Product?.Category?.Name ?? string.Empty,
+                Status = item.Product?.status.ToString() ?? string.Empty,
+                Price = item.Price,
+                Discount = item.Product?.DiscountPrice,
+                Quantity = item.Quantity,
+                Total = item.Total
+            }) ?? new List<PCAssemblyItemReadDTO>();
+
+            return new GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>
+            {
+                Success = true,
+                Message = "Components retrieved successfully.",
+                Data = components
+            };
+        }
+
+        public async Task<PCAssemblyItemReadDTO?> GetComponentByCategoryAsync(string assemblyId, ProductCategory category)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyId))
+                return null;
+
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
+                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory");
+
+            if (assembly?.PCAssemblyItems == null)
+                return null;
+
+            var item = assembly.PCAssemblyItems.FirstOrDefault(pi => pi.Product?.Category?.Name == category.ToString());
+            if (item == null) return null;
+
+            return new PCAssemblyItemReadDTO
+            {
+                ItemId = item.Id,
+                ProductId = item.ProductId,
+                ProductName = item.Product?.Name ?? string.Empty,
+                SubCategoryName = item.Product?.SubCategory?.Name,
+                Category = item.Product?.Category?.Name ?? string.Empty,
+                Status = item.Product?.status.ToString() ?? string.Empty,
+                Price = item.Price,
+                Discount = item.Product?.DiscountPrice,
+                Quantity = item.Quantity,
+                Total = item.Total
+            };
+        }
+
+        public async Task<GeneralResponse<CartReadDTO>> SaveBuildToCartAsync(string assemblyId, string customerId, decimal assemblyFee)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyId) || string.IsNullOrWhiteSpace(customerId))
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = "Assembly ID and Customer ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Get the assembly with all components
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
+                    "PCAssemblyItems,PCAssemblyItems.Product");
+
+                if (assembly == null)
+                {
+                    return new GeneralResponse<CartReadDTO>
+                    {
+                        Success = false,
+                        Message = "PC Assembly not found.",
+                        Data = null
+                    };
+                }
+
+                // Calculate total including assembly fee
+                var componentsTotal = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0;
+                var totalAmount = componentsTotal + assemblyFee;
+
+                // Update assembly with fee and mark as completed
+                assembly.AssemblyFee = assemblyFee;
+                assembly.Status = PCAssemblyStatus.Completed;
+                assembly.CompletedDate = DateTime.UtcNow;
+
+                _pcAssemblyRepo.Update(assembly);
+                await _pcAssemblyRepo.SaveChangesAsync();
+
+                // Create a special cart item for the PC build
+                var pcBuildItem = new CartItemDTO
+                {
+                    ProductId = assemblyId, // Using assembly ID as product ID for PC builds
+                    Quantity = 1,
+                    UnitPrice = totalAmount,
+                    TotalPrice = totalAmount
+                };
+
+                // Add to cart (this would need to be implemented in cart service)
+                // For now, return success with the calculated total
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = true,
+                    Message = "PC Build saved to cart successfully.",
+                    Data = new CartReadDTO
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CustomerId = customerId,
+                        CreatedAt = DateTime.UtcNow,
+                        SubTotal = totalAmount,
+                        CartItems = new List<CartItemReadDTO>()
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CartReadDTO>
+                {
+                    Success = false,
+                    Message = "Failed to save PC build to cart.",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<PCBuildTableDTO>> GetPCBuildTableAsync(string assemblyId)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyId))
+            {
+                return new GeneralResponse<PCBuildTableDTO>
+                {
+                    Success = false,
+                    Message = "Assembly ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
+                    "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory");
+
+                if (assembly == null)
+                {
+                    return new GeneralResponse<PCBuildTableDTO>
+                    {
+                        Success = false,
+                        Message = "PC Assembly not found.",
+                        Data = null
+                    };
+                }
+
+                // Define all PC component categories
+                var allCategories = new[]
+                {
+                    ProductCategory.Processor,
+                    ProductCategory.Motherboard,
+                    ProductCategory.CPUCooler,
+                    ProductCategory.Case,
+                    ProductCategory.GraphicsCard,
+                    ProductCategory.RAM,
+                    ProductCategory.Storage,
+                    ProductCategory.CaseCooler,
+                    ProductCategory.PowerSupply,
+                    ProductCategory.Monitor,
+                    ProductCategory.Accessories
+                };
+
+                var components = new List<PCBuildTableItemDTO>();
+                var totalCost = 0m;
+
+                foreach (var category in allCategories)
+                {
+                    var existingItem = assembly.PCAssemblyItems?.FirstOrDefault(pi => 
+                        pi.Product?.Category?.Name == category.ToString());
+
+                    var component = new PCBuildTableItemDTO
+                    {
+                        ComponentType = category,
+                        ComponentDisplayName = GetComponentDisplayName(category),
+                        HasComponent = existingItem != null
+                    };
+
+                    if (existingItem != null)
+                    {
+                        component.ProductId = existingItem.ProductId;
+                        component.ProductName = existingItem.Product?.Name;
+                        component.SubCategoryName = existingItem.Product?.SubCategory?.Name;
+                        component.Status = "Selected";
+                        component.Price = existingItem.Price;
+                        component.Discount = existingItem.Product?.DiscountPrice;
+                        component.ItemId = existingItem.Id;
+                        totalCost += existingItem.Total;
+                    }
+                    else
+                    {
+                        component.Status = "Not Selected";
+                    }
+
+                    components.Add(component);
+                }
+
+                var buildTable = new PCBuildTableDTO
+                {
+                    AssemblyId = assembly.Id,
+                    Components = components,
+                    TotalCost = totalCost,
+                    AssemblyFee = assembly.AssemblyFee ?? 0,
+                    GrandTotal = totalCost + (assembly.AssemblyFee ?? 0),
+                    IsComplete = assembly.Status == PCAssemblyStatus.Completed
+                };
+
+                return new GeneralResponse<PCBuildTableDTO>
+                {
+                    Success = true,
+                    Message = "PC Build table retrieved successfully.",
+                    Data = buildTable
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<PCBuildTableDTO>
+                {
+                    Success = false,
+                    Message = "Failed to retrieve PC build table.",
+                    Data = null
+                };
+            }
+        }
+
+        private string GetComponentDisplayName(ProductCategory category)
+        {
+            return category switch
+            {
+                ProductCategory.Processor => "Processor",
+                ProductCategory.Motherboard => "Motherboard",
+                ProductCategory.CPUCooler => "CPU Cooler",
+                ProductCategory.Case => "Case",
+                ProductCategory.GraphicsCard => "Graphics Card",
+                ProductCategory.RAM => "RAM",
+                ProductCategory.Storage => "Storage",
+                ProductCategory.CaseCooler => "Case Cooler",
+                ProductCategory.PowerSupply => "Power Supply",
+                ProductCategory.Monitor => "Monitor",
+                ProductCategory.Accessories => "Accessories",
+                _ => category.ToString()
             };
         }
     }

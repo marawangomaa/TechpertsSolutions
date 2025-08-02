@@ -23,12 +23,16 @@ namespace Service.Utilities
                 ServiceUsageId = entity.ServiceUsageId,
                 Items = entity.PCAssemblyItems?.Select(item => new PCAssemblyItemReadDTO
                 {
-                    Id = item.Id,
+                    ItemId = item.Id,
                     ProductId = item.ProductId,
                     ProductName = item.Product?.Name ?? "Unknown Product",
                     ProductImageUrl = item.Product?.ImageUrl,
-                    Quantity = item.Quantity,
+                    SubCategoryName = item.Product?.SubCategory?.Name,
+                    Category = item.Product?.Category?.Name ?? string.Empty,
+                    Status = item.Product?.status.ToString() ?? string.Empty,
                     Price = item.Price,
+                    Discount = item.Product?.DiscountPrice,
+                    Quantity = item.Quantity,
                     Total = item.Total
                 }).ToList() ?? new List<PCAssemblyItemReadDTO>()
             };

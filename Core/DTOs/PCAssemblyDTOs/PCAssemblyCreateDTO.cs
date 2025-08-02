@@ -10,7 +10,7 @@ namespace Core.DTOs.PCAssemblyDTOs
     public class PCAssemblyCreateDTO
     {
         [Required]
-        public string CustomerId { get; set; }
+        public string CustomerId { get; set; } = string.Empty;
 
         public string? Name { get; set; }
 
