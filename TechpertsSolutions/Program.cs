@@ -238,6 +238,7 @@ namespace TechpertsSolutions
                 var services = scope.ServiceProvider;
                 await SeedRoles.SeedRolesAsync(services);
                 await SeedCategories.SeedCategoriesAsync(services);
+                await SeedSubCategories.SeedSubCategoriesAsync(services);
                 await SeedAdminUser.SeedAdminUserAsync(services);
                 SeedEnums.LogEnumValues();
             }

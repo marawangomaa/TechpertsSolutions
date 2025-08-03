@@ -1,8 +1,10 @@
+using Core.DTOs;
+using Core.DTOs.SubCategoryDTOs;
 using Core.Enums;
+using Core.Enums.BrandsEnums;
 using Core.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Core.DTOs;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.DTOs.EnumDTOs;
 
@@ -128,6 +130,244 @@ namespace TechpertsSolutions.Controllers
                 Success = true,
                 Message = "All enum options retrieved successfully.",
                 Data = allEnums
+            });
+        }
+
+        [HttpGet("subcategories-by-category")]
+        public IActionResult GetSubCategoriesByCategory()
+        {
+            var subCategoriesByCategory = new
+            {
+                Processor = Enum.GetValues(typeof(ProcessorBrands))
+                    .Cast<ProcessorBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Motherboard = Enum.GetValues(typeof(MotherboardBrands))
+                    .Cast<MotherboardBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                GraphicsCard = Enum.GetValues(typeof(GraphicsCardBrands))
+                    .Cast<GraphicsCardBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                RAM = Enum.GetValues(typeof(RAMBrands))
+                    .Cast<RAMBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Storage = Enum.GetValues(typeof(StorageBrands))
+                    .Cast<StorageBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                CPUCooler = Enum.GetValues(typeof(CpuCoolerBrands))
+                    .Cast<CpuCoolerBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Case = Enum.GetValues(typeof(CaseBrands))
+                    .Cast<CaseBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                CaseCooler = Enum.GetValues(typeof(CaseCoolerBrands))
+                    .Cast<CaseCoolerBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                PowerSupply = Enum.GetValues(typeof(PowerSupplyBrands))
+                    .Cast<PowerSupplyBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Monitor = Enum.GetValues(typeof(MonitorBrands))
+                    .Cast<MonitorBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Accessories = Enum.GetValues(typeof(AccessoryBrands))
+                    .Cast<AccessoryBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                PreBuildPC = Enum.GetValues(typeof(PrebuiltPcBrands))
+                    .Cast<PrebuiltPcBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+                Laptop = Enum.GetValues(typeof(LaptopBrands))
+                    .Cast<LaptopBrands>()
+                    .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList()
+            };
+
+            return Ok(new GeneralResponse<dynamic>
+            {
+                Success = true,
+                Message = "Subcategories by category retrieved successfully.",
+                Data = subCategoriesByCategory
+            });
+        }
+
+        [HttpGet("subcategories/{category}")]
+        public IActionResult GetSubCategoriesByCategoryEnum(string category)
+        {
+            if (!Enum.TryParse<ProductCategory>(category, true, out var categoryEnum))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid category enum value.",
+                    Data = category
+                });
+            }
+
+            List<SubCategoryEnumDTO> subCategories = categoryEnum switch
+            {
+                ProductCategory.Processor => Enum.GetValues(typeof(ProcessorBrands))
+                    .Cast<ProcessorBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Motherboard => Enum.GetValues(typeof(MotherboardBrands))
+                    .Cast<MotherboardBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.GraphicsCard => Enum.GetValues(typeof(GraphicsCardBrands))
+                    .Cast<GraphicsCardBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.RAM => Enum.GetValues(typeof(RAMBrands))
+                    .Cast<RAMBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Storage => Enum.GetValues(typeof(StorageBrands))
+                    .Cast<StorageBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.CPUCooler => Enum.GetValues(typeof(CpuCoolerBrands))
+                    .Cast<CpuCoolerBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Case => Enum.GetValues(typeof(CaseBrands))
+                    .Cast<CaseBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.CaseCooler => Enum.GetValues(typeof(CaseCoolerBrands))
+                    .Cast<CaseCoolerBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.PowerSupply => Enum.GetValues(typeof(PowerSupplyBrands))
+                    .Cast<PowerSupplyBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Monitor => Enum.GetValues(typeof(MonitorBrands))
+                    .Cast<MonitorBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Accessories => Enum.GetValues(typeof(AccessoryBrands))
+                    .Cast<AccessoryBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.PreBuildPC => Enum.GetValues(typeof(PrebuiltPcBrands))
+                    .Cast<PrebuiltPcBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                ProductCategory.Laptop => Enum.GetValues(typeof(LaptopBrands))
+                    .Cast<LaptopBrands>()
+                    .Select(brand => new SubCategoryEnumDTO { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                    .ToList(),
+
+                _ => new List<SubCategoryEnumDTO>()
+            };
+
+            return Ok(new GeneralResponse<dynamic>
+            {
+                Success = true,
+                Message = $"Subcategories for {category} retrieved successfully.",
+                Data = subCategories
+            });
+        }
+
+        [HttpGet("categories-with-subcategories")]
+        public IActionResult GetCategoriesWithSubCategories()
+        {
+            var categoriesWithSubCategories = new
+            {
+                Categories = Enum.GetValues(typeof(ProductCategory))
+                    .Cast<ProductCategory>()
+                    .Where(c => c != ProductCategory.None)
+                    .Select(category => new 
+                    { 
+                        Value = category.ToString(), 
+                        DisplayName = category.GetStringValue(),
+                        Description = GetProductCategoryDescription(category)
+                    })
+                    .ToList(),
+                SubCategoriesByCategory = new
+                {
+                    Processor = Enum.GetValues(typeof(ProcessorBrands))
+                        .Cast<ProcessorBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Motherboard = Enum.GetValues(typeof(MotherboardBrands))
+                        .Cast<MotherboardBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    GraphicsCard = Enum.GetValues(typeof(GraphicsCardBrands))
+                        .Cast<GraphicsCardBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    RAM = Enum.GetValues(typeof(RAMBrands))
+                        .Cast<RAMBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Storage = Enum.GetValues(typeof(StorageBrands))
+                        .Cast<StorageBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    CPUCooler = Enum.GetValues(typeof(CpuCoolerBrands))
+                        .Cast<CpuCoolerBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Case = Enum.GetValues(typeof(CaseBrands))
+                        .Cast<CaseBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    CaseCooler = Enum.GetValues(typeof(CaseCoolerBrands))
+                        .Cast<CaseCoolerBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    PowerSupply = Enum.GetValues(typeof(PowerSupplyBrands))
+                        .Cast<PowerSupplyBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Monitor = Enum.GetValues(typeof(MonitorBrands))
+                        .Cast<MonitorBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Accessories = Enum.GetValues(typeof(AccessoryBrands))
+                        .Cast<AccessoryBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    PreBuildPC = Enum.GetValues(typeof(PrebuiltPcBrands))
+                        .Cast<PrebuiltPcBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList(),
+                    Laptop = Enum.GetValues(typeof(LaptopBrands))
+                        .Cast<LaptopBrands>()
+                        .Select(brand => new { Value = brand.ToString(), DisplayName = brand.GetStringValue() })
+                        .ToList()
+                }
+            };
+
+            return Ok(new GeneralResponse<dynamic>
+            {
+                Success = true,
+                Message = "Categories with subcategories retrieved successfully.",
+                Data = categoriesWithSubCategories
             });
         }
 

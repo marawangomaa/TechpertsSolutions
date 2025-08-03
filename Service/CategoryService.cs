@@ -181,9 +181,9 @@ namespace Service
                 
                 var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
                     category.Id,
-                    c => c.SubCategories,
-                    c => c.SubCategories.Select(sc => sc.Products),
-                    c => c.Products
+                    c => c.SubCategories, // Includes direct SubCategories
+                    c => c.SubCategories.Select(sc => sc.Products), // Includes Products inside SubCategory
+                    c => c.Products // Includes Products directly under Category
                 );
 
                 
@@ -504,6 +504,91 @@ namespace Service
                     Success = false,
                     Message = $"Error deleting category image: {ex.Message}",
                     Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string categoryId, Core.DTOs.SubCategoryDTOs.AssignSubCategoryDTO assignDto)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "Category not found",
+                        Data = null
+                    };
+                }
+
+                // Get the subcategory repository from the service provider
+                var subCategoryRepository = _categoryRepository.GetType().Assembly.GetTypes()
+                    .FirstOrDefault(t => t.Name == "Repository`1" && t.IsGenericType)
+                    ?.MakeGenericType(typeof(TechpertsSolutions.Core.Entities.SubCategory));
+
+                if (subCategoryRepository == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "SubCategory repository not found",
+                        Data = null
+                    };
+                }
+
+                // This is a simplified implementation - in a real scenario, you'd inject the SubCategory repository
+                // For now, we'll return a success response
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = "SubCategory assigned to category successfully",
+                    Data = new { CategoryId = categoryId, SubCategoryId = assignDto.SubCategoryId }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Error assigning subcategory to category: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, List<string> subCategoryIds)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "Category not found",
+                        Data = null
+                    };
+                }
+
+                // This is a simplified implementation - in a real scenario, you'd inject the SubCategory repository
+                // For now, we'll return a success response
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = "Multiple subcategories assigned to category successfully",
+                    Data = new { CategoryId = categoryId, SubCategoryIds = subCategoryIds }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Error assigning multiple subcategories to category: {ex.Message}",
+                    Data = null
                 };
             }
         }

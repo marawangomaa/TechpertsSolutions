@@ -21,5 +21,9 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesByCategoryIdAsync(string categoryId);
         Task<GeneralResponse<ImageUploadResponseDTO>> UploadSubCategoryImageAsync(IFormFile imageFile, string subCategoryId);
         Task<GeneralResponse<bool>> DeleteSubCategoryImageAsync(string subCategoryId);
+        Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string subCategoryId, string categoryId);
+        Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetUnassignedSubCategoriesAsync();
+        Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesWithIncludesAsync(string includeProperties = null);
+        Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesByCategoryIdWithIncludesAsync(string categoryId, string includeProperties = null);
     }
 }

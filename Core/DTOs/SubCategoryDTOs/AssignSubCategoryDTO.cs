@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs.SubCategoryDTOs
 {
-    public class CreateSubCategoryDTO
+    public class AssignSubCategoryDTO
     {
-        public string Name { get; set; }
-        public string? CategoryId { get; set; } // Made optional
+        public string SubCategoryId { get; set; }
+        public string CategoryId { get; set; }
     }
-}
+} 

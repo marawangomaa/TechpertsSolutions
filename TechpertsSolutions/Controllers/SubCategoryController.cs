@@ -364,5 +364,129 @@ namespace TechpertsSolutions.Controllers
                 });
             }
         }
+
+        [HttpPost("{subCategoryId}/assign-to-category")]
+        [ProducesResponseType(typeof(GeneralResponse<object>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> AssignToCategory(string subCategoryId, [FromBody] string categoryId)
+        {
+            if (string.IsNullOrWhiteSpace(subCategoryId) || !Guid.TryParse(subCategoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid subcategory ID.",
+                    Data = subCategoryId
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(categoryId) || !Guid.TryParse(categoryId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid category ID.",
+                    Data = categoryId
+                });
+            }
+
+            try
+            {
+                var response = await _subCategoryService.AssignSubCategoryToCategoryAsync(subCategoryId, categoryId);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error assigning subcategory {subCategoryId} to category {categoryId}");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while assigning the subcategory to category.",
+                    Data = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("unassigned")]
+        [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> GetUnassignedSubCategories()
+        {
+            try
+            {
+                var response = await _subCategoryService.GetUnassignedSubCategoriesAsync();
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting unassigned subcategories.");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving unassigned subcategories."
+                });
+            }
+        }
+
+        [HttpGet("with-includes")]
+        [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> GetSubCategoriesWithIncludes([FromQuery] string includeProperties = null)
+        {
+            try
+            {
+                var response = await _subCategoryService.GetSubCategoriesWithIncludesAsync(includeProperties);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting subcategories with includes.");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving subcategories with includes."
+                });
+            }
+        }
+
+        [HttpGet("by-category-with-includes/{categoryId}")]
+        [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> GetSubCategoriesByCategoryIdWithIncludes(string categoryId, [FromQuery] string includeProperties = null)
+        {
+            try
+            {
+                var response = await _subCategoryService.GetSubCategoriesByCategoryIdWithIncludesAsync(categoryId, includeProperties);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting subcategories by category ID with includes: {categoryId}");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving subcategories by category with includes."
+                });
+            }
+        }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
+using Core.DTOs.SubCategoryDTOs;
 using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
@@ -165,6 +165,56 @@ namespace TechpertsSolutions.Controllers
             }
 
             var response = await _categoryService.DeleteCategoryImageAsync(categoryId);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{categoryId}/assign-subcategory")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
+        public async Task<IActionResult> AssignSubCategory(string categoryId, [FromBody] AssignSubCategoryDTO assignDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = "Invalid form data"
+                });
+            }
+
+            var response = await _categoryService.AssignSubCategoryToCategoryAsync(categoryId, assignDto);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpPost("{categoryId}/assign-subcategories")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
+        public async Task<IActionResult> AssignMultipleSubCategories(string categoryId, [FromBody] List<string> subCategoryIds)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return BadRequest(new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Validation failed: " + string.Join("; ", errors),
+                    Data = "Invalid form data"
+                });
+            }
+
+            var response = await _categoryService.AssignMultipleSubCategoriesToCategoryAsync(categoryId, subCategoryIds);
             if (!response.Success)
             {
                 return BadRequest(response);

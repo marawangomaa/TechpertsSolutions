@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.DTOs.CategoryDTOs;
 using Microsoft.AspNetCore.Http;
 using Core.DTOs;
+using Core.DTOs.SubCategoryDTOs;
 
 namespace Core.Interfaces.Services
 {
@@ -20,5 +21,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeleteCategoryAsync(string Id);
         Task<GeneralResponse<ImageUploadResponseDTO>> UploadCategoryImageAsync(IFormFile imageFile, string categoryId);
         Task<GeneralResponse<bool>> DeleteCategoryImageAsync(string categoryId);
+        Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string categoryId, AssignSubCategoryDTO assignDto);
+        Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, List<string> subCategoryIds);
     }
 }

@@ -36,10 +36,8 @@ namespace Service
         {
             try
             {
-                // Optimized includes for subcategory listing with category information
-                var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
-                    sc => sc.Category,
-                    sc => sc.Products);
+                // Use string-based includes for better flexibility
+                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Category,Products");
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -52,6 +50,7 @@ namespace Service
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error getting all subcategories");
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
                 {
                     Success = false,
@@ -86,11 +85,10 @@ namespace Service
 
             try
             {
-                // Comprehensive includes for detailed subcategory view with category information
-                var subCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
-                    id,
-                    sc => sc.Category,
-                    sc => sc.Products);
+                // Use string-based includes for better flexibility
+                var subCategory = await _subCategoryRepository.GetFirstOrDefaultAsync(
+                    sc => sc.Id == id,
+                    includeProperties: "Category,Products");
 
                 if (subCategory == null)
                 {
@@ -111,6 +109,7 @@ namespace Service
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, $"Error getting subcategory by ID: {id}");
                 return new GeneralResponse<SubCategoryDTO>
                 {
                     Success = false,
@@ -486,10 +485,9 @@ namespace Service
                 }
 
                 
-                var subCategories = await _subCategoryRepository.FindWithIncludesAsync(
+                var subCategories = await _subCategoryRepository.FindWithStringIncludesAsync(
                     sc => sc.CategoryId == categoryId,
-                    sc => sc.Category,
-                    sc => sc.Products
+                    includeProperties: "Category,Products"
                 );
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
@@ -631,6 +629,176 @@ namespace Service
                     Success = false,
                     Message = $"Error deleting subcategory image: {ex.Message}",
                     Data = false
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string subCategoryId, string categoryId)
+        {
+            try
+            {
+                var subCategory = await _subCategoryRepository.GetByIdAsync(subCategoryId);
+                if (subCategory == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "SubCategory not found",
+                        Data = null
+                    };
+                }
+
+                var category = await _categoryRepository.GetByIdAsync(categoryId);
+                if (category == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "Category not found",
+                        Data = null
+                    };
+                }
+
+                // Assign the subcategory to the category
+                subCategory.CategoryId = categoryId;
+                _subCategoryRepository.Update(subCategory);
+                await _subCategoryRepository.SaveChangesAsync();
+
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = "SubCategory assigned to category successfully",
+                    Data = new { SubCategoryId = subCategoryId, CategoryId = categoryId }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error assigning subcategory to category: {ex.Message}");
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Error assigning subcategory to category: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetUnassignedSubCategoriesAsync()
+        {
+            try
+            {
+                var allSubCategories = await _subCategoryRepository.GetAllAsync();
+                var unassignedSubCategories = allSubCategories
+                    .Where(sc => string.IsNullOrEmpty(sc.CategoryId))
+                    .Select(sc => new SubCategoryDTO
+                    {
+                        Id = sc.Id,
+                        Name = sc.Name,
+                        Image = sc.Image,
+                        CategoryId = sc.CategoryId
+                    })
+                    .ToList();
+
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = true,
+                    Message = "Unassigned subcategories retrieved successfully",
+                    Data = unassignedSubCategories
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting unassigned subcategories: {ex.Message}");
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = false,
+                    Message = $"Error getting unassigned subcategories: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesWithIncludesAsync(string includeProperties = null)
+        {
+            try
+            {
+                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: includeProperties);
+                var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
+
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = true,
+                    Message = "SubCategories with custom includes retrieved successfully.",
+                    Data = subCategoryDtos
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error getting subcategories with includes '{includeProperties}': {ex.Message}");
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = false,
+                    Message = $"Error getting subcategories with includes: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetSubCategoriesByCategoryIdWithIncludesAsync(string categoryId, string includeProperties = null)
+        {
+            if (string.IsNullOrWhiteSpace(categoryId))
+            {
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = false,
+                    Message = "Category ID cannot be null or empty.",
+                    Data = null
+                };
+            }
+
+            if (!Guid.TryParse(categoryId, out _))
+            {
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = false,
+                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == categoryId);
+                if (!categoryExists)
+                {
+                    return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                    {
+                        Success = false,
+                        Message = $"Category with ID '{categoryId}' does not exist.",
+                        Data = null
+                    };
+                }
+
+                var subCategories = await _subCategoryRepository.FindWithStringIncludesAsync(
+                    sc => sc.CategoryId == categoryId,
+                    includeProperties: includeProperties
+                );
+
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = true,
+                    Message = "SubCategories retrieved successfully.",
+                    Data = SubCategoryMapper.MapToSubCategoryDTOList(subCategories)
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error occurred while getting subcategories for Category ID: {categoryId} with includes '{includeProperties}'");
+                return new GeneralResponse<IEnumerable<SubCategoryDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving subcategories.",
+                    Data = null
                 };
             }
         }

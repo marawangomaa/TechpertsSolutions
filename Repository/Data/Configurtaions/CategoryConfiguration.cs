@@ -15,16 +15,25 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
+            // Configure direct relationship with SubCategories (one-to-many)
             builder.HasMany(c => c.SubCategories)
                    .WithOne(sc => sc.Category)
                    .HasForeignKey(sc => sc.CategoryId)
+                   .OnDelete(DeleteBehavior.SetNull); // Set to null instead of cascade
+
+            // Configure many-to-many relationship through CategorySubCategory
+            builder.HasMany(c => c.CategorySubCategories)
+                   .WithOne(cs => cs.Category)
+                   .HasForeignKey(cs => cs.CategoryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // Configure relationship with Products
             builder.HasMany(c => c.Products)
                    .WithOne(p => p.Category)
                    .HasForeignKey(p => p.CategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
 
+            // Configure unique index on Name
             builder.HasIndex(c => c.Name).IsUnique();
         }
     }

@@ -8,6 +8,7 @@ using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {
@@ -67,6 +68,7 @@ namespace TechpertsSolutions.Repository.Data
         public DbSet<ServiceUsage> ServiceUsages { get; set; }
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
+        public DbSet<CategorySubCategory> CategorySubCategories { get; set; }
         public DbSet<TechCompany> TechCompanies { get; set; }
         public DbSet<Warranty> Warranties { get; set; }
         public DbSet<WishList> WishLists { get; set; }
