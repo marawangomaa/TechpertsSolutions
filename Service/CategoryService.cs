@@ -181,12 +181,19 @@ namespace Service
                 
                 var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
                     category.Id,
-                    c => c.SubCategories, // Includes direct SubCategories
-                    c => c.SubCategories.Select(sc => sc.Products), // Includes Products inside SubCategory
+                    c => c.CategorySubCategories, // Includes direct SubCategories
                     c => c.Products // Includes Products directly under Category
                 );
+                // Then manually access SubCategories like this:
+                var subCategories = createdCategory.CategorySubCategories?
+                    .Select(cs => cs.SubCategory)
+                    .ToList();
 
-                
+                // And if you want their products:
+                var subCategoryProducts = subCategories?
+                    .SelectMany(sc => sc.Products)
+                    .ToList();
+
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
@@ -266,15 +273,18 @@ namespace Service
                 CategoryMapper.MapToCategory(categoryUpdateDto, category);
 
                 _categoryRepository.Update(category); 
-                await _categoryRepository.SaveChangesAsync(); 
+                await _categoryRepository.SaveChangesAsync();
 
-                
+
                 var updatedCategory = await _categoryRepository.GetByIdWithIncludesAsync(
-                    category.Id,
-                    c => c.SubCategories,
-                    c => c.Products
-                );
-                
+                                category.Id,
+                                c => c.CategorySubCategories, // Include the join table
+                                c => c.Products                // Include direct products
+                                );
+                var subCategories = updatedCategory.CategorySubCategories?
+                                  .Select(cs => cs.SubCategory)
+                                                      .ToList();
+
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
