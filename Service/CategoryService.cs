@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
+using Core.Utilities;
 
 namespace Service
 {
@@ -51,26 +52,47 @@ namespace Service
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(q => q
-                    .Include(c => c.Products)
-                    .Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory));
+                .Include(c => c.Products)
+                .ThenInclude(p => p.Specifications)
+                .Include(c => c.Products)
+                .ThenInclude(p => p.Warranties)
+                .Include(c => c.Products)
+                .ThenInclude(p => p.SubCategory)
+                .Include(c => c.SubCategories)
+                .ThenInclude(cs => cs.SubCategory));
 
                 var categoryDtos = categories.Select(c => new CategoryDTO {
                     Id = c.Id,
                     Name = c.Name,
                     Description = c.Description,
                     Image = c.Image,
-                    Products = c.Products?.Select(p => new ProductListItemDTO {
+                    Products = c.Products?.Select(p => new ProductCardDTO {
                         Id = p.Id,
                         Name = p.Name,
                         Price = p.Price,
-                        // Add other properties as needed
-                    }).ToList() ?? new List<ProductListItemDTO>(),
-                    SubCategories = c.SubCategories?.Select(cs => new SubCategoryDTO {
-                        Id = cs.SubCategory.Id,
-                        Name = cs.SubCategory.Name,
-                        // Add other properties as needed
-                    }).ToList() ?? new List<SubCategoryDTO>()
+                        DiscountPrice = p.DiscountPrice,
+                        ImageUrl = p.ImageUrl,
+                        CategoryId = p.CategoryId,
+                        CategoryName = p.Category?.Name ?? string.Empty,
+                        CategoryEnum = p.Category != null ? EnumExtensions.ParseFromStringValue<ProductCategory>(p.Category.Name) : null,
+                        SubCategoryId = p.SubCategoryId,
+                        SubCategoryName = p.SubCategory?.Name ?? string.Empty,
+                        Status = p.status.ToString(),
+                        Specifications = p.Specifications?.Select(s => new SpecificationDTO {
+                            Id = s.Id,
+                            Key = s.Key,
+                            Value = s.Value
+                        }).ToList() ?? new List<SpecificationDTO>(),
+                        Warranties = p.Warranties?.Select(w => new WarrantyDTO {
+                            Id = w.Id,
+                            Description = w.Description,
+                            Type = w.Type,
+                            Duration = w.Duration,
+                            StartDate = w.StartDate,
+                            EndDate = w.EndDate
+                        }).ToList() ?? new List<WarrantyDTO>()
+                    }).ToList() 
+                    ?? new List<ProductCardDTO>()
                 }).ToList();
 
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
@@ -105,15 +127,20 @@ namespace Service
 
             try
             {
-                var category = await _categoryRepository.GetAllAsync(q =>
-                    q.Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory)
-                            .ThenInclude(sc => sc.Products)
-                    .Include(c => c.Products));
+                var category = await _categoryRepository.GetFirstOrDefaultAsync(
+                                c => c.Id == id, // The filter for the single category
+                                q => q.Include(c => c.Products)
+                                .Include(c => c.Products)
+                                .ThenInclude(p => p.Specifications)
+                                .Include(c => c.Products)
+                                .ThenInclude(p => p.Warranties)
+                                .Include(c => c.Products)
+                                .ThenInclude(p => p.SubCategory)
+                                .Include(c => c.Products)
+                                .Include(c => c.SubCategories)
+                                .ThenInclude(cs => cs.SubCategory));
 
-                var foundCategory = category.FirstOrDefault(c => c.Id == id);
-
-                if (foundCategory == null)
+                if (category == null)
                 {
                     return new GeneralResponse<CategoryDTO>
                     {
@@ -127,11 +154,13 @@ namespace Service
                 {
                     Success = true,
                     Message = "Category retrieved successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(foundCategory)
+                    Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
             catch (Exception ex)
             {
+                // It's good practice to log the exception for debugging purposes
+                // _logger.LogError(ex, "Error retrieving category by ID: {Id}", id);
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,

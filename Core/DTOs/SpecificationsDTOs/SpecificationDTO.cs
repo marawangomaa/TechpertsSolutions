@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Core.DTOs.ProductDTOs;
 
 namespace Core.DTOs.SpecificationsDTOs
 {
@@ -22,6 +18,6 @@ namespace Core.DTOs.SpecificationsDTOs
 
         public string? ProductName { get; set; }
 
-        public List<Core.DTOs.ProductDTOs.ProductListItemDTO>? Products { get; set; }
+        public List<ProductCardDTO>? Products { get; set; }
     }
 }

@@ -14,6 +14,6 @@ namespace Core.DTOs.SubCategoryDTOs
         public string? Image { get; set; }
         public string CategoryId { get; set; }
         public string CategoryName { get; set; } 
-        public List<ProductListItemDTO> Products { get; set; } = new List<ProductListItemDTO>();
+        public List<ProductCardDTO> Products { get; set; } = new List<ProductCardDTO>();
     }
 }

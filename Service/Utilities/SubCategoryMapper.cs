@@ -17,7 +17,7 @@ namespace Service.Utilities
                 Image = subCategory.Image,
                 CategoryId = null, // No direct category relationship
                 CategoryName = null, // No direct category relationship
-                Products = subCategory.Products?.Select(p => ProductMapper.MapToProductListItem(p)).Where(p => p != null).ToList() ?? new List<ProductListItemDTO>()
+                Products = subCategory.Products?.Select(p => ProductMapper.MapToProductCard(p)).Where(p => p != null).ToList() ?? new List<ProductCardDTO>()
             };
         }
 

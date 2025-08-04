@@ -18,14 +18,10 @@ namespace Service.Utilities
                 Image = category.Image,
                 Description = category.Description,
                 Products = category.Products?
-                    .Select(p => ProductMapper.MapToProductListItem(p))
+                    .Select(p => ProductMapper.MapToProductCard(p))
                     .Where(p => p != null)
-                    .ToList() ?? new List<ProductListItemDTO>(),
-
-                SubCategories = category.SubCategories?
-                    .Where(csc => csc.SubCategory != null)
-                    .Select(csc => SubCategoryMapper.MapToSubCategoryDTO(csc.SubCategory))
-                    .ToList() ?? new List<SubCategoryDTO>()
+                    .ToList() ?? new List<ProductCardDTO>(),
+               
             };
         }
 

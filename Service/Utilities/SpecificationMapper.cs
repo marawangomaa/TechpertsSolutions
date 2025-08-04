@@ -17,7 +17,7 @@ namespace Service.Utilities
                 Value = specification.Value,
                 ProductId = specification.ProductId,
                 ProductName = specification.Product?.Name,
-                Products = specification.Product != null ? new List<ProductListItemDTO> { ProductMapper.MapToProductListItem(specification.Product) } : new List<ProductListItemDTO>()
+                Products = specification.Product != null ? new List<ProductCardDTO> { ProductMapper.MapToProductCard(specification.Product) } : new List<ProductCardDTO>()
             };
             return dto;
         }

@@ -12,7 +12,23 @@ namespace Service.Utilities
         {
             if (product == null) return null;
 
-            
+            var subCategoryNames = new List<string>();
+
+            // If product is assigned to multiple subcategories via SubCategory.CategorySubCategories
+            if (product.SubCategory != null && product.SubCategory.CategorySubCategories != null)
+            {
+                subCategoryNames = product.SubCategory.CategorySubCategories
+                    .Select(cs => cs.SubCategory?.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList();
+            }
+            // If product has direct SubCategory assignment
+            else if (product.SubCategory != null)
+            {
+                subCategoryNames.Add(product.SubCategory.Name);
+            }
+
             ProductCategory? categoryEnum = null;
             try
             {
@@ -36,7 +52,7 @@ namespace Service.Utilities
                 CategoryId = product.CategoryId,
                 SubCategoryId = product.SubCategoryId,
                 CategoryName = product.Category?.Name ?? string.Empty,
-                SubCategoryName = product.SubCategory?.Name,
+                SubCategoryNames = subCategoryNames,
                 CategoryEnum = categoryEnum,
                 ImageUrl = product.ImageUrl,
                 Image1Url = product.Image1Url,
@@ -147,20 +163,23 @@ namespace Service.Utilities
             };
         }
 
-        public static ProductListItemDTO? MapToProductListItem(Product? product)
+        public static ProductCardDTO? MapToProductCard(Product? product)
         {
             if (product == null) return null;
 
-            return new ProductListItemDTO
+            return new ProductCardDTO
             {
                 Id = product.Id,
                 Name = product.Name,
                 Price = product.Price,
+                DiscountPrice = product.DiscountPrice,
+                Status = product.status.ToString(),
                 ImageUrl = product.ImageUrl,
-                Image1Url = product.Image1Url,
-                Image2Url = product.Image2Url,
-                Image3Url = product.Image3Url,
-                Image4Url = product.Image4Url
+                CategoryId = product.CategoryId,
+                CategoryName = product.Category?.Name ?? string.Empty,
+                SubCategoryId = product.SubCategoryId,
+                SubCategoryName = product.SubCategory?.Name ?? string.Empty,
+                CategoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(product.Category?.Name)
             };
         }
     }

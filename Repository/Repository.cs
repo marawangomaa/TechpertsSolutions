@@ -1,5 +1,6 @@
 ﻿using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System.Linq.Expressions;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
@@ -64,6 +65,22 @@ namespace Repository
         {
             var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
             return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<T?> GetFirstOrDefaultAsync(
+            Expression<Func<T, bool>> predicate,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes)
+        {
+            // Apply the includes to the queryable before executing it
+            IQueryable<T> query = _dbSet;
+            query = includes(query);
+
+            return await query.FirstOrDefaultAsync(predicate);
         }
 
         // 🔧 Added: GetFirstOrDefault with expression includes

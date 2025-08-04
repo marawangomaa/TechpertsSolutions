@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Query;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -24,6 +25,9 @@ namespace Core.Interfaces
         Task<T?> GetByIdWithIncludesAsync(string id, params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
         Task<T?> GetFirstOrDefaultWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes); // 🔧 Added
+        Task<T?> GetFirstOrDefaultAsync(
+        Expression<Func<T, bool>> predicate,
+        Func<IQueryable<T>, IIncludableQueryable<T, object>> includes);
 
         // Includes (Func-based for flexibility)
         Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>> includeBuilder);

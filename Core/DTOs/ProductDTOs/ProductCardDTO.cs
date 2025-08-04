@@ -21,7 +21,8 @@ namespace Core.DTOs.ProductDTOs
         public ProductCategory? CategoryEnum { get; set; }
         public string? SubCategoryId { get; set; }
         public string? SubCategoryName { get; set; }
-
+        public List<SpecificationDTO>? Specifications { get; set; }
+        public List<WarrantyDTO>? Warranties { get; set; }
         public string Status { get; set; } = "Pending";
     }
 }
