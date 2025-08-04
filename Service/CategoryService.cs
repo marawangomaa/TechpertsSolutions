@@ -51,12 +51,27 @@ namespace Service
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(q => q
+                    .Include(c => c.Products)
                     .Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory)
-                            .ThenInclude(sc => sc.Products)
-                    .Include(c => c.Products));
+                        .ThenInclude(cs => cs.SubCategory));
 
-                var categoryDtos = categories.Select(CategoryMapper.MapToCategoryDTO).ToList();
+                var categoryDtos = categories.Select(c => new CategoryDTO {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    Image = c.Image,
+                    Products = c.Products?.Select(p => new ProductListItemDTO {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        // Add other properties as needed
+                    }).ToList() ?? new List<ProductListItemDTO>(),
+                    SubCategories = c.SubCategories?.Select(cs => new SubCategoryDTO {
+                        Id = cs.SubCategory.Id,
+                        Name = cs.SubCategory.Name,
+                        // Add other properties as needed
+                    }).ToList() ?? new List<SubCategoryDTO>()
+                }).ToList();
 
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
