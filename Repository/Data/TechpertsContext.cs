@@ -17,7 +17,7 @@ namespace TechpertsSolutions.Repository.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             // Explicitly ignore CreatedAt and UpdatedAt properties for all BaseEntity types
             modelBuilder.Entity<Admin>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
             modelBuilder.Entity<Cart>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
@@ -70,7 +70,7 @@ namespace TechpertsSolutions.Repository.Data
                 entity.HasKey(e => new { e.CategoryId, e.SubCategoryId });
                 
                 entity.HasOne(e => e.Category)
-                      .WithMany(c => c.CategorySubCategories)
+                      .WithMany(c => c.SubCategories)
                       .HasForeignKey(e => e.CategoryId)
                       .OnDelete(DeleteBehavior.Cascade);
                 

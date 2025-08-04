@@ -179,7 +179,8 @@ namespace TechpertsSolutions
 
             
             builder.Services.AddDbContext<TechpertsContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
+                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
             builder.Services.AddIdentity<AppUser, AppRole>()
                             .AddRoleManager<RoleManager<AppRole>>()

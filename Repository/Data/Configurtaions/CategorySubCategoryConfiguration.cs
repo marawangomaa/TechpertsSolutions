@@ -18,7 +18,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
 
             // Configure relationship with Category
             builder.HasOne(cs => cs.Category)
-                   .WithMany(c => c.CategorySubCategories)
+                   .WithMany(c => c.SubCategories)
                    .HasForeignKey(cs => cs.CategoryId)
                    .OnDelete(DeleteBehavior.Cascade);
 

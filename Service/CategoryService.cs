@@ -1,16 +1,17 @@
 using Core.DTOs;
 using Core.DTOs.CategoryDTOs;
+using Microsoft.EntityFrameworkCore;
 using Core.DTOs.ProductDTOs;
 using Core.DTOs.SubCategoryDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
@@ -22,24 +23,38 @@ namespace Service
         private readonly IRepository<Category> _categoryRepository;
         private readonly IRepository<Product> _productRepository;
         private readonly IRepository<CartItem> _cartItemRepository;
+        private readonly IRepository<SubCategory> _subCategoryRepository;
+        private readonly IRepository<CategorySubCategory> _categorySubCategoryRepository;
         private readonly IFileService _fileService;
+        private readonly ILogger<CategoryService> _logger;
 
-        public CategoryService(IRepository<Category> categoryRepository,
+        public CategoryService(
+            IRepository<Category> categoryRepository,
             IRepository<Product> productRepository,
             IRepository<CartItem> cartItemRepository,
-            IFileService fileService) 
+            IRepository<SubCategory> subCategoryRepository,
+            IRepository<CategorySubCategory> categorySubCategoryRepository,
+            IFileService fileService,
+            ILogger<CategoryService> logger)
         {
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
             _cartItemRepository = cartItemRepository;
+            _subCategoryRepository = subCategoryRepository;
+            _categorySubCategoryRepository = categorySubCategoryRepository;
             _fileService = fileService;
+            _logger = logger;
         }
 
         public async Task<GeneralResponse<IEnumerable<CategoryDTO>>> GetAllCategoriesAsync()
         {
             try
             {
-                var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
+                var categories = await _categoryRepository.GetAllAsync(q => q
+                    .Include(c => c.SubCategories)
+                        .ThenInclude(cs => cs.SubCategory)
+                            .ThenInclude(sc => sc.Products)
+                    .Include(c => c.Products));
 
                 var categoryDtos = categories.Select(CategoryMapper.MapToCategoryDTO).ToList();
 
@@ -55,7 +70,7 @@ namespace Service
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
                 {
                     Success = false,
-                    Message = $"An unexpected error occurred while retrieving categories.{ex}",
+                    Message = $"An unexpected error occurred while retrieving categories. {ex.Message}",
                     Data = null
                 };
             }
@@ -63,38 +78,82 @@ namespace Service
 
         public async Task<GeneralResponse<CategoryDTO>> GetCategoryByIdAsync(string id)
         {
-            
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "Category ID cannot be null or empty.",
-                    Data = null
-                };
-            }
-
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Message = "Invalid Category ID format.",
                     Data = null
                 };
             }
 
             try
             {
-                var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
-                var category = categories.FirstOrDefault(c => c.Id == id);
+                var category = await _categoryRepository.GetAllAsync(q =>
+                    q.Include(c => c.SubCategories)
+                        .ThenInclude(cs => cs.SubCategory)
+                            .ThenInclude(sc => sc.Products)
+                    .Include(c => c.Products));
+
+                var foundCategory = category.FirstOrDefault(c => c.Id == id);
+
+                if (foundCategory == null)
+                {
+                    return new GeneralResponse<CategoryDTO>
+                    {
+                        Success = false,
+                        Message = $"Category with ID '{id}' not found.",
+                        Data = null
+                    };
+                }
+
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = true,
+                    Message = "Category retrieved successfully.",
+                    Data = CategoryMapper.MapToCategoryDTO(foundCategory)
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = $"Error retrieving category: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
+        public async Task<GeneralResponse<CategoryDTO>> GetCategoryByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return new GeneralResponse<CategoryDTO>
+                {
+                    Success = false,
+                    Message = "Category name must be provided.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                var categories = await _categoryRepository.GetAllAsync(q =>
+                    q.Include(c => c.SubCategories)
+                        .ThenInclude(cs => cs.SubCategory)
+                            .ThenInclude(sc => sc.Products)
+                    .Include(c => c.Products));
+
+                var category = categories.FirstOrDefault(c => c.Name == name);
 
                 if (category == null)
                 {
                     return new GeneralResponse<CategoryDTO>
                     {
                         Success = false,
-                        Message = $"Category with ID '{id}' not found.",
+                        Message = $"Category with name '{name}' not found.",
                         Data = null
                     };
                 }
@@ -111,57 +170,15 @@ namespace Service
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving the category.",
+                    Message = $"Error retrieving category: {ex.Message}",
                     Data = null
                 };
             }
         }
-        public async Task<GeneralResponse<CategoryDTO>> GetCategoryByNameAsync(string name) 
+
+        public async Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Category name must be provided.",
-                    Data = null
-                };
-            }
-            var categories = await _categoryRepository.GetAllAsync(includeProperties: "SubCategories,SubCategories.Products,Products");
-            var category = categories.FirstOrDefault(c => c.Name == name);
-
-            if (category == null) 
-            {
-                return new GeneralResponse<CategoryDTO>()
-                {
-                   Success = false,
-                   Message = $"Category with name {name} not found",
-                   Data = null
-                };
-            }
- 
-            var categoryDTO = CategoryMapper.MapToCategoryDTO(category);
-            return new GeneralResponse<CategoryDTO>() 
-            {
-                Success = true,
-                Message = "Category Found",
-                Data = categoryDTO
-            };
-        }
-
-        public async Task<GeneralResponse<CategoryDTO>> CreateCategoryAsync(CategoryCreateDTO categoryCreateDto)
-        {
-            if (categoryCreateDto == null)
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Category data cannot be null.",
-                    Data = null
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(categoryCreateDto.Name))
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
             {
                 return new GeneralResponse<CategoryDTO>
                 {
@@ -173,85 +190,36 @@ namespace Service
 
             try
             {
-                var category = CategoryMapper.MapToCategory(categoryCreateDto);
-
-                await _categoryRepository.AddAsync(category); 
-                await _categoryRepository.SaveChangesAsync(); 
-
-                
-                var createdCategory = await _categoryRepository.GetByIdWithIncludesAsync(
-                    category.Id,
-                    c => c.CategorySubCategories, // Includes direct SubCategories
-                    c => c.Products // Includes Products directly under Category
-                );
-                // Then manually access SubCategories like this:
-                var subCategories = createdCategory.CategorySubCategories?
-                    .Select(cs => cs.SubCategory)
-                    .ToList();
-
-                // And if you want their products:
-                var subCategoryProducts = subCategories?
-                    .SelectMany(sc => sc.Products)
-                    .ToList();
+                var category = CategoryMapper.MapToCategory(dto);
+                await _categoryRepository.AddAsync(category);
+                await _categoryRepository.SaveChangesAsync();
 
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
                     Message = "Category created successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(createdCategory)
+                    Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = $"An unexpected error occurred while creating the category.",
+                    Message = $"Error: {ex.Message}",
                     Data = null
                 };
             }
         }
 
-        
-        public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(string id,CategoryUpdateDTO categoryUpdateDto)
+        public async Task<GeneralResponse<CategoryDTO>> UpdateCategoryAsync(string id, CategoryUpdateDTO dto)
         {
-            
-            if (categoryUpdateDto == null)
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "Update data cannot be null.",
-                    Data = null
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Category ID is required.",
-                    Data = null
-                };
-            }
-
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Category ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
-            if (string.IsNullOrWhiteSpace(categoryUpdateDto.Name))
-            {
-                return new GeneralResponse<CategoryDTO>
-                {
-                    Success = false,
-                    Message = "Category name is required.",
+                    Message = "Invalid update data.",
                     Data = null
                 };
             }
@@ -264,65 +232,41 @@ namespace Service
                     return new GeneralResponse<CategoryDTO>
                     {
                         Success = false,
-                        Message = $"Category with ID '{id}' not found.",
+                        Message = "Category not found.",
                         Data = null
                     };
                 }
 
-                
-                CategoryMapper.MapToCategory(categoryUpdateDto, category);
-
-                _categoryRepository.Update(category); 
+                CategoryMapper.MapToCategory(dto, category);
+                _categoryRepository.Update(category);
                 await _categoryRepository.SaveChangesAsync();
-
-
-                var updatedCategory = await _categoryRepository.GetByIdWithIncludesAsync(
-                                category.Id,
-                                c => c.CategorySubCategories, // Include the join table
-                                c => c.Products                // Include direct products
-                                );
-                var subCategories = updatedCategory.CategorySubCategories?
-                                  .Select(cs => cs.SubCategory)
-                                                      .ToList();
 
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = true,
-                    Message = "Category updated successfully.",
-                    Data = CategoryMapper.MapToCategoryDTO(updatedCategory)
+                    Message = "Category updated.",
+                    Data = CategoryMapper.MapToCategoryDTO(category)
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<CategoryDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while updating the category.",
+                    Message = $"Error: {ex.Message}",
                     Data = null
                 };
             }
         }
 
-        
         public async Task<GeneralResponse<bool>> DeleteCategoryAsync(string id)
         {
-            
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "Category ID cannot be null or empty.",
-                    Data = false
-                };
-            }
-
-            if (!Guid.TryParse(id, out _))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "Invalid Category ID format. Expected GUID format.",
+                    Message = "Invalid Category ID.",
                     Data = false
                 };
             }
@@ -335,62 +279,35 @@ namespace Service
                     return new GeneralResponse<bool>
                     {
                         Success = false,
-                        Message = $"Category with ID '{id}' not found.",
+                        Message = "Category not found.",
                         Data = false
                     };
                 }
 
-                
-
-                
-                
-                var productsToDelete = await _productRepository.FindAsync(p => p.CategoryId == id);
-
-                
-                foreach (var product in productsToDelete)
+                var products = await _productRepository.FindAsync(p => p.CategoryId == id);
+                foreach (var product in products)
                 {
-                    var cartItemsToDelete = await _cartItemRepository.FindAsync(ci => ci.ProductId == product.Id);
-                    
-                    foreach (var cartItem in cartItemsToDelete)
-                    {
-                        _cartItemRepository.Remove(cartItem);
-                    }
-                    
-                    
-                }
-
-                
-                
-                foreach (var product in productsToDelete)
-                {
+                    var cartItems = await _cartItemRepository.FindAsync(ci => ci.ProductId == product.Id);
+                    _cartItemRepository.RemoveRange(cartItems);
                     _productRepository.Remove(product);
                 }
-                
-                
 
-                
-
-                
                 _categoryRepository.Remove(category);
-
-                
-                
-                
                 await _categoryRepository.SaveChangesAsync();
-                
+
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = "Category deleted successfully.",
+                    Message = "Category deleted.",
                     Data = true
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while deleting the category.",
+                    Message = $"Error: {ex.Message}",
                     Data = false
                 };
             }
@@ -400,43 +317,29 @@ namespace Service
         {
             try
             {
-                if (imageFile == null || imageFile.Length == 0)
+                if (imageFile == null || !_fileService.IsValidImageFile(imageFile))
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
                         Success = false,
-                        Message = "No image file provided",
+                        Message = "Invalid image file.",
                         Data = null
                     };
                 }
 
-                if (!_fileService.IsValidImageFile(imageFile))
-                {
-                    return new GeneralResponse<ImageUploadResponseDTO>
-                    {
-                        Success = false,
-                        Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
-                        Data = null
-                    };
-                }
-
-                
                 var category = await _categoryRepository.GetByIdAsync(categoryId);
                 if (category == null)
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
                         Success = false,
-                        Message = "Category not found",
+                        Message = "Category not found.",
                         Data = null
                     };
                 }
 
-                
                 var imagePath = await _fileService.UploadImageAsync(imageFile, "categories");
                 var imageUrl = _fileService.GetImageUrl(imagePath);
-
-                
                 category.Image = imagePath;
                 _categoryRepository.Update(category);
                 await _categoryRepository.SaveChangesAsync();
@@ -444,11 +347,11 @@ namespace Service
                 return new GeneralResponse<ImageUploadResponseDTO>
                 {
                     Success = true,
-                    Message = "Category image uploaded successfully",
+                    Message = "Image uploaded successfully.",
                     Data = new ImageUploadResponseDTO
                     {
                         Success = true,
-                        Message = "Image uploaded successfully",
+                        Message = "Uploaded",
                         ImagePath = imagePath,
                         ImageUrl = imageUrl
                     }
@@ -459,7 +362,7 @@ namespace Service
                 return new GeneralResponse<ImageUploadResponseDTO>
                 {
                     Success = false,
-                    Message = $"Error uploading category image: {ex.Message}",
+                    Message = $"Error uploading image: {ex.Message}",
                     Data = null
                 };
             }
@@ -470,31 +373,19 @@ namespace Service
             try
             {
                 var category = await _categoryRepository.GetByIdAsync(categoryId);
-                if (category == null)
+                if (category == null || string.IsNullOrEmpty(category.Image))
                 {
                     return new GeneralResponse<bool>
                     {
                         Success = false,
-                        Message = "Category not found",
+                        Message = "Category or image not found.",
                         Data = false
                     };
                 }
 
-                if (string.IsNullOrEmpty(category.Image))
-                {
-                    return new GeneralResponse<bool>
-                    {
-                        Success = false,
-                        Message = "Category has no image to delete",
-                        Data = false
-                    };
-                }
-
-                
                 var deleted = await _fileService.DeleteImageAsync(category.Image);
                 if (deleted)
                 {
-                    
                     category.Image = null;
                     _categoryRepository.Update(category);
                     await _categoryRepository.SaveChangesAsync();
@@ -503,7 +394,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = "Category image deleted successfully",
+                    Message = "Image deleted successfully.",
                     Data = true
                 };
             }
@@ -512,49 +403,47 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = $"Error deleting category image: {ex.Message}",
+                    Message = $"Error deleting image: {ex.Message}",
                     Data = false
                 };
             }
         }
 
-        public async Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string categoryId, Core.DTOs.SubCategoryDTOs.AssignSubCategoryDTO assignDto)
+        public async Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string categoryId, AssignSubCategoryDTO assignDto)
         {
             try
             {
                 var category = await _categoryRepository.GetByIdAsync(categoryId);
-                if (category == null)
+                var subCategory = await _subCategoryRepository.GetByIdAsync(assignDto.SubCategoryId);
+
+                if (category == null || subCategory == null)
                 {
                     return new GeneralResponse<object>
                     {
                         Success = false,
-                        Message = "Category not found",
+                        Message = "Category or SubCategory not found.",
                         Data = null
                     };
                 }
 
-                // Get the subcategory repository from the service provider
-                var subCategoryRepository = _categoryRepository.GetType().Assembly.GetTypes()
-                    .FirstOrDefault(t => t.Name == "Repository`1" && t.IsGenericType)
-                    ?.MakeGenericType(typeof(TechpertsSolutions.Core.Entities.SubCategory));
+                var exists = await _categorySubCategoryRepository.AnyAsync(cs =>
+                    cs.CategoryId == categoryId && cs.SubCategoryId == assignDto.SubCategoryId);
 
-                if (subCategoryRepository == null)
+                if (!exists)
                 {
-                    return new GeneralResponse<object>
+                    await _categorySubCategoryRepository.AddAsync(new CategorySubCategory
                     {
-                        Success = false,
-                        Message = "SubCategory repository not found",
-                        Data = null
-                    };
+                        CategoryId = categoryId,
+                        SubCategoryId = assignDto.SubCategoryId
+                    });
+                    await _categorySubCategoryRepository.SaveChangesAsync();
                 }
 
-                // This is a simplified implementation - in a real scenario, you'd inject the SubCategory repository
-                // For now, we'll return a success response
                 return new GeneralResponse<object>
                 {
                     Success = true,
-                    Message = "SubCategory assigned to category successfully",
-                    Data = new { CategoryId = categoryId, SubCategoryId = assignDto.SubCategoryId }
+                    Message = "SubCategory assigned successfully.",
+                    Data = null
                 };
             }
             catch (Exception ex)
@@ -562,7 +451,7 @@ namespace Service
                 return new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"Error assigning subcategory to category: {ex.Message}",
+                    Message = $"Error assigning subcategory: {ex.Message}",
                     Data = null
                 };
             }
@@ -578,18 +467,33 @@ namespace Service
                     return new GeneralResponse<object>
                     {
                         Success = false,
-                        Message = "Category not found",
+                        Message = "Category not found.",
                         Data = null
                     };
                 }
 
-                // This is a simplified implementation - in a real scenario, you'd inject the SubCategory repository
-                // For now, we'll return a success response
+                foreach (var subCategoryId in subCategoryIds)
+                {
+                    var exists = await _categorySubCategoryRepository.AnyAsync(cs =>
+                        cs.CategoryId == categoryId && cs.SubCategoryId == subCategoryId);
+
+                    if (!exists)
+                    {
+                        await _categorySubCategoryRepository.AddAsync(new CategorySubCategory
+                        {
+                            CategoryId = categoryId,
+                            SubCategoryId = subCategoryId
+                        });
+                    }
+                }
+
+                await _categorySubCategoryRepository.SaveChangesAsync();
+
                 return new GeneralResponse<object>
                 {
                     Success = true,
-                    Message = "Multiple subcategories assigned to category successfully",
-                    Data = new { CategoryId = categoryId, SubCategoryIds = subCategoryIds }
+                    Message = "Multiple SubCategories assigned successfully.",
+                    Data = null
                 };
             }
             catch (Exception ex)
@@ -597,7 +501,7 @@ namespace Service
                 return new GeneralResponse<object>
                 {
                     Success = false,
-                    Message = $"Error assigning multiple subcategories to category: {ex.Message}",
+                    Message = $"Error assigning subcategories: {ex.Message}",
                     Data = null
                 };
             }

@@ -16,7 +16,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             base.Configure(builder);
 
             // Configure many-to-many relationship through CategorySubCategory
-            builder.HasMany(c => c.CategorySubCategories)
+            builder.HasMany(c => c.SubCategories)
                    .WithOne(cs => cs.Category)
                    .HasForeignKey(cs => cs.CategoryId)
                    .OnDelete(DeleteBehavior.Cascade);

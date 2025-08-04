@@ -15,7 +15,7 @@ namespace Core.DTOs.CategoryDTOs
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; }
         public string Image { get; set; }
-        public List<ProductListItemDTO> products { get; set; } = new List<ProductListItemDTO>();
+        public List<ProductListItemDTO> Products { get; set; } = new List<ProductListItemDTO>();
         public List<SubCategoryDTO> SubCategories { get; set; } = new List<SubCategoryDTO>();
     }
 }
