@@ -52,14 +52,14 @@ namespace Service
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(q => q
-                .Include(c => c.Products)
-                .ThenInclude(p => p.Specifications)
-                .Include(c => c.Products)
-                .ThenInclude(p => p.Warranties)
-                .Include(c => c.Products)
-                .ThenInclude(p => p.SubCategory)
-                .Include(c => c.SubCategories)
-                .ThenInclude(cs => cs.SubCategory));
+                    .Include(c => c.Products)
+                        .ThenInclude(p => p.Specifications)
+                    .Include(c => c.Products)
+                        .ThenInclude(p => p.Warranties)
+                    .Include(c => c.Products)
+                        .ThenInclude(p => p.SubCategory)
+                    .Include(c => c.SubCategories)
+                        .ThenInclude(cs => cs.SubCategory));
 
                 var categoryDtos = categories.Select(c => new CategoryDTO {
                     Id = c.Id,
@@ -74,25 +74,26 @@ namespace Service
                         ImageUrl = p.ImageUrl,
                         CategoryId = p.CategoryId,
                         CategoryName = p.Category?.Name ?? string.Empty,
-                        CategoryEnum = p.Category != null ? EnumExtensions.ParseFromStringValue<ProductCategory>(p.Category.Name) : null,
+                        CategoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(p.Category?.Name),
                         SubCategoryId = p.SubCategoryId,
                         SubCategoryName = p.SubCategory?.Name ?? string.Empty,
                         Status = p.status.ToString(),
-                        Specifications = p.Specifications?.Select(s => new SpecificationDTO {
+                        Specifications = p.Specifications?.Select(s => new SpecificationDTO
+                        {
                             Id = s.Id,
                             Key = s.Key,
                             Value = s.Value
-                        }).ToList() ?? new List<SpecificationDTO>(),
-                        Warranties = p.Warranties?.Select(w => new WarrantyDTO {
+                        }).ToList(),
+                        Warranties = p.Warranties?.Select(w => new WarrantyDTO
+                        {
                             Id = w.Id,
-                            Description = w.Description,
                             Type = w.Type,
                             Duration = w.Duration,
+                            Description = w.Description,
                             StartDate = w.StartDate,
                             EndDate = w.EndDate
-                        }).ToList() ?? new List<WarrantyDTO>()
-                    }).ToList() 
-                    ?? new List<ProductCardDTO>()
+                        }).ToList()
+                    }).ToList() ?? new List<ProductCardDTO>()
                 }).ToList();
 
                 return new GeneralResponse<IEnumerable<CategoryDTO>>
@@ -128,17 +129,15 @@ namespace Service
             try
             {
                 var category = await _categoryRepository.GetFirstOrDefaultAsync(
-                                c => c.Id == id, // The filter for the single category
+                                c => c.Id == id,
                                 q => q.Include(c => c.Products)
+                                    .ThenInclude(p => p.Specifications)
                                 .Include(c => c.Products)
-                                .ThenInclude(p => p.Specifications)
+                                    .ThenInclude(p => p.Warranties)
                                 .Include(c => c.Products)
-                                .ThenInclude(p => p.Warranties)
-                                .Include(c => c.Products)
-                                .ThenInclude(p => p.SubCategory)
-                                .Include(c => c.Products)
+                                    .ThenInclude(p => p.SubCategory)
                                 .Include(c => c.SubCategories)
-                                .ThenInclude(cs => cs.SubCategory));
+                                    .ThenInclude(cs => cs.SubCategory));
 
                 if (category == null)
                 {
@@ -184,13 +183,16 @@ namespace Service
 
             try
             {
-                var categories = await _categoryRepository.GetAllAsync(q =>
-                    q.Include(c => c.SubCategories)
-                        .ThenInclude(cs => cs.SubCategory)
-                            .ThenInclude(sc => sc.Products)
-                    .Include(c => c.Products));
-
-                var category = categories.FirstOrDefault(c => c.Name == name);
+                var category = await _categoryRepository.GetFirstOrDefaultAsync(
+                    c => c.Name == name,
+                    q => q.Include(c => c.Products)
+                        .ThenInclude(p => p.Specifications)
+                    .Include(c => c.Products)
+                        .ThenInclude(p => p.Warranties)
+                    .Include(c => c.Products)
+                        .ThenInclude(p => p.SubCategory)
+                    .Include(c => c.SubCategories)
+                        .ThenInclude(cs => cs.SubCategory));
 
                 if (category == null)
                 {

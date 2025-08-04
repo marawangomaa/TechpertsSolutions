@@ -167,6 +167,19 @@ namespace Service.Utilities
         {
             if (product == null) return null;
 
+            ProductCategory? categoryEnum = null;
+            try
+            {
+                if (!string.IsNullOrEmpty(product.Category?.Name))
+                {
+                    categoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(product.Category.Name);
+                }
+            }
+            catch
+            {
+                
+            }
+
             return new ProductCardDTO
             {
                 Id = product.Id,
@@ -179,7 +192,22 @@ namespace Service.Utilities
                 CategoryName = product.Category?.Name ?? string.Empty,
                 SubCategoryId = product.SubCategoryId,
                 SubCategoryName = product.SubCategory?.Name ?? string.Empty,
-                CategoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(product.Category?.Name)
+                CategoryEnum = categoryEnum,
+                Specifications = product.Specifications?.Select(s => new SpecificationDTO
+                {
+                    Id = s.Id,
+                    Key = s.Key,
+                    Value = s.Value
+                }).ToList(),
+                Warranties = product.Warranties?.Select(w => new WarrantyDTO
+                {
+                    Id = w.Id,
+                    Type = w.Type,
+                    Duration = w.Duration,
+                    Description = w.Description,
+                    StartDate = w.StartDate,
+                    EndDate = w.EndDate
+                }).ToList()
             };
         }
     }

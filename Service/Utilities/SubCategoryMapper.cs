@@ -10,13 +10,18 @@ namespace Service.Utilities
         {
             if (subCategory == null) return null;
 
+            // Get category information from the many-to-many relationship
+            var categoryInfo = subCategory.CategorySubCategories?.FirstOrDefault()?.Category;
+            var categoryId = categoryInfo?.Id ?? string.Empty;
+            var categoryName = categoryInfo?.Name ?? string.Empty;
+
             return new SubCategoryDTO
             {
                 Id = subCategory.Id,
                 Name = subCategory.Name,
                 Image = subCategory.Image,
-                CategoryId = null, // No direct category relationship
-                CategoryName = null, // No direct category relationship
+                CategoryId = categoryId,
+                CategoryName = categoryName,
                 Products = subCategory.Products?.Select(p => ProductMapper.MapToProductCard(p)).Where(p => p != null).ToList() ?? new List<ProductCardDTO>()
             };
         }

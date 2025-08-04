@@ -39,7 +39,7 @@ namespace Service
             try
             {
                 // Use string-based includes for better flexibility
-                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Products");
+                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Products,CategorySubCategories.Category");
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -90,7 +90,7 @@ namespace Service
                 // Use string-based includes for better flexibility
                 var subCategory = await _subCategoryRepository.GetFirstOrDefaultAsync(
                     sc => sc.Id == id,
-                    includeProperties: "Products");
+                    includeProperties: "Products,CategorySubCategories.Category");
 
                 if (subCategory == null)
                 {
@@ -132,7 +132,7 @@ namespace Service
                 };
             }
             var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultAsync(sc => sc.Name == name,
-                includeProperties: "Category,Products");
+                includeProperties: "CategorySubCategories.Category,Products");
             if (subCategoryByName == null) 
             {
                 return new GeneralResponse<SubCategoryDTO>
@@ -195,9 +195,12 @@ namespace Service
                 await _subCategoryRepository.SaveChangesAsync();
 
                 
+                // Get the created subcategory with includes
                 var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     subCategory.Id, 
-                    sc => sc.Products
+                    sc => sc.Products,
+                    sc => sc.CategorySubCategories,
+                    sc => sc.CategorySubCategories.Select(cs => cs.Category)
                 );
                 
                 return new GeneralResponse<SubCategoryDTO>
