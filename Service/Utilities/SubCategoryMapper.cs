@@ -15,8 +15,8 @@ namespace Service.Utilities
                 Id = subCategory.Id,
                 Name = subCategory.Name,
                 Image = subCategory.Image,
-                CategoryId = subCategory.CategoryId,
-                CategoryName = subCategory.Category?.Name,
+                CategoryId = null, // No direct category relationship
+                CategoryName = null, // No direct category relationship
                 Products = subCategory.Products?.Select(p => ProductMapper.MapToProductListItem(p)).Where(p => p != null).ToList() ?? new List<ProductListItemDTO>()
             };
         }
@@ -28,8 +28,7 @@ namespace Service.Utilities
             return new SubCategory
             {
                 Id = Guid.NewGuid().ToString(),
-                Name = dto.Name,
-                CategoryId = dto.CategoryId
+                Name = dto.Name
             };
         }
 
@@ -38,7 +37,6 @@ namespace Service.Utilities
             if (dto == null || existingSubCategory == null) return null;
 
             existingSubCategory.Name = dto.Name;
-            existingSubCategory.CategoryId = dto.CategoryId;
             return existingSubCategory;
         }
 

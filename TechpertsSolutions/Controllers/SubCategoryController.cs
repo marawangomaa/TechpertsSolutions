@@ -413,6 +413,44 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
+        [HttpPost("assign-to-multiple-categories")]
+        [ProducesResponseType(typeof(GeneralResponse<object>), 200)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 400)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 404)]
+        [ProducesResponseType(typeof(GeneralResponse<string>), 500)]
+        public async Task<IActionResult> AssignToMultipleCategories([FromBody] AssignSubCategoryToCategoriesDTO assignDto)
+        {
+            if (assignDto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Assignment data cannot be null.",
+                    Data = null
+                });
+            }
+
+            try
+            {
+                var response = await _subCategoryService.AssignSubCategoryToMultipleCategoriesAsync(assignDto);
+                if (!response.Success)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error assigning subcategory {assignDto?.SubCategoryId} to multiple categories");
+                return StatusCode(500, new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while assigning the subcategory to multiple categories.",
+                    Data = ex.Message
+                });
+            }
+        }
+
         [HttpGet("unassigned")]
         [ProducesResponseType(typeof(GeneralResponse<IEnumerable<SubCategoryDTO>>), 200)]
         [ProducesResponseType(typeof(GeneralResponse<string>), 500)]

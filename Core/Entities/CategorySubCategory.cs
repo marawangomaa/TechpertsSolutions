@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using Core.Interfaces;
 
-namespace Core.Entities
+namespace TechpertsSolutions.Core.Entities
 {
-    public class CategorySubCategory
+    public class CategorySubCategory : IEntity
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CategoryId { get; set; }
         public Category Category { get; set; }
         public string SubCategoryId { get; set; }

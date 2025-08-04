@@ -19,10 +19,6 @@ namespace TechpertsSolutions.Utilities
             var existingSubCategories = await subCategoryRepo.GetAllAsync();
             var existingNames = existingSubCategories.Where(sc => !string.IsNullOrEmpty(sc.Name)).Select(sc => sc.Name).ToHashSet();
 
-            // Get categories for mapping
-            var categories = await categoryRepo.GetAllAsync();
-            var categoryMap = categories.ToDictionary(c => c.Name, c => c.Id);
-
             var subCategoriesToAdd = new List<SubCategory>();
 
             // Seed Processor Brands
@@ -35,7 +31,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Processor"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(processorBrands);
@@ -51,7 +46,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Motherboard"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(motherboardBrands);
@@ -67,7 +61,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("GraphicsCard"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(graphicsCardBrands);
@@ -83,7 +76,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("RAM"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(ramBrands);
@@ -99,7 +91,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Storage"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(storageBrands);
@@ -115,7 +106,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("CPUCooler"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(cpuCoolerBrands);
@@ -131,7 +121,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Case"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(caseBrands);
@@ -147,7 +136,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("CaseCooler"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(caseCoolerBrands);
@@ -163,7 +151,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("PowerSupply"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(powerSupplyBrands);
@@ -179,7 +166,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Monitor"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(monitorBrands);
@@ -195,7 +181,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Accessories"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(accessoryBrands);
@@ -211,7 +196,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("PreBuildPC"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(prebuiltPcBrands);
@@ -227,7 +211,6 @@ namespace TechpertsSolutions.Utilities
                     {
                         Id = Guid.NewGuid().ToString(),
                         Name = brand.GetStringValue(),
-                        CategoryId = categoryMap.GetValueOrDefault("Laptop"),
                         Image = null
                     });
                 subCategoriesToAdd.AddRange(laptopBrands);
@@ -236,7 +219,7 @@ namespace TechpertsSolutions.Utilities
             // Add all subcategories to database
             foreach (var subCategory in subCategoriesToAdd)
             {
-                Console.WriteLine($"Adding subcategory: {subCategory.Name} to category: {subCategory.CategoryId}");
+                Console.WriteLine($"Adding subcategory: {subCategory.Name}");
                 await subCategoryRepo.AddAsync(subCategory);
             }
 

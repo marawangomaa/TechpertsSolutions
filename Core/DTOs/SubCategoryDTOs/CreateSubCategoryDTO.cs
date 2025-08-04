@@ -9,6 +9,5 @@ namespace Core.DTOs.SubCategoryDTOs
     public class CreateSubCategoryDTO
     {
         public string Name { get; set; }
-        public string? CategoryId { get; set; } // Made optional
     }
 }

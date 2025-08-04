@@ -18,7 +18,7 @@ namespace Service.Utilities
                 Image = category.Image,
                 Description = category.Description,
                 products = category.Products?.Select(p => ProductMapper.MapToProductListItem(p)).Where(p => p != null).ToList() ?? new List<ProductListItemDTO>(),
-                SubCategories = category.SubCategories?.Select(sc => SubCategoryMapper.MapToSubCategoryDTO(sc)).Where(sc => sc != null).ToList() ?? new List<SubCategoryDTO>()
+                SubCategories = category.CategorySubCategories?.Select(csc => SubCategoryMapper.MapToSubCategoryDTO(csc.SubCategory)).Where(sc => sc != null).ToList() ?? new List<SubCategoryDTO>()
             };
         }
 

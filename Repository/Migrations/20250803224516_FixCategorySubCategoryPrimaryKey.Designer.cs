@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TechpertsSolutions.Repository.Data;
 
@@ -11,9 +12,11 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    partial class TechpertsContextModelSnapshot : ModelSnapshot
+    [Migration("20250803224516_FixCategorySubCategoryPrimaryKey")]
+    partial class FixCategorySubCategoryPrimaryKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -884,6 +887,9 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CategoryId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
@@ -892,6 +898,8 @@ namespace Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("SubCategories");
                 });
@@ -1386,6 +1394,15 @@ namespace Repository.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.SubCategory", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.Category", "Category")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.TechCompany", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.CommissionPlan", "CommissionPlan")
@@ -1473,6 +1490,8 @@ namespace Repository.Migrations
                     b.Navigation("CategorySubCategories");
 
                     b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionPlan", b =>

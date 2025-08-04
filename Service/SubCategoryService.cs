@@ -5,7 +5,6 @@ using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Service.Utilities;
-
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -15,6 +14,7 @@ namespace Service
         private readonly IRepository<SubCategory> _subCategoryRepository;
         private readonly IRepository<Product> _productRepository; 
         private readonly IRepository<Category> _categoryRepository; 
+        private readonly IRepository<CategorySubCategory> _categorySubCategoryRepository;
         private readonly IFileService _fileService;
         private readonly ILogger<SubCategoryService> _logger;
 
@@ -22,12 +22,14 @@ namespace Service
             IRepository<SubCategory> subCategoryRepository,
             IRepository<Product> productRepository,
             IRepository<Category> categoryRepository,
+            IRepository<CategorySubCategory> categorySubCategoryRepository,
             IFileService fileService,
             ILogger<SubCategoryService> logger)
         {
             _subCategoryRepository = subCategoryRepository;
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
+            _categorySubCategoryRepository = categorySubCategoryRepository;
             _fileService = fileService;
             _logger = logger;
         }
@@ -37,7 +39,7 @@ namespace Service
             try
             {
                 // Use string-based includes for better flexibility
-                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Category,Products");
+                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Products");
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -88,7 +90,7 @@ namespace Service
                 // Use string-based includes for better flexibility
                 var subCategory = await _subCategoryRepository.GetFirstOrDefaultAsync(
                     sc => sc.Id == id,
-                    includeProperties: "Category,Products");
+                    includeProperties: "Products");
 
                 if (subCategory == null)
                 {
@@ -171,40 +173,8 @@ namespace Service
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(createDto.CategoryId))
-            {
-                return new GeneralResponse<SubCategoryDTO>
-                {
-                    Success = false,
-                    Message = "Category ID is required.",
-                    Data = null
-                };
-            }
-
-            if (!Guid.TryParse(createDto.CategoryId, out _))
-            {
-                return new GeneralResponse<SubCategoryDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Category ID format. Expected GUID format.",
-                    Data = null
-                };
-            }
-
             try
             {
-                
-                var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == createDto.CategoryId);
-                if (!categoryExists)
-                {
-                    return new GeneralResponse<SubCategoryDTO>
-                    {
-                        Success = false,
-                        Message = $"Category with ID '{createDto.CategoryId}' does not exist.",
-                        Data = null
-                    };
-                }
-
                 
                 var existingSubCategory = await _subCategoryRepository.AnyAsync(
                     sc => sc.Name.ToLower() == createDto.Name.ToLower());
@@ -213,7 +183,7 @@ namespace Service
                     return new GeneralResponse<SubCategoryDTO>
                     {
                         Success = false,
-                        Message = $"A subcategory with the name '{createDto.Name}' already exists in another category.",
+                        Message = $"A subcategory with the name '{createDto.Name}' already exists.",
                         Data = null
                     };
                 }
@@ -227,7 +197,6 @@ namespace Service
                 
                 var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     subCategory.Id, 
-                    sc => sc.Category,
                     sc => sc.Products
                 );
                 
@@ -293,25 +262,8 @@ namespace Service
                 };
             }
 
-            if (string.IsNullOrWhiteSpace(updateDto.CategoryId))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "Category ID is required.",
-                    Data = false
-                };
-            }
-
-            if (!Guid.TryParse(updateDto.CategoryId, out _))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "Invalid Category ID format. Expected GUID format.",
-                    Data = false
-                };
-            }
+            // Note: CategoryId is optional in the update DTO since subcategories can be assigned to multiple categories
+            // through the CategorySubCategory relationship
 
             try
             {
@@ -327,15 +279,29 @@ namespace Service
                 }
 
                 
-                var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == updateDto.CategoryId);
-                if (!categoryExists)
+                // Validate category exists if CategoryId is provided
+                if (!string.IsNullOrWhiteSpace(updateDto.CategoryId))
                 {
-                    return new GeneralResponse<bool>
+                    if (!Guid.TryParse(updateDto.CategoryId, out _))
                     {
-                        Success = false,
-                        Message = $"Category with ID '{updateDto.CategoryId}' does not exist.",
-                        Data = false
-                    };
+                        return new GeneralResponse<bool>
+                        {
+                            Success = false,
+                            Message = "Invalid Category ID format. Expected GUID format.",
+                            Data = false
+                        };
+                    }
+
+                    var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == updateDto.CategoryId);
+                    if (!categoryExists)
+                    {
+                        return new GeneralResponse<bool>
+                        {
+                            Success = false,
+                            Message = $"Category with ID '{updateDto.CategoryId}' does not exist.",
+                            Data = false
+                        };
+                    }
                 }
 
                 
@@ -485,9 +451,16 @@ namespace Service
                 }
 
                 
+                // Get subcategories through the CategorySubCategory relationship
+                var categorySubCategories = await _categorySubCategoryRepository.FindAsync(
+                    csc => csc.CategoryId == categoryId
+                );
+                
+                var subCategoryIds = categorySubCategories.Select(csc => csc.SubCategoryId).ToList();
+                
                 var subCategories = await _subCategoryRepository.FindWithStringIncludesAsync(
-                    sc => sc.CategoryId == categoryId,
-                    includeProperties: "Category,Products"
+                    sc => subCategoryIds.Contains(sc.Id),
+                    includeProperties: "CategorySubCategories,Products"
                 );
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
@@ -659,10 +632,31 @@ namespace Service
                     };
                 }
 
-                // Assign the subcategory to the category
-                subCategory.CategoryId = categoryId;
-                _subCategoryRepository.Update(subCategory);
-                await _subCategoryRepository.SaveChangesAsync();
+                // Check if the relationship already exists
+                var existingRelationship = await _categorySubCategoryRepository.GetFirstOrDefaultAsync(
+                    csc => csc.SubCategoryId == subCategoryId && csc.CategoryId == categoryId
+                );
+
+                if (existingRelationship != null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = "SubCategory is already assigned to this category",
+                        Data = new { SubCategoryId = subCategoryId, CategoryId = categoryId }
+                    };
+                }
+
+                // Create the relationship through CategorySubCategory
+                var categorySubCategory = new CategorySubCategory
+                {
+                    CategoryId = categoryId,
+                    SubCategoryId = subCategoryId,
+                    AssignedAt = DateTime.UtcNow
+                };
+
+                await _categorySubCategoryRepository.AddAsync(categorySubCategory);
+                await _categorySubCategoryRepository.SaveChangesAsync();
 
                 return new GeneralResponse<object>
                 {
@@ -683,20 +677,120 @@ namespace Service
             }
         }
 
+        public async Task<GeneralResponse<object>> AssignSubCategoryToMultipleCategoriesAsync(AssignSubCategoryToCategoriesDTO assignDto)
+        {
+            if (assignDto == null)
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "Assignment data cannot be null.",
+                    Data = null
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(assignDto.SubCategoryId))
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "SubCategory ID is required.",
+                    Data = null
+                };
+            }
+
+            if (assignDto.CategoryIds == null || !assignDto.CategoryIds.Any())
+            {
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = "At least one Category ID is required.",
+                    Data = null
+                };
+            }
+
+            try
+            {
+                // Validate subcategory exists
+                var subCategory = await _subCategoryRepository.GetByIdAsync(assignDto.SubCategoryId);
+                if (subCategory == null)
+                {
+                    return new GeneralResponse<object>
+                    {
+                        Success = false,
+                        Message = $"SubCategory with ID '{assignDto.SubCategoryId}' not found.",
+                        Data = null
+                    };
+                }
+
+                // Validate all categories exist
+                foreach (var categoryId in assignDto.CategoryIds)
+                {
+                    if (!Guid.TryParse(categoryId, out _))
+                    {
+                        return new GeneralResponse<object>
+                        {
+                            Success = false,
+                            Message = $"Invalid Category ID format for '{categoryId}'. Expected GUID format.",
+                            Data = null
+                        };
+                    }
+
+                    var categoryExists = await _categoryRepository.AnyAsync(c => c.Id == categoryId);
+                    if (!categoryExists)
+                    {
+                        return new GeneralResponse<object>
+                        {
+                            Success = false,
+                            Message = $"Category with ID '{categoryId}' does not exist.",
+                            Data = null
+                        };
+                    }
+                }
+
+                // Create CategorySubCategory relationships
+                var categorySubCategories = assignDto.CategoryIds.Select(categoryId => new CategorySubCategory
+                {
+                    CategoryId = categoryId,
+                    SubCategoryId = assignDto.SubCategoryId,
+                    AssignedAt = DateTime.UtcNow
+                }).ToList();
+
+                // Add all relationships
+                foreach (var categorySubCategory in categorySubCategories)
+                {
+                    await _categorySubCategoryRepository.AddAsync(categorySubCategory);
+                }
+
+                await _categorySubCategoryRepository.SaveChangesAsync();
+
+                return new GeneralResponse<object>
+                {
+                    Success = true,
+                    Message = $"SubCategory assigned to {assignDto.CategoryIds.Count} categories successfully",
+                    Data = new { SubCategoryId = assignDto.SubCategoryId, CategoryIds = assignDto.CategoryIds }
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error assigning subcategory to multiple categories: {ex.Message}");
+                return new GeneralResponse<object>
+                {
+                    Success = false,
+                    Message = $"Error assigning subcategory to multiple categories: {ex.Message}",
+                    Data = null
+                };
+            }
+        }
+
         public async Task<GeneralResponse<IEnumerable<SubCategoryDTO>>> GetUnassignedSubCategoriesAsync()
         {
             try
             {
-                var allSubCategories = await _subCategoryRepository.GetAllAsync();
+                var allSubCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "CategorySubCategories");
                 var unassignedSubCategories = allSubCategories
-                    .Where(sc => string.IsNullOrEmpty(sc.CategoryId))
-                    .Select(sc => new SubCategoryDTO
-                    {
-                        Id = sc.Id,
-                        Name = sc.Name,
-                        Image = sc.Image,
-                        CategoryId = sc.CategoryId
-                    })
+                    .Where(sc => sc.CategorySubCategories == null || !sc.CategorySubCategories.Any())
+                    .Select(SubCategoryMapper.MapToSubCategoryDTO)
                     .ToList();
 
                 return new GeneralResponse<IEnumerable<SubCategoryDTO>>
@@ -779,8 +873,15 @@ namespace Service
                     };
                 }
 
+                // Get subcategories through the CategorySubCategory relationship
+                var categorySubCategories = await _categorySubCategoryRepository.FindAsync(
+                    csc => csc.CategoryId == categoryId
+                );
+                
+                var subCategoryIds = categorySubCategories.Select(csc => csc.SubCategoryId).ToList();
+                
                 var subCategories = await _subCategoryRepository.FindWithStringIncludesAsync(
-                    sc => sc.CategoryId == categoryId,
+                    sc => subCategoryIds.Contains(sc.Id),
                     includeProperties: includeProperties
                 );
 

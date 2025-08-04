@@ -15,12 +15,6 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         {
             base.Configure(builder);
 
-            // Configure direct relationship with Category (many-to-one)
-            builder.HasOne(sc => sc.Category)
-                   .WithMany(c => c.SubCategories)
-                   .HasForeignKey(sc => sc.CategoryId)
-                   .OnDelete(DeleteBehavior.SetNull); // Set to null instead of cascade
-
             // Configure many-to-many relationship through CategorySubCategory
             builder.HasMany(sc => sc.CategorySubCategories)
                    .WithOne(cs => cs.SubCategory)
