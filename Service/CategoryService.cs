@@ -61,17 +61,21 @@ namespace Service
                     .Include(c => c.SubCategories)
                         .ThenInclude(cs => cs.SubCategory));
 
-                var categoryDtos = categories.Select(c => new CategoryDTO {
+                var defaultImage = "/assets/profiles/default-category.png";
+
+                var categoryDtos = categories.Select(c => new CategoryDTO
+                {
                     Id = c.Id,
                     Name = c.Name,
                     Description = c.Description,
-                    Image = c.Image,
-                    Products = c.Products?.Select(p => new ProductCardDTO {
+                    Image = !string.IsNullOrEmpty(c.Image) ? c.Image : defaultImage,
+                    Products = c.Products?.Select(p => new ProductCardDTO
+                    {
                         Id = p.Id,
                         Name = p.Name,
                         Price = p.Price,
                         DiscountPrice = p.DiscountPrice,
-                        ImageUrl = p.ImageUrl,
+                        ImageUrl = !string.IsNullOrEmpty(p.ImageUrl) ? p.ImageUrl : defaultImage,
                         CategoryId = p.CategoryId,
                         CategoryName = p.Category?.Name ?? string.Empty,
                         CategoryEnum = EnumExtensions.ParseFromStringValue<ProductCategory>(p.Category?.Name),

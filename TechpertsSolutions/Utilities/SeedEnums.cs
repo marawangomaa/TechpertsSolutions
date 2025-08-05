@@ -1,4 +1,5 @@
 using Core.Enums;
+using Core.Enums.BrandsEnums;
 using Core.Utilities;
 
 namespace TechpertsSolutions.Utilities
@@ -8,36 +9,39 @@ namespace TechpertsSolutions.Utilities
         public static void LogEnumValues()
         {
             Console.WriteLine("=== Enum Values Available ===");
-            
-            
-            Console.WriteLine("\nProductPendingStatus Values:");
-            foreach (ProductPendingStatus status in Enum.GetValues(typeof(ProductPendingStatus)))
-            {
-                Console.WriteLine($"  {status} = {status.GetStringValue()}");
-            }
 
-            
-            Console.WriteLine("\nServiceType Values:");
-            foreach (ServiceType serviceType in Enum.GetValues(typeof(ServiceType)))
-            {
-                Console.WriteLine($"  {serviceType} = {serviceType.GetStringValue()}");
-            }
+            LogEnum<ProductPendingStatus>("ProductPendingStatus");
+            LogEnum<ServiceType>("ServiceType");
+            LogEnum<ProductCategory>("ProductCategory");
+            LogEnum<RoleType>("RoleType");
 
-            
-            Console.WriteLine("\nProductCategory Values:");
-            foreach (ProductCategory category in Enum.GetValues(typeof(ProductCategory)))
-            {
-                Console.WriteLine($"  {category} = {category.GetStringValue()}");
-            }
-
-            
-            Console.WriteLine("\nRoleType Values:");
-            foreach (RoleType role in Enum.GetValues(typeof(RoleType)))
-            {
-                Console.WriteLine($"  {role} = {role.GetStringValue()}");
-            }
+            // Add all brand enums used for subcategory seeding:
+            LogEnum<ProcessorBrands>("ProcessorBrands");
+            LogEnum<MotherboardBrands>("MotherboardBrands");
+            LogEnum<GraphicsCardBrands>("GraphicsCardBrands");
+            LogEnum<RAMBrands>("RAMBrands");
+            LogEnum<StorageBrands>("StorageBrands");
+            LogEnum<CpuCoolerBrands>("CpuCoolerBrands");
+            LogEnum<CaseBrands>("CaseBrands");
+            LogEnum<CaseCoolerBrands>("CaseCoolerBrands");
+            LogEnum<PowerSupplyBrands>("PowerSupplyBrands");
+            LogEnum<MonitorBrands>("MonitorBrands");
+            LogEnum<AccessoryBrands>("AccessoryBrands");
+            LogEnum<PrebuiltPcBrands>("PrebuiltPcBrands");
+            LogEnum<LaptopBrands>("LaptopBrands");
 
             Console.WriteLine("=== Enum Seeding Completed ===");
+        }
+
+        private static void LogEnum<TEnum>(string enumName) where TEnum : Enum
+        {
+            Console.WriteLine($"\n{enumName} Values:");
+            foreach (TEnum value in Enum.GetValues(typeof(TEnum)))
+            {
+                string display = value.ToString();
+                string strValue = value.GetStringValue();
+                Console.WriteLine($"  {display} = {strValue}");
+            }
         }
     }
 } 

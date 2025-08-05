@@ -8,7 +8,7 @@ namespace TechpertsSolutions.Utilities
 {
     public static class SeedCategories
     {
-        public static async Task SeedCategoriesAsync(IServiceProvider serviceProvider) 
+        public static async Task SeedCategoriesAsync(IServiceProvider serviceProvider)
         {
             Console.WriteLine("Seeding categories started...");
             var categoryRepo = serviceProvider.GetRequiredService<IRepository<Category>>();
@@ -37,6 +37,7 @@ namespace TechpertsSolutions.Utilities
                 await categoryRepo.SaveChangesAsync();
             else
                 Console.WriteLine("No new categories to add.");
+
             Console.WriteLine("Seeding categories completed.");
         }
     }

@@ -9,7 +9,7 @@ namespace TechpertsSolutions.Controllers
 {
     [ApiController]
     [Route("api/assembly")]
-    [Authorize]
+    //[Authorize]
     public class PCAssemblyCompatibilityController : ControllerBase
     {
         private readonly IPCAssemblyCompatibilityService _pcAssemblyCompatibilityService;

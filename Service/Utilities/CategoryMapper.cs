@@ -11,17 +11,26 @@ namespace Service.Utilities
         {
             if (category == null) return null;
 
+            var defaultImage = "/assets/profiles/default-profile.jpg";
+
             return new CategoryDTO
             {
                 Id = category.Id,
                 Name = category.Name,
-                Image = category.Image,
+                Image = !string.IsNullOrEmpty(category.Image) ? category.Image : defaultImage,
                 Description = category.Description,
                 Products = category.Products?
-                    .Select(p => ProductMapper.MapToProductCard(p))
+                    .Select(p =>
+                    {
+                        var mappedProduct = ProductMapper.MapToProductCard(p);
+                        if (mappedProduct != null && string.IsNullOrEmpty(mappedProduct.ImageUrl))
+                        {
+                            mappedProduct.ImageUrl = defaultImage;
+                        }
+                        return mappedProduct;
+                    })
                     .Where(p => p != null)
                     .ToList() ?? new List<ProductCardDTO>(),
-               
             };
         }
 

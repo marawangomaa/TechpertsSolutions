@@ -1,31 +1,29 @@
 using Core.Enums;
 using Core.Enums.BrandsEnums;
 using Core.Interfaces;
-using Microsoft.AspNetCore.Identity;
-using TechpertsSolutions.Core.Entities;
 using Core.Utilities;
+using Microsoft.Extensions.DependencyInjection;
+using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Utilities
 {
     public static class SeedSubCategories
     {
-        public static async Task SeedSubCategoriesAsync(IServiceProvider serviceProvider)
+        public static async Task<List<SubCategory>> SeedSubCategoriesAsync(IServiceProvider serviceProvider)
         {
             Console.WriteLine("Seeding subcategories started...");
             var subCategoryRepo = serviceProvider.GetRequiredService<IRepository<SubCategory>>();
-            var categoryRepo = serviceProvider.GetRequiredService<IRepository<Category>>();
 
-            // Get existing subcategories to avoid duplicates
             var existingSubCategories = await subCategoryRepo.GetAllAsync();
             var existingNames = existingSubCategories.Where(sc => !string.IsNullOrEmpty(sc.Name)).Select(sc => sc.Name).ToHashSet();
 
-            var subCategoriesToAdd = new List<SubCategory>();
+            var allSubCategories = new List<SubCategory>();
 
-            // Seed Processor Brands
-            if (!existingNames.Contains("Intel") || !existingNames.Contains("AMD"))
+            // Helper method to process enums
+            void AddSubCategoriesFromEnum<T>() where T : Enum
             {
-                var processorBrands = Enum.GetValues(typeof(ProcessorBrands))
-                    .Cast<ProcessorBrands>()
+                var subCats = Enum.GetValues(typeof(T))
+                    .Cast<T>()
                     .Where(brand => !existingNames.Contains(brand.GetStringValue()))
                     .Select(brand => new SubCategory
                     {
@@ -33,200 +31,33 @@ namespace TechpertsSolutions.Utilities
                         Name = brand.GetStringValue(),
                         Image = null
                     });
-                subCategoriesToAdd.AddRange(processorBrands);
+                allSubCategories.AddRange(subCats);
             }
 
-            // Seed Motherboard Brands
-            if (!existingNames.Contains("ASUS") || !existingNames.Contains("MSI"))
-            {
-                var motherboardBrands = Enum.GetValues(typeof(MotherboardBrands))
-                    .Cast<MotherboardBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(motherboardBrands);
-            }
+            AddSubCategoriesFromEnum<ProcessorBrands>();
+            AddSubCategoriesFromEnum<MotherboardBrands>();
+            AddSubCategoriesFromEnum<GraphicsCardBrands>();
+            AddSubCategoriesFromEnum<RAMBrands>();
+            AddSubCategoriesFromEnum<StorageBrands>();
+            AddSubCategoriesFromEnum<CpuCoolerBrands>();
+            AddSubCategoriesFromEnum<CaseBrands>();
+            AddSubCategoriesFromEnum<CaseCoolerBrands>();
+            AddSubCategoriesFromEnum<PowerSupplyBrands>();
+            AddSubCategoriesFromEnum<MonitorBrands>();
+            AddSubCategoriesFromEnum<AccessoryBrands>();
+            AddSubCategoriesFromEnum<PrebuiltPcBrands>();
+            AddSubCategoriesFromEnum<LaptopBrands>();
 
-            // Seed Graphics Card Brands
-            if (!existingNames.Contains("NVIDIA") || !existingNames.Contains("AMD"))
-            {
-                var graphicsCardBrands = Enum.GetValues(typeof(GraphicsCardBrands))
-                    .Cast<GraphicsCardBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(graphicsCardBrands);
-            }
-
-            // Seed RAM Brands
-            if (!existingNames.Contains("Corsair") || !existingNames.Contains("G.Skill"))
-            {
-                var ramBrands = Enum.GetValues(typeof(RAMBrands))
-                    .Cast<RAMBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(ramBrands);
-            }
-
-            // Seed Storage Brands
-            if (!existingNames.Contains("Samsung") || !existingNames.Contains("Western Digital"))
-            {
-                var storageBrands = Enum.GetValues(typeof(StorageBrands))
-                    .Cast<StorageBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(storageBrands);
-            }
-
-            // Seed CPU Cooler Brands
-            if (!existingNames.Contains("Cooler Master") || !existingNames.Contains("Noctua"))
-            {
-                var cpuCoolerBrands = Enum.GetValues(typeof(CpuCoolerBrands))
-                    .Cast<CpuCoolerBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(cpuCoolerBrands);
-            }
-
-            // Seed Case Brands
-            if (!existingNames.Contains("NZXT") || !existingNames.Contains("Cooler Master"))
-            {
-                var caseBrands = Enum.GetValues(typeof(CaseBrands))
-                    .Cast<CaseBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(caseBrands);
-            }
-
-            // Seed Case Cooler Brands
-            if (!existingNames.Contains("NZXT") || !existingNames.Contains("Cooler Master"))
-            {
-                var caseCoolerBrands = Enum.GetValues(typeof(CaseCoolerBrands))
-                    .Cast<CaseCoolerBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(caseCoolerBrands);
-            }
-
-            // Seed Power Supply Brands
-            if (!existingNames.Contains("Corsair") || !existingNames.Contains("EVGA"))
-            {
-                var powerSupplyBrands = Enum.GetValues(typeof(PowerSupplyBrands))
-                    .Cast<PowerSupplyBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(powerSupplyBrands);
-            }
-
-            // Seed Monitor Brands
-            if (!existingNames.Contains("ASUS") || !existingNames.Contains("Acer"))
-            {
-                var monitorBrands = Enum.GetValues(typeof(MonitorBrands))
-                    .Cast<MonitorBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(monitorBrands);
-            }
-
-            // Seed Accessory Brands
-            if (!existingNames.Contains("Logitech") || !existingNames.Contains("Razer"))
-            {
-                var accessoryBrands = Enum.GetValues(typeof(AccessoryBrands))
-                    .Cast<AccessoryBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(accessoryBrands);
-            }
-
-            // Seed Pre-built PC Brands
-            if (!existingNames.Contains("CyberPowerPC") || !existingNames.Contains("iBUYPOWER"))
-            {
-                var prebuiltPcBrands = Enum.GetValues(typeof(PrebuiltPcBrands))
-                    .Cast<PrebuiltPcBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(prebuiltPcBrands);
-            }
-
-            // Seed Laptop Brands
-            if (!existingNames.Contains("Dell") || !existingNames.Contains("HP"))
-            {
-                var laptopBrands = Enum.GetValues(typeof(LaptopBrands))
-                    .Cast<LaptopBrands>()
-                    .Where(brand => !existingNames.Contains(brand.GetStringValue()))
-                    .Select(brand => new SubCategory
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Name = brand.GetStringValue(),
-                        Image = null
-                    });
-                subCategoriesToAdd.AddRange(laptopBrands);
-            }
-
-            // Add all subcategories to database
-            foreach (var subCategory in subCategoriesToAdd)
+            foreach (var subCategory in allSubCategories)
             {
                 Console.WriteLine($"Adding subcategory: {subCategory.Name}");
                 await subCategoryRepo.AddAsync(subCategory);
             }
 
-            if (subCategoriesToAdd.Count > 0)
+            if (allSubCategories.Count > 0)
             {
                 await subCategoryRepo.SaveChangesAsync();
-                Console.WriteLine($"Added {subCategoriesToAdd.Count} subcategories.");
+                Console.WriteLine($"Added {allSubCategories.Count} subcategories.");
             }
             else
             {
@@ -234,6 +65,7 @@ namespace TechpertsSolutions.Utilities
             }
 
             Console.WriteLine("Seeding subcategories completed.");
+            return allSubCategories;
         }
     }
-} 
+}

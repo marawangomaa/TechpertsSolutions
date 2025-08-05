@@ -3,7 +3,7 @@ using Core.DTOs.CustomerDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TechpertsSolutions.Core.DTOs;
+using System.Security.Claims;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -24,7 +24,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUserProfile()
         {
-            var userId = User.FindFirst("uid")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new GeneralResponse<string>
@@ -46,7 +46,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateUserProfile([FromForm] UserProfileUpdateDTO dto)
         {
-            var userId = User.FindFirst("uid")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new GeneralResponse<string>

@@ -240,8 +240,10 @@ namespace TechpertsSolutions
                 await SeedRoles.SeedRolesAsync(services);
                 await SeedCategories.SeedCategoriesAsync(services);
                 await SeedSubCategories.SeedSubCategoriesAsync(services);
+                await SeedCategorySubCategoryLink.SeedLinksAsync(services);
                 await SeedAdminUser.SeedAdminUserAsync(services);
                 SeedEnums.LogEnumValues();
+                Console.WriteLine("Seeding completed");
             }
             if (app.Environment.IsDevelopment())
             {

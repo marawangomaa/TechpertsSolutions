@@ -1,91 +1,55 @@
+using Core.Interfaces;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace TechpertsSolutions.Repository.Data
 {
-    public class TechpertsContext : IdentityDbContext<AppUser,AppRole,string>
+    public class TechpertsContext : IdentityDbContext<AppUser, AppRole, string>
     {
         public TechpertsContext(DbContextOptions<TechpertsContext> options) : base(options) { }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Explicitly ignore CreatedAt and UpdatedAt properties for all BaseEntity types
-            modelBuilder.Entity<Admin>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Cart>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<CartItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Category>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Customer>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Delivery>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<DeliveryPerson>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Maintenance>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Order>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<OrderItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<PCAssembly>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<PCAssemblyItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Product>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<ServiceUsage>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Specification>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<SubCategory>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<TechCompany>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<Warranty>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<WishList>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            modelBuilder.Entity<WishListItem>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore AppUser properties that are not in the database
-            modelBuilder.Entity<AppUser>().Ignore(e => e.IsActive).Ignore(e => e.ProfilePhotoUrl);
-            
-            // Ignore Product image properties that are not in the database
-            modelBuilder.Entity<Product>().Ignore(e => e.Image1Url).Ignore(e => e.Image2Url).Ignore(e => e.Image3Url).Ignore(e => e.Image4Url);
-            
-            // Ignore Notification properties that are not in the database
-            modelBuilder.Entity<Notification>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore CommissionPlan properties that are not in the database
-            modelBuilder.Entity<CommissionPlan>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore CommissionTransaction properties that are not in the database
-            modelBuilder.Entity<CommissionTransaction>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore ChatRoom properties that are not in the database
-            modelBuilder.Entity<ChatRoom>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore ChatMessage properties that are not in the database
-            modelBuilder.Entity<ChatMessage>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Ignore ChatParticipant properties that are not in the database
-            modelBuilder.Entity<ChatParticipant>().Ignore(e => e.CreatedAt).Ignore(e => e.UpdatedAt);
-            
-            // Explicitly configure CategorySubCategory entity with primary key
+            // Configure composite key for CategorySubCategory
             modelBuilder.Entity<CategorySubCategory>(entity =>
             {
                 entity.HasKey(e => new { e.CategoryId, e.SubCategoryId });
-                
+
                 entity.HasOne(e => e.Category)
                       .WithMany(c => c.SubCategories)
                       .HasForeignKey(e => e.CategoryId)
                       .OnDelete(DeleteBehavior.Cascade);
-                
+
                 entity.HasOne(e => e.SubCategory)
                       .WithMany(sc => sc.CategorySubCategories)
                       .HasForeignKey(e => e.SubCategoryId)
                       .OnDelete(DeleteBehavior.Cascade);
-                
+
                 entity.Property(e => e.AssignedAt)
                       .IsRequired()
                       .HasDefaultValueSql("GETUTCDATE()");
             });
-            
+
+            // Apply default value for CreatedAt for all entities implementing IEntity
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                var clrType = entityType.ClrType;
+                if (typeof(IEntity).IsAssignableFrom(clrType) && clrType != typeof(CategorySubCategory))
+                {
+                    var entity = modelBuilder.Entity(clrType);
+
+                    entity.Property("CreatedAt")
+                          .HasDefaultValueSql("GETUTCDATE()");
+                }
+            }
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
         }
+
         public DbSet<Admin> Admins { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
