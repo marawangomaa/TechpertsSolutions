@@ -11,7 +11,7 @@ namespace Service.Utilities
         {
             if (category == null) return null;
 
-            var defaultImage = "/assets/profiles/default-profile.jpg";
+            var defaultImage = "/assets/categories/default-category.png";
 
             return new CategoryDTO
             {

@@ -15,11 +15,16 @@ namespace Service.Utilities
             var categoryId = categoryInfo?.Id ?? string.Empty;
             var categoryName = categoryInfo?.Name ?? string.Empty;
 
+            // Determine image: SubCategory's image or fallback to Category's (which has a default via getter)
+            var finalImage = !string.IsNullOrEmpty(subCategory.Image)
+                ? subCategory.Image
+                : categoryInfo?.Image ?? "/assets/subcategories/default-subcategory.png";
+
             return new SubCategoryDTO
             {
                 Id = subCategory.Id,
                 Name = subCategory.Name,
-                Image = subCategory.Image,
+                Image = finalImage,
                 CategoryId = categoryId,
                 CategoryName = categoryName,
                 Products = subCategory.Products?.Select(p => ProductMapper.MapToProductCard(p)).Where(p => p != null).ToList() ?? new List<ProductCardDTO>()

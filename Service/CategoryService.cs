@@ -61,7 +61,7 @@ namespace Service
                     .Include(c => c.SubCategories)
                         .ThenInclude(cs => cs.SubCategory));
 
-                var defaultImage = "/assets/profiles/default-category.png";
+                var defaultImage = "/assets/categories/default-category.png";
 
                 var categoryDtos = categories.Select(c => new CategoryDTO
                 {
