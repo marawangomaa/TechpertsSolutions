@@ -17,7 +17,5 @@ namespace Core.DTOs.SpecificationsDTOs
         public string ProductId { get; set; } = string.Empty;
 
         public string? ProductName { get; set; }
-
-        public List<ProductCardDTO>? Products { get; set; }
     }
 }

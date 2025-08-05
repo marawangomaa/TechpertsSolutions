@@ -19,21 +19,76 @@ namespace Repository
         }
 
         // Basic Get by ID
-        public async Task<T> GetByIdAsync(string id) =>
-            await _dbSet.FirstOrDefaultAsync(e => e.Id == id)
-            ?? throw new KeyNotFoundException($"{typeof(T).Name} with ID={id} not found.");
+        public async Task<T> GetByIdAsync(string id)
+        {
+            var entity = await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
+            if (entity == null)
+                throw new KeyNotFoundException($"{typeof(T).Name} with ID={id} not found.");
+            return entity;
+        }
 
-        // Basic Get All
-        public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return await _dbSet.ToListAsync();
+        }
 
-        // Get All with string includes
-        public async Task<IEnumerable<T>> GetAllAsync(string? includeProperties)
+        // String-based Includes
+        public async Task<IEnumerable<T>> GetAllAsync(string? includeProperties = null)
         {
             var query = ApplyStringIncludes(_dbSet, includeProperties);
             return await query.ToListAsync();
         }
 
-        // Get All with Func include builder
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
+        {
+            var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? includeProperties)
+        {
+            var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
+            return await query.ToListAsync();
+        }
+
+        // Expression-based Includes
+        public async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet, includes);
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet, includes);
+            return await query.ToListAsync();
+        }
+
+        public async Task<T?> GetByIdWithIncludesAsync(string id, params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet, includes);
+            return await query.FirstOrDefaultAsync(e => e.Id == id);
+        }
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
+            return await query.ToListAsync();
+        }
+
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<T?> GetFirstOrDefaultWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
+            return await query.FirstOrDefaultAsync();
+        }
+
+        // Func-based Includes (IQueryable -> IQueryable)
         public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>> includeBuilder)
         {
             var query = includeBuilder != null ? includeBuilder(_dbSet) : _dbSet;
@@ -46,80 +101,75 @@ namespace Repository
             return await query.ToListAsync();
         }
 
-        // Get All with expression includes
-        public async Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes)
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>> includeBuilder)
         {
-            var query = ApplyExpressionIncludes(_dbSet, includes);
+            var query = includeBuilder != null ? includeBuilder(_dbSet.Where(predicate)) : _dbSet.Where(predicate);
             return await query.ToListAsync();
         }
 
-        // Get by ID with includes
-        public async Task<T?> GetByIdWithIncludesAsync(string id, params Expression<Func<T, object>>[] includes)
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>> includeBuilder)
         {
-            var query = ApplyExpressionIncludes(_dbSet, includes);
-            return await query.FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        // GetFirstOrDefault with string includes
-        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties)
-        {
-            var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
+            var query = includeBuilder != null ? includeBuilder(_dbSet.Where(predicate)) : _dbSet.Where(predicate);
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        // Func-based Includes with ThenInclude Support
+        public async Task<IEnumerable<T>> GetAllWithIncludesAsync(Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder)
         {
-            return await _dbSet.FirstOrDefaultAsync(predicate);
+            IQueryable<T> query = includeBuilder != null ? includeBuilder(_dbSet) : _dbSet;
+            return await query.ToListAsync();
         }
 
-        public async Task<T?> GetFirstOrDefaultAsync(
-            Expression<Func<T, bool>> predicate,
-            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes)
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder)
         {
-            // Apply the includes to the queryable before executing it
-            IQueryable<T> query = _dbSet;
-            query = includes(query);
-
-            return await query.FirstOrDefaultAsync(predicate);
+            var query = includeBuilder != null ? includeBuilder(_dbSet.Where(predicate)) : _dbSet.Where(predicate);
+            return await query.ToListAsync();
         }
 
-        // 🔧 Added: GetFirstOrDefault with expression includes
-        public async Task<T?> GetFirstOrDefaultWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder)
         {
-            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
+            var query = includeBuilder != null ? includeBuilder(_dbSet.Where(predicate)) : _dbSet.Where(predicate);
             return await query.FirstOrDefaultAsync();
         }
 
-        // Find with predicate
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
-            await _dbSet.Where(predicate).ToListAsync();
-
-        // Find with string includes
-        public async Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties)
+        // Basic Find & Existence Check
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
-            var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
-            return await query.ToListAsync();
+            return await _dbSet.Where(predicate).ToListAsync();
         }
 
-        // Find with expression includes
-        public async Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
-            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
-            return await query.ToListAsync();
+            return await _dbSet.AnyAsync(predicate);
         }
 
-        // Check existence
-        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate) =>
-            await _dbSet.AnyAsync(predicate);
+        // CRUD
+        public async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+        }
 
-        // Add/Update/Delete
-        public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
-        public void Update(T entity) => _dbSet.Update(entity);
-        public void Remove(T entity) => _dbSet.Remove(entity);
-        public void RemoveRange(IEnumerable<T> entities) => _dbSet.RemoveRange(entities);
-        public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+        public void Update(T entity)
+        {
+            _dbSet.Update(entity);
+        }
 
-        // Helpers
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _dbSet.RemoveRange(entities);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        // Helpers for Includes
         private IQueryable<T> ApplyStringIncludes(IQueryable<T> query, string? includeProperties)
         {
             if (!string.IsNullOrWhiteSpace(includeProperties))
@@ -136,8 +186,33 @@ namespace Repository
         private IQueryable<T> ApplyExpressionIncludes(IQueryable<T> query, params Expression<Func<T, object>>[] includes)
         {
             foreach (var include in includes)
+            {
                 query = query.Include(include);
+            }
             return query;
+        }
+
+
+
+        
+
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
+        // Find with string includes
+        public async Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties)
+        {
+            var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
+            return await query.ToListAsync();
+        }
+
+        // Find with expression includes
+        public async Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
+            return await query.ToListAsync();
         }
     }
 }

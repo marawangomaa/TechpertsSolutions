@@ -15,35 +15,43 @@ namespace Core.Interfaces
         Task<T> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();
 
-        // Includes (String-based)
+        // String-based Includes
         Task<IEnumerable<T>> GetAllAsync(string? includeProperties = null);
         Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null);
-        Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, string? includeProperties);
 
-        // Includes (Expression-based)
+        // Expression-based Includes
+        Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> GetAllWithIncludesAsync(params Expression<Func<T, object>>[] includes);
         Task<T?> GetByIdWithIncludesAsync(string id, params Expression<Func<T, object>>[] includes);
-        Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
-        Task<T?> GetFirstOrDefaultWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes); // 🔧 Added
-        Task<T?> GetFirstOrDefaultAsync(
-        Expression<Func<T, bool>> predicate,
-        Func<IQueryable<T>, IIncludableQueryable<T, object>> includes);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+        Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
+        Task<T?> GetFirstOrDefaultWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
 
-        // Includes (Func-based for flexibility)
+        // Func-based Includes (IQueryable -> IQueryable)
         Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>> includeBuilder);
         Task<IEnumerable<T>> GetAllAsyncIncluded(Func<IQueryable<T>, IQueryable<T>> includeBuilder);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>> includeBuilder);
+        Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>> includeBuilder);
 
-        // Existence Check
+        // Func-based Includes with ThenInclude Support (IIncludableQueryable)
+        Task<IEnumerable<T>> GetAllWithIncludesAsync(Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder);
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder);
+        Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IIncludableQueryable<T, object>> includeBuilder);
+
+        // Basic Find & Existence Check
+        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
 
-        // CRUD
+        // CRUD Operations
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);
         void RemoveRange(IEnumerable<T> entities);
         Task SaveChangesAsync();
+        Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null);
 
-        // Basic Find
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
+        // Includes (Expression-based)
+        Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     }
 }

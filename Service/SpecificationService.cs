@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Service
 {
@@ -33,7 +34,8 @@ namespace Service
                     s => s.Product,
                     s => s.Product.Category,
                     s => s.Product.SubCategory,
-                    s => s.Product.TechCompany);
+                    s => s.Product.TechCompany,
+                    s => s.Product.Warranties);
 
                 var specDtos = specs.Select(SpecificationMapper.MapToSpecificationDTO).ToList();
 
@@ -85,7 +87,8 @@ namespace Service
                     s => s.Product,
                     s => s.Product.Category,
                     s => s.Product.SubCategory,
-                    s => s.Product.TechCompany);
+                    s => s.Product.TechCompany,
+                    s => s.Product.Warranties);
 
                 if (spec == null)
                 {
@@ -126,8 +129,8 @@ namespace Service
                     Data = null
                 };
             }
-
-            var specs = await _specRepo.FindAsync(s => s.ProductId == productId);
+            
+            var specs = await _specRepo.FindAsync(s => s.ProductId == productId,s => s.Product);
             var specDtos = specs.Select(SpecificationMapper.MapToSpecificationDTO).ToList();
 
             return new GeneralResponse<IEnumerable<Core.DTOs.SpecificationsDTOs.SpecificationDTO>>
