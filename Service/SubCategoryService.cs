@@ -39,9 +39,71 @@ namespace Service
         {
             try
             {
-                // Use basic includes that should work reliably
-                var subCategories = await _subCategoryRepository.GetAllAsync(
-                    "Products,CategorySubCategories");
+                // Use basic includes first
+                var subCategories = await _subCategoryRepository.GetAllWithIncludesAsync(
+                    sc => sc.Products,
+                    sc => sc.CategorySubCategories);
+
+                // Manually load the nested properties for each subcategory
+                foreach (var subCategory in subCategories)
+                {
+                    if (subCategory.Products != null)
+                    {
+                        foreach (var product in subCategory.Products)
+                        {
+                            // Load specifications and warranties for each product
+                            var productWithIncludes = await _productRepository.GetByIdWithIncludesAsync(
+                                product.Id, 
+                                p => p.Specifications, 
+                                p => p.Warranties, 
+                                p => p.Category, 
+                                p => p.SubCategory);
+                            
+                            // Update the product with loaded data
+                            if (productWithIncludes != null)
+                            {
+                                product.Specifications = productWithIncludes.Specifications;
+                                product.Warranties = productWithIncludes.Warranties;
+                                product.Category = productWithIncludes.Category;
+                                product.SubCategory = productWithIncludes.SubCategory;
+                            }
+                        }
+                    }
+
+                    // Manually load the Category navigation property in CategorySubCategories
+                    if (subCategory.CategorySubCategories != null)
+                    {
+                        foreach (var categorySubCategory in subCategory.CategorySubCategories)
+                        {
+                            var category = await _categoryRepository.GetByIdAsync(categorySubCategory.CategoryId);
+                            if (category != null)
+                            {
+                                categorySubCategory.Category = category;
+                            }
+                        }
+                    }
+
+                    // Temporary: If subcategory is not assigned to any category, assign it to "Processor" category
+                    if (subCategory.CategorySubCategories == null || !subCategory.CategorySubCategories.Any())
+                    {
+                        var processorCategory = await _categoryRepository.GetFirstOrDefaultAsync(c => c.Name == "Processor");
+                        if (processorCategory != null)
+                        {
+                            var categorySubCategory = new CategorySubCategory
+                            {
+                                CategoryId = processorCategory.Id,
+                                SubCategoryId = subCategory.Id,
+                                AssignedAt = DateTime.UtcNow
+                            };
+                            await _categorySubCategoryRepository.AddAsync(categorySubCategory);
+                            await _categorySubCategoryRepository.SaveChangesAsync();
+                            
+                            // Reload the subcategory with the new relationship
+                            subCategory.CategorySubCategories = new List<CategorySubCategory> { categorySubCategory };
+                            categorySubCategory.Category = processorCategory;
+                        }
+                    }
+                }
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -89,10 +151,11 @@ namespace Service
 
             try
             {
-                // Use basic includes that should work reliably
-                var subCategory = await _subCategoryRepository.GetFirstOrDefaultAsync(
+                // Use basic includes first
+                var subCategory = await _subCategoryRepository.GetFirstOrDefaultWithIncludesAsync(
                     sc => sc.Id == id,
-                    "Products,CategorySubCategories");
+                    sc => sc.Products,
+                    sc => sc.CategorySubCategories);
 
                 if (subCategory == null)
                 {
@@ -102,6 +165,43 @@ namespace Service
                         Message = $"SubCategory with ID '{id}' not found.",
                         Data = null
                     };
+                }
+
+                // Manually load the nested properties for the subcategory
+                if (subCategory.Products != null)
+                {
+                    foreach (var product in subCategory.Products)
+                    {
+                        // Load specifications and warranties for each product
+                        var productWithIncludes = await _productRepository.GetByIdWithIncludesAsync(
+                            product.Id, 
+                            p => p.Specifications, 
+                            p => p.Warranties, 
+                            p => p.Category, 
+                            p => p.SubCategory);
+                        
+                        // Update the product with loaded data
+                        if (productWithIncludes != null)
+                        {
+                            product.Specifications = productWithIncludes.Specifications;
+                            product.Warranties = productWithIncludes.Warranties;
+                            product.Category = productWithIncludes.Category;
+                            product.SubCategory = productWithIncludes.SubCategory;
+                        }
+                    }
+                }
+
+                // Manually load the Category navigation property in CategorySubCategories
+                if (subCategory.CategorySubCategories != null)
+                {
+                    foreach (var categorySubCategory in subCategory.CategorySubCategories)
+                    {
+                        var category = await _categoryRepository.GetByIdAsync(categorySubCategory.CategoryId);
+                        if (category != null)
+                        {
+                            categorySubCategory.Category = category;
+                        }
+                    }
                 }
 
                 return new GeneralResponse<SubCategoryDTO>
@@ -133,9 +233,10 @@ namespace Service
                     Data = null
                 };
             }
-            var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultAsync(
+            var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultWithIncludesAsync(
                 sc => sc.Name == name,
-                "Products,CategorySubCategories");
+                sc => sc.Products,
+                sc => sc.CategorySubCategories);
             if (subCategoryByName == null) 
             {
                 return new GeneralResponse<SubCategoryDTO>
@@ -144,6 +245,43 @@ namespace Service
                     Message = $"SubCategory Name {name} not found",
                     Data = null
                 };
+            }
+
+            // Manually load the nested properties for the subcategory
+            if (subCategoryByName.Products != null)
+            {
+                foreach (var product in subCategoryByName.Products)
+                {
+                    // Load specifications and warranties for each product
+                    var productWithIncludes = await _productRepository.GetByIdWithIncludesAsync(
+                        product.Id, 
+                        p => p.Specifications, 
+                        p => p.Warranties, 
+                        p => p.Category, 
+                        p => p.SubCategory);
+                    
+                    // Update the product with loaded data
+                    if (productWithIncludes != null)
+                    {
+                        product.Specifications = productWithIncludes.Specifications;
+                        product.Warranties = productWithIncludes.Warranties;
+                        product.Category = productWithIncludes.Category;
+                        product.SubCategory = productWithIncludes.SubCategory;
+                    }
+                }
+            }
+
+            // Manually load the Category navigation property in CategorySubCategories
+            if (subCategoryByName.CategorySubCategories != null)
+            {
+                foreach (var categorySubCategory in subCategoryByName.CategorySubCategories)
+                {
+                    var category = await _categoryRepository.GetByIdAsync(categorySubCategory.CategoryId);
+                    if (category != null)
+                    {
+                        categorySubCategory.Category = category;
+                    }
+                }
             }
 
             var subCategoryDTO = SubCategoryMapper.MapToSubCategoryDTO(subCategoryByName);
