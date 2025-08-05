@@ -23,7 +23,7 @@ namespace Core.DTOs.ProductDTOs
         public string? TechCompanyId { get; set; }
         public string CategoryName { get; set; } = null!;
         public ProductCategory? CategoryEnum { get; set; }
-        public List<string> SubCategoryNames { get; set; } = new();
+        public string? SubCategoryName { get; set; }
         
         // Image URLs - support both old and new format
         public string? ImageUrl { get; set; }

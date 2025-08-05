@@ -12,23 +12,6 @@ namespace Service.Utilities
         {
             if (product == null) return null;
 
-            var subCategoryNames = new List<string>();
-
-            // If product is assigned to multiple subcategories via SubCategory.CategorySubCategories
-            if (product.SubCategory != null && product.SubCategory.CategorySubCategories != null)
-            {
-                subCategoryNames = product.SubCategory.CategorySubCategories
-                    .Select(cs => cs.SubCategory?.Name)
-                    .Where(name => !string.IsNullOrEmpty(name))
-                    .Distinct()
-                    .ToList();
-            }
-            // If product has direct SubCategory assignment
-            else if (product.SubCategory != null)
-            {
-                subCategoryNames.Add(product.SubCategory.Name);
-            }
-
             ProductCategory? categoryEnum = null;
             try
             {
@@ -52,7 +35,7 @@ namespace Service.Utilities
                 CategoryId = product.CategoryId,
                 SubCategoryId = product.SubCategoryId,
                 CategoryName = product.Category?.Name ?? string.Empty,
-                SubCategoryNames = subCategoryNames,
+                SubCategoryName = product.SubCategory?.Name ?? string.Empty,
                 CategoryEnum = categoryEnum,
                 ImageUrl = product.ImageUrl,
                 Image1Url = product.Image1Url,
