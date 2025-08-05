@@ -329,46 +329,56 @@ namespace Service
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleComponentsAsync(string productId)
+        public async Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleProductsForCategoryAsync(string assemblyId, string categoryName)
         {
-            if (string.IsNullOrWhiteSpace(productId))
+            // Step 1: Get assembly with items and their products/specs
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                q => q.Include(a => a.PCAssemblyItems)
+                      .ThenInclude(i => i.Product)
+                          .ThenInclude(p => p.Specifications)
+            );
+
+            if (assembly == null)
             {
                 return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>
                 {
                     Success = false,
-                    Message = "Product ID cannot be null or empty.",
+                    Message = "PC Assembly not found.",
                     Data = null
                 };
             }
 
-            var product = await _productRepo.GetByIdAsync(productId);
-            if (product == null)
-            {
-                return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>
+            // Step 2: Aggregate specifications from already selected products
+            var selectedSpecs = assembly.PCAssemblyItems
+                .SelectMany(i => i.Product.Specifications)
+                .GroupBy(s => s.Key)
+                .ToDictionary(g => g.Key, g => g.First().Value);  // assumes same value for same key
+
+            // Step 3: Get all products in the target category
+            var productsInCategory = await _productRepo.FindAsync(
+                p => p.Category.Name == categoryName,
+                q => q.Include(p => p.Category)
+                      .Include(p => p.Specifications)
+            );
+
+            // Step 4: Filter compatible products
+            var compatibleProducts = productsInCategory
+                .Where(p => AreSpecsCompatible(p.Specifications, selectedSpecs))
+                .Select(p => new CompatibleComponentDTO
                 {
-                    Success = false,
-                    Message = "Product not found.",
-                    Data = null
-                };
-            }
-
-            // This is a simplified compatibility check - in a real application, you'd have more complex logic
-            var compatibleProducts = await _productRepo.FindAsync(p => p.CategoryId == product.CategoryId && p.Id != productId);
-
-            var compatibleComponents = compatibleProducts.Select(p => new CompatibleComponentDTO
-            {
-                ProductId = p.Id,
-                ProductName = p.Name,
-                Price = p.Price,
-                Category = p.Category?.Name,
-                CompatibilityScore = 0.8m // Simplified score
-            });
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    Price = p.Price,
+                    Category = p.Category?.Name,
+                    CompatibilityScore = CalculateCompatibilityScore(selectedSpecs, p.Specifications)
+                });
 
             return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>
             {
                 Success = true,
-                Message = "Compatible components retrieved successfully.",
-                Data = compatibleComponents
+                Message = "Compatible products retrieved successfully.",
+                Data = compatibleProducts
             };
         }
 
@@ -745,6 +755,31 @@ namespace Service
                 ProductCategory.Accessories => "Accessories",
                 _ => category.ToString()
             };
+        }
+        private bool AreSpecsCompatible(IEnumerable<Specification> candidateSpecs, Dictionary<string, string> selectedSpecs)
+        {
+            foreach (var key in selectedSpecs.Keys)
+            {
+                var candidate = candidateSpecs.FirstOrDefault(s => s.Key == key);
+                if (candidate == null || candidate.Value != selectedSpecs[key])
+                    return false; // mismatch
+            }
+            return true;
+        }
+        private decimal CalculateCompatibilityScore(Dictionary<string, string> selectedSpecs, IEnumerable<Specification> candidateSpecs)
+        {
+            int matched = 0;
+            int total = selectedSpecs.Count;
+
+            foreach (var spec in candidateSpecs)
+            {
+                if (selectedSpecs.TryGetValue(spec.Key, out var selectedValue) && selectedValue == spec.Value)
+                {
+                    matched++;
+                }
+            }
+
+            return total == 0 ? 0 : (decimal)matched / total;
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<PCAssemblyReadDTO>> RemoveComponentFromAssemblyAsync(string assemblyId, string itemId);
         Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(string assemblyId);
         Task<GeneralResponse<PCBuildTotalDTO>> CalculateBuildTotalAsync(string assemblyId);
-        Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleComponentsAsync(string productId);
+        Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleProductsForCategoryAsync(string assemblyId, string categoryName);
         Task<GeneralResponse<CartReadDTO>> SaveBuildToCartAsync(string assemblyId, string customerId, decimal assemblyFee);
         Task<GeneralResponse<PCBuildTableDTO>> GetPCBuildTableAsync(string assemblyId);
     }

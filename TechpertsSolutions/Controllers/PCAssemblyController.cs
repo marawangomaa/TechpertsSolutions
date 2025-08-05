@@ -284,26 +284,14 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
-        [HttpGet("build/compatible/{productId}")]
-        public async Task<IActionResult> GetCompatibleComponents(string productId)
+
+
+
+        [HttpGet("{assemblyId}/compatible-products/{categoryName}")]
+        public async Task<IActionResult> GetCompatibleProductsForCategory(string assemblyId, string categoryName)
         {
-            try
-            {
-                var result = await _pcAssemblyService.GetCompatibleComponentsAsync(productId);
-                return result.Success ? Ok(result) : NotFound(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Failed to get compatible components.",
-                    Data = ex.Message
-                });
-            }
+            var response = await _pcAssemblyService.GetCompatibleProductsForCategoryAsync(assemblyId, categoryName);
+            return Ok(response);
         }
 
         [HttpPost("build/{assemblyId}/add-to-cart")]
