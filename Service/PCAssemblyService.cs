@@ -1,10 +1,11 @@
 using Core.DTOs;
-using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs.CartDTOs;
+using Core.DTOs.PCAssemblyDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Microsoft.EntityFrameworkCore;
 using Repository;
 using Service.Utilities;
 using System;
@@ -100,9 +101,23 @@ namespace Service
             try
             {
                 // Comprehensive includes for detailed PC assembly view
-                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == id, 
-                    "Customer,Customer.User,TechCompany,TechCompany.User,ServiceUsage,PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory,PCAssemblyItems.Product.TechCompany");
-
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                                                                a => a.Id == id,
+                                                                query => query
+                                                                .Include(a => a.Customer)
+                                                                .ThenInclude(c => c.User)
+                                                                .Include(a => a.TechCompany)
+                                                                .ThenInclude(tc => tc.User)
+                                                                .Include(a => a.ServiceUsage)
+                                                                .Include(a => a.PCAssemblyItems)
+                                                                .ThenInclude(item => item.Product)
+                                                                .ThenInclude(p => p.Category)
+                                                                .Include(a => a.PCAssemblyItems)
+                                                                .ThenInclude(item => item.Product)
+                                                                .ThenInclude(p => p.SubCategory)
+                                                                .Include(a => a.PCAssemblyItems)
+                                                                .ThenInclude(item => item.Product)
+                                                                 .ThenInclude(p => p.TechCompany));
                 if (assembly == null)
                 {
                     return new GeneralResponse<PCAssemblyReadDTO>
@@ -136,8 +151,22 @@ namespace Service
             try
             {
                 // Optimized includes for PC assembly listing with essential related data
-                var assemblies = await _pcAssemblyRepo.GetAllAsync(
-                    "Customer,Customer.User,TechCompany,TechCompany.User,ServiceUsage,PCAssemblyItems");
+                var assemblies = await _pcAssemblyRepo.GetAllAsync(query =>
+                                              query.Include(a => a.Customer)
+                                              .ThenInclude(c => c.User)
+     .Include(a => a.TechCompany)
+     .ThenInclude(tc => tc.User)
+     .Include(a => a.ServiceUsage)
+     .Include(a => a.PCAssemblyItems)
+         .ThenInclude(item => item.Product)
+             .ThenInclude(p => p.Category)
+     .Include(a => a.PCAssemblyItems)
+         .ThenInclude(item => item.Product)
+             .ThenInclude(p => p.SubCategory)
+     .Include(a => a.PCAssemblyItems)
+         .ThenInclude(item => item.Product)
+             .ThenInclude(p => p.TechCompany)
+ );
 
                 var assemblyDtos = assemblies.Select(PCAssemblyMapper.ToReadDTO).ToList();
 
