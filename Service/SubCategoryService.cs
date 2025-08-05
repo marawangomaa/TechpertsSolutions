@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Service
 {
@@ -38,8 +39,9 @@ namespace Service
         {
             try
             {
-                // Use string-based includes for better flexibility
-                var subCategories = await _subCategoryRepository.GetAllAsync(includeProperties: "Products,CategorySubCategories.Category");
+                // Use basic includes that should work reliably
+                var subCategories = await _subCategoryRepository.GetAllAsync(
+                    "Products,CategorySubCategories");
 
                 var subCategoryDtos = subCategories.Select(SubCategoryMapper.MapToSubCategoryDTO).ToList();
 
@@ -87,10 +89,10 @@ namespace Service
 
             try
             {
-                // Use string-based includes for better flexibility
+                // Use basic includes that should work reliably
                 var subCategory = await _subCategoryRepository.GetFirstOrDefaultAsync(
                     sc => sc.Id == id,
-                    includeProperties: "Products,CategorySubCategories.Category");
+                    "Products,CategorySubCategories");
 
                 if (subCategory == null)
                 {
@@ -131,8 +133,9 @@ namespace Service
                     Data = null
                 };
             }
-            var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultAsync(sc => sc.Name == name,
-                includeProperties: "CategorySubCategories.Category,Products");
+            var subCategoryByName = await _subCategoryRepository.GetFirstOrDefaultAsync(
+                sc => sc.Name == name,
+                "Products,CategorySubCategories");
             if (subCategoryByName == null) 
             {
                 return new GeneralResponse<SubCategoryDTO>
@@ -142,6 +145,7 @@ namespace Service
                     Data = null
                 };
             }
+
             var subCategoryDTO = SubCategoryMapper.MapToSubCategoryDTO(subCategoryByName);
             return new GeneralResponse<SubCategoryDTO> 
             {
@@ -199,9 +203,7 @@ namespace Service
                 var createdSubCategory = await _subCategoryRepository.GetByIdWithIncludesAsync(
                     subCategory.Id, 
                     sc => sc.Products,
-                    sc => sc.CategorySubCategories,
-                    sc => sc.CategorySubCategories.Select(cs => cs.Category)
-                );
+                    sc => sc.CategorySubCategories);
                 
                 return new GeneralResponse<SubCategoryDTO>
                 {

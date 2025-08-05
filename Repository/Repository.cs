@@ -125,7 +125,10 @@ namespace Repository
             if (!string.IsNullOrWhiteSpace(includeProperties))
             {
                 foreach (var prop in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                    query = query.Include(prop.Trim());
+                {
+                    var trimmedProp = prop.Trim();
+                    query = query.Include(trimmedProp);
+                }
             }
             return query;
         }
