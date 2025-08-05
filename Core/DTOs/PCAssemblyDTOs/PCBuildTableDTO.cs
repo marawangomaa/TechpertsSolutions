@@ -19,7 +19,7 @@ namespace Core.DTOs.PCAssemblyDTOs
         public string? ProductId { get; set; }
         public string? ProductName { get; set; }
         public string? SubCategoryName { get; set; }
-        public string Status { get; set; } = "Not Selected";
+        public string? Status { get; set; } = null;
         public decimal? Price { get; set; }
         public decimal? Discount { get; set; }
         public bool HasComponent { get; set; }

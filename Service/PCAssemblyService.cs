@@ -704,7 +704,7 @@ namespace Service
                     }
                     else
                     {
-                        component.Status = "Not Selected";
+                        component.Status = null;
                     }
 
                     components.Add(component);
