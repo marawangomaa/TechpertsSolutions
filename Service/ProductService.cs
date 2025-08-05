@@ -75,11 +75,13 @@ namespace Service
 
             try
             {
-                // Optimized includes for product listing - only include what's needed for ProductCardDTO
+                // Optimized includes for product listing - include all needed for ProductCardDTO
                 var allProducts = (await _productRepo.GetAllWithIncludesAsync(
                     p => p.Category, 
                     p => p.SubCategory, 
-                    p => p.TechCompany)).AsQueryable();
+                    p => p.TechCompany,
+                    p => p.Specifications,
+                    p => p.Warranties)).AsQueryable();
 
                 
                 if (status.HasValue)
@@ -117,7 +119,7 @@ namespace Service
                     .Take(pageSize)
                     .ToList();
 
-                var productDtos = products.Select(ProductMapper.MapToProductCardDTO).ToList();
+                var productDtos = products.Select(ProductMapper.MapToProductCard).ToList();
 
                 var paginatedResult = new PaginatedDTO<ProductCardDTO>
                 {
@@ -1068,7 +1070,9 @@ namespace Service
                 var products = await _productRepo.FindWithIncludesAsync(
                     p => p.Category != null && p.Category.Name == categoryName && p.status == ProductPendingStatus.Approved,
                     p => p.Category,
-                    p => p.SubCategory);
+                    p => p.SubCategory,
+                    p => p.Specifications,
+                    p => p.Warranties);
 
                 
                 var sortedProducts = sortBy?.ToLower() switch
@@ -1084,7 +1088,7 @@ namespace Service
                 var items = sortedProducts
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(ProductMapper.MapToProductCardDTO)
+                    .Select(ProductMapper.MapToProductCard)
                     .ToList();
 
                 var result = new PaginatedDTO<ProductCardDTO>
