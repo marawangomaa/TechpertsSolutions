@@ -290,7 +290,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{assemblyId}/compatible-products/{categoryName}")]
         public async Task<IActionResult> GetCompatibleProductsForCategory(string assemblyId, string categoryName)
         {
-            var response = await _pcAssemblyService.GetCompatibleProductsForCategoryAsync(assemblyId, categoryName);
+            var response = await _pcAssemblyService.GetFilteredCompatibleComponentsAsync(assemblyId, categoryName);
             return Ok(response);
         }
 

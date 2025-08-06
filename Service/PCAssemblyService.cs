@@ -329,14 +329,17 @@ namespace Service
             };
         }
 
-        public async Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetCompatibleProductsForCategoryAsync(string assemblyId, string categoryName)
+        
+        public async Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetFilteredCompatibleComponentsAsync(string assemblyId, string targetCategoryName)
         {
-            // Step 1: Get assembly with items and their products/specs
             var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
                 a => a.Id == assemblyId,
                 q => q.Include(a => a.PCAssemblyItems)
                       .ThenInclude(i => i.Product)
                           .ThenInclude(p => p.Specifications)
+                      .Include(a => a.PCAssemblyItems)
+                          .ThenInclude(i => i.Product)
+                              .ThenInclude(p => p.Category)
             );
 
             if (assembly == null)
@@ -349,36 +352,40 @@ namespace Service
                 };
             }
 
-            // Step 2: Aggregate specifications from already selected products
-            var selectedSpecs = assembly.PCAssemblyItems
-                .SelectMany(i => i.Product.Specifications)
-                .GroupBy(s => s.Key)
-                .ToDictionary(g => g.Key, g => g.First().Value);  // assumes same value for same key
+            var selectedItems = assembly.PCAssemblyItems
+                .Where(i => i.Product != null)
+                .Select(i => i.Product)
+                .ToList();
 
-            // Step 3: Get all products in the target category
-            var productsInCategory = await _productRepo.FindAsync(
-                p => p.Category.Name == categoryName,
-                q => q.Include(p => p.Category)
-                      .Include(p => p.Specifications)
+            var selectedSpecs = selectedItems
+                .SelectMany(p => p.Specifications)
+                .GroupBy(s => s.Key)
+                .ToDictionary(g => g.Key, g => g.First().Value);
+
+            var productsInTargetCategory = await _productRepo.FindAsync(
+                p => p.Category.Name == targetCategoryName,
+                q => q.Include(p => p.Specifications)
+                      .Include(p => p.Category)
             );
 
-            // Step 4: Filter compatible products
-            var compatibleProducts = productsInCategory
-                .Where(p => AreSpecsCompatible(p.Specifications, selectedSpecs))
-                .Select(p => new CompatibleComponentDTO
-                {
-                    ProductId = p.Id,
-                    ProductName = p.Name,
-                    Price = p.Price,
-                    Category = p.Category?.Name,
-                    CompatibilityScore = CalculateCompatibilityScore(selectedSpecs, p.Specifications)
-                });
+            var compatibleProducts = productsInTargetCategory.Where(p =>
+                IsProductCompatible(p, selectedItems, targetCategoryName)
+            );
+
+            var dtoList = compatibleProducts.Select(p => new CompatibleComponentDTO
+            {
+                ProductId = p.Id,
+                ProductName = p.Name,
+                Price = p.Price,
+                Category = p.Category?.Name ?? string.Empty,
+                CompatibilityScore = CalculateCompatibilityScore(selectedSpecs, p.Specifications)
+            });
 
             return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>
             {
                 Success = true,
-                Message = "Compatible products retrieved successfully.",
-                Data = compatibleProducts
+                Message = "Compatible components retrieved.",
+                Data = dtoList
             };
         }
 
@@ -756,16 +763,60 @@ namespace Service
                 _ => category.ToString()
             };
         }
-        private bool AreSpecsCompatible(IEnumerable<Specification> candidateSpecs, Dictionary<string, string> selectedSpecs)
+        // Compatibility rule engine
+        private bool IsProductCompatible(Product candidate, List<Product> selectedItems, string targetCategory)
         {
-            foreach (var key in selectedSpecs.Keys)
+            var candidateSpecs = candidate.Specifications.ToDictionary(s => s.Key, s => s.Value);
+
+            if (targetCategory == "Motherboard")
             {
-                var candidate = candidateSpecs.FirstOrDefault(s => s.Key == key);
-                if (candidate == null || candidate.Value != selectedSpecs[key])
-                    return false; // mismatch
+                var selectedCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
+                if (selectedCpu != null)
+                {
+                    var cpuSocket = selectedCpu.Specifications.FirstOrDefault(s => s.Key == "SocketType")?.Value;
+                    var mbSocket = candidateSpecs.TryGetValue("SocketType", out var value) ? value : null;
+                    if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
+                        return false;
+                }
+
+                var selectedRam = selectedItems.FirstOrDefault(p => p.Category.Name == "RAM");
+                if (selectedRam != null)
+                {
+                    var ramType = selectedRam.Specifications.FirstOrDefault(s => s.Key == "RAMType")?.Value;
+                    var mbSupportedRam = candidateSpecs.TryGetValue("SupportedRAM", out var value) ? value : null;
+                    if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Contains(ramType))
+                        return false;
+                }
             }
+
+            if (targetCategory == "Processor")
+            {
+                var selectedMb = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                if (selectedMb != null)
+                {
+                    var mbSocket = selectedMb.Specifications.FirstOrDefault(s => s.Key == "SocketType")?.Value;
+                    var cpuSocket = candidateSpecs.TryGetValue("SocketType", out var value) ? value : null;
+                    if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
+                        return false;
+                }
+            }
+
+            if (targetCategory == "RAM")
+            {
+                var selectedMb = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                if (selectedMb != null)
+                {
+                    var mbSupportedRam = selectedMb.Specifications.FirstOrDefault(s => s.Key == "SupportedRAM")?.Value;
+                    var ramType = candidateSpecs.TryGetValue("RAMType", out var value) ? value : null;
+                    if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Contains(ramType))
+                        return false;
+                }
+            }
+
             return true;
         }
+
+        // Compatibility score calculation
         private decimal CalculateCompatibilityScore(Dictionary<string, string> selectedSpecs, IEnumerable<Specification> candidateSpecs)
         {
             int matched = 0;
