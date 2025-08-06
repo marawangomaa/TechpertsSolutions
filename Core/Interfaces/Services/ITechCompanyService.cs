@@ -14,6 +14,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<TechCompanyReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<TechCompanyReadDTO>>> GetAllAsync();
         Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto);
-        Task<GeneralResponse<string>> DeleteAsync(string id);
+        Task CleanupTechCompanyDataAsync(string userId);
     }
 }

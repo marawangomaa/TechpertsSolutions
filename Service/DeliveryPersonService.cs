@@ -2,11 +2,6 @@ using Core.DTOs.DeliveryPersonDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 
@@ -37,17 +32,19 @@ namespace Service
             await _deliveryPersonRepo.AddAsync(deliveryPerson);
             await _deliveryPersonRepo.SaveChangesAsync();
 
+            // Fetch with includes to return full DTO (with User and Role)
+            var savedEntity = await _deliveryPersonRepo.GetByIdWithIncludesAsync(deliveryPerson.Id, dp => dp.User, dp => dp.Role);
+
             return new GeneralResponse<DeliveryPersonReadDTO>
             {
                 Success = true,
                 Message = "Delivery person created successfully.",
-                Data = DeliveryPersonMapper.ToReadDTO(deliveryPerson)
+                Data = DeliveryPersonMapper.ToReadDTO(savedEntity)
             };
         }
 
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<DeliveryPersonReadDTO>
@@ -70,10 +67,7 @@ namespace Service
 
             try
             {
-                // Comprehensive includes for detailed delivery person view with user and role information
-                var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, 
-                    dp => dp.User, 
-                    dp => dp.Role);
+                var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, dp => dp.User, dp => dp.Role);
 
                 if (deliveryPerson == null)
                 {
@@ -89,11 +83,12 @@ namespace Service
                 {
                     Success = true,
                     Message = "DeliveryPerson retrieved successfully.",
-                    Data = DeliveryPersonMapper.MapToDeliveryPersonReadDTO(deliveryPerson)
+                    Data = DeliveryPersonMapper.ToReadDTO(deliveryPerson)
                 };
             }
             catch (Exception ex)
             {
+                // Add logging here if needed
                 return new GeneralResponse<DeliveryPersonReadDTO>
                 {
                     Success = false,
@@ -107,12 +102,9 @@ namespace Service
         {
             try
             {
-                // Optimized includes for delivery person listing with user and role information
-                var deliveryPersons = await _deliveryPersonRepo.GetAllWithIncludesAsync(
-                    dp => dp.User, 
-                    dp => dp.Role);
+                var deliveryPersons = await _deliveryPersonRepo.GetAllWithIncludesAsync(dp => dp.User, dp => dp.Role);
 
-                var deliveryPersonDtos = deliveryPersons.Select(DeliveryPersonMapper.MapToDeliveryPersonReadDTO).ToList();
+                var deliveryPersonDtos = deliveryPersons.Select(DeliveryPersonMapper.ToReadDTO).ToList();
 
                 return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
                 {
@@ -123,6 +115,7 @@ namespace Service
             }
             catch (Exception ex)
             {
+                // Add logging here if needed
                 return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
                 {
                     Success = false,
@@ -144,7 +137,7 @@ namespace Service
                 };
             }
 
-            var deliveryPerson = await _deliveryPersonRepo.GetByIdAsync(id);
+            var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, dp => dp.User, dp => dp.Role);
 
             if (deliveryPerson == null)
             {
@@ -169,55 +162,35 @@ namespace Service
             };
         }
 
-        public async Task<GeneralResponse<bool>> DeleteAsync(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = "ID cannot be null or empty.",
-                    Data = false
-                };
-            }
-
-            var deliveryPerson = await _deliveryPersonRepo.GetByIdAsync(id);
-
-            if (deliveryPerson == null)
-            {
-                return new GeneralResponse<bool>
-                {
-                    Success = false,
-                    Message = $"Delivery person with ID '{id}' not found.",
-                    Data = false
-                };
-            }
-
-            _deliveryPersonRepo.Remove(deliveryPerson);
-            await _deliveryPersonRepo.SaveChangesAsync();
-
-            return new GeneralResponse<bool>
-            {
-                Success = true,
-                Message = "Delivery person deleted successfully.",
-                Data = true
-            };
-        }
-
         public async Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAvailableDeliveryPersonsAsync()
         {
-            var availableDeliveryPersons = await _deliveryPersonRepo.FindWithIncludesAsync(
-                dp => dp.IsAvailable, 
-                dp => dp.User, 
-                dp => dp.Role
-            );
-
-            return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+            try
             {
-                Success = true,
-                Message = "Available delivery persons retrieved successfully.",
-                Data = availableDeliveryPersons.Select(DeliveryPersonMapper.ToReadDTO)
-            };
+                var availableDeliveryPersons = await _deliveryPersonRepo.FindWithIncludesAsync(
+                    dp => dp.IsAvailable,
+                    dp => dp.User,
+                    dp => dp.Role
+                );
+
+                var dtoList = availableDeliveryPersons.Select(DeliveryPersonMapper.ToReadDTO).ToList();
+
+                return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+                {
+                    Success = true,
+                    Message = "Available delivery persons retrieved successfully.",
+                    Data = dtoList
+                };
+            }
+            catch (Exception ex)
+            {
+                // Add logging here if needed
+                return new GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
+                {
+                    Success = false,
+                    Message = "An unexpected error occurred while retrieving available delivery persons.",
+                    Data = null
+                };
+            }
         }
     }
-} 
+}

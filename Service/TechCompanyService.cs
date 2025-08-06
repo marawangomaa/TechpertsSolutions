@@ -1,43 +1,100 @@
+using Core.DTOs;
 using Core.DTOs.TechCompanyDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.DTOs;
 using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data;
 
 namespace Service
 {
     public class TechCompanyService : ITechCompanyService
     {
         private readonly IRepository<TechCompany> _techCompanyRepo;
+        private readonly TechpertsContext context;
 
-        public TechCompanyService(IRepository<TechCompany> repo)
+        public TechCompanyService(IRepository<TechCompany> repo,TechpertsContext _context)
         {
             _techCompanyRepo = repo;
+            context = _context;
         }
 
         public async Task<GeneralResponse<TechCompanyReadDTO>> CreateAsync(TechCompanyCreateDTO dto)
         {
+            if (dto == null)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "TechCompany data cannot be null.",
+                    Data = null
+                };
+            }
+
             var entity = TechCompanyMapper.ToEntity(dto);
             await _techCompanyRepo.AddAsync(entity);
             await _techCompanyRepo.SaveChangesAsync();
+
+            // Reload entity with includes
+            var fullEntity = await _techCompanyRepo.GetByIdWithIncludesAsync(entity.Id,
+                t => t.User, t => t.Role);
 
             return new GeneralResponse<TechCompanyReadDTO>
             {
                 Success = true,
                 Message = "TechCompany created successfully.",
-                Data = TechCompanyMapper.ToReadDTO(entity)
+                Data = TechCompanyMapper.ToReadDTO(fullEntity)
             };
         }
 
+        public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(id) || dto == null)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "Invalid input data.",
+                    Data = null
+                };
+            }
+
+            var entity = await _techCompanyRepo.GetByIdAsync(id);
+            if (entity == null)
+            {
+                return new GeneralResponse<TechCompanyReadDTO>
+                {
+                    Success = false,
+                    Message = "TechCompany not found.",
+                    Data = null
+                };
+            }
+
+            TechCompanyMapper.UpdateEntity(entity, dto);
+            _techCompanyRepo.Update(entity);
+            await _techCompanyRepo.SaveChangesAsync();
+
+            // Reload updated entity with includes
+            var updatedEntity = await _techCompanyRepo.GetByIdWithIncludesAsync(id, t => t.User, t => t.Role);
+
+            return new GeneralResponse<TechCompanyReadDTO>
+            {
+                Success = true,
+                Message = "Updated successfully.",
+                Data = TechCompanyMapper.ToReadDTO(updatedEntity)
+            };
+        }
+
+
         public async Task<GeneralResponse<TechCompanyReadDTO>> GetByIdAsync(string id)
         {
-            
+
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<TechCompanyReadDTO>
@@ -61,8 +118,8 @@ namespace Service
             try
             {
                 // Comprehensive includes for detailed tech company view with user and role information
-                var entity = await _techCompanyRepo.GetByIdWithIncludesAsync(id, 
-                    t => t.User, 
+                var entity = await _techCompanyRepo.GetByIdWithIncludesAsync(id,
+                    t => t.User,
                     t => t.Role);
 
                 if (entity == null)
@@ -99,7 +156,7 @@ namespace Service
             {
                 // Optimized includes for tech company listing with user and role information
                 var entities = await _techCompanyRepo.GetAllWithIncludesAsync(
-                    t => t.User, 
+                    t => t.User,
                     t => t.Role);
 
                 var techCompanyDtos = entities.Select(TechCompanyMapper.MapToTechCompanyReadDTO).ToList();
@@ -121,54 +178,52 @@ namespace Service
                 };
             }
         }
-
-        public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto)
+        public async Task CleanupTechCompanyDataAsync(string userId)
         {
-            var entity = await _techCompanyRepo.GetByIdAsync(id);
-            if (entity == null)
+            await using var transaction = await context.Database.BeginTransactionAsync();
+            try
             {
-                return new GeneralResponse<TechCompanyReadDTO>
+                // 1. Get TechCompany by userId with optional includes
+                var techCompany = await _techCompanyRepo.GetFirstOrDefaultWithIncludesAsync(
+                    tc => tc.UserId == userId);
+
+                if (techCompany == null)
                 {
-                    Success = false,
-                    Message = "TechCompany not found.",
-                    Data = null
-                };
+                    await transaction.CommitAsync(); // No cleanup needed
+                    return;
+                }
+
+                string techCompanyId = techCompany.Id;
+
+                // 2. Find all products for this TechCompany
+                var products = await context.Products
+                    .Where(p => p.TechCompanyId == techCompanyId)
+                    .ToListAsync();
+
+                // 3. Find and remove all PCAssemblyItems that reference these products
+                var productIds = products.Select(p => p.Id).ToList();
+
+                var assemblyItems = await context.PCAssemblyItems
+                    .Where(ai => productIds.Contains(ai.ProductId))
+                    .ToListAsync();
+
+                context.PCAssemblyItems.RemoveRange(assemblyItems);
+
+                // 4. Remove all the products
+                context.Products.RemoveRange(products);
+
+                // 5. Remove TechCompany
+                _techCompanyRepo.Remove(techCompany);
+
+                // 6. Save all changes and commit transaction
+                await context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            TechCompanyMapper.UpdateEntity(entity, dto);
-            _techCompanyRepo.Update(entity);
-            await _techCompanyRepo.SaveChangesAsync();
-
-            return new GeneralResponse<TechCompanyReadDTO>
+            catch (Exception)
             {
-                Success = true,
-                Message = "Updated successfully.",
-                Data = TechCompanyMapper.ToReadDTO(entity)
-            };
-        }
-
-        public async Task<GeneralResponse<string>> DeleteAsync(string id)
-        {
-            var entity = await _techCompanyRepo.GetByIdAsync(id);
-            if (entity == null)
-            {
-                return new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "TechCompany not found.",
-                    Data = null
-                };
+                await transaction.RollbackAsync();
+                throw;
             }
-
-            _techCompanyRepo.Remove(entity);
-            await _techCompanyRepo.SaveChangesAsync();
-
-            return new GeneralResponse<string>
-            {
-                Success = true,
-                Message = "Deleted successfully.",
-                Data = id
-            };
         }
     }
 }

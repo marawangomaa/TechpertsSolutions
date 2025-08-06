@@ -14,7 +14,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAllAsync();
         Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(string id, DeliveryPersonUpdateDTO dto);
-        Task<GeneralResponse<bool>> DeleteAsync(string id);
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAvailableDeliveryPersonsAsync();
     }
 } 

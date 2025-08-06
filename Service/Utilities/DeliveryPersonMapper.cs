@@ -1,10 +1,6 @@
 using Core.DTOs.DeliveryPersonDTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
+using System;
 
 namespace Service.Utilities
 {
@@ -14,6 +10,9 @@ namespace Service.Utilities
         {
             if (entity == null) return null;
 
+            var user = entity.User;
+            var role = entity.Role;
+
             return new DeliveryPersonReadDTO
             {
                 Id = entity.Id,
@@ -21,35 +20,23 @@ namespace Service.Utilities
                 RoleId = entity.RoleId,
                 VehicleNumber = entity.VehicleNumber,
                 VehicleType = entity.VehicleType,
-                PhoneNumber = entity.User.PhoneNumber,
-                City = entity.User.City,
-                Country = entity.User.Country,
                 IsAvailable = entity.IsAvailable,
-                UserName = entity.User?.UserName,
-                UserFullName = entity.User?.FullName,
-                RoleName = entity.Role?.Name
+
+                // User properties with null checks
+                PhoneNumber = user?.PhoneNumber ?? "Unknown",
+                City = user?.City ?? "Unknown",
+                Country = user?.Country ?? "Unknown",
+                UserName = user?.UserName ?? "Unknown",
+                UserFullName = user?.FullName ?? "Unknown",
+
+                // Role name with null check
+                RoleName = role?.Name ?? "Unknown"
             };
         }
 
         public static DeliveryPersonReadDTO MapToDeliveryPersonReadDTO(DeliveryPerson entity)
         {
-            if (entity == null) return null;
-
-            return new DeliveryPersonReadDTO
-            {
-                Id = entity.Id,
-                UserId = entity.UserId,
-                RoleId = entity.RoleId,
-                VehicleNumber = entity.VehicleNumber,
-                VehicleType = entity.VehicleType,
-                PhoneNumber = entity.User?.PhoneNumber,
-                City = entity.User?.City,
-                Country = entity.User?.Country,
-                IsAvailable = entity.IsAvailable,
-                UserName = entity.User?.UserName,
-                UserFullName = entity.User?.FullName,
-                RoleName = entity.Role?.Name
-            };
+            return ToReadDTO(entity); // Avoid duplicate logic
         }
 
         public static DeliveryPerson ToEntity(DeliveryPersonCreateDTO dto)
@@ -81,4 +68,4 @@ namespace Service.Utilities
                 entity.IsAvailable = dto.IsAvailable.Value;
         }
     }
-} 
+}

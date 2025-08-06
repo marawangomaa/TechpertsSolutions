@@ -1,6 +1,6 @@
+using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
-using Core.Enums;
 using Core.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -11,15 +11,16 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repository;
 using Service;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Repository.Data;
-using TechpertsSolutions.Utilities;
+using TechpertsSolutions.Extensions;
 using TechpertsSolutions.Hubs;
+using TechpertsSolutions.Repository.Data;
 using TechpertsSolutions.Services;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using TechpertsSolutions.Utilities;
 
 namespace TechpertsSolutions
 {
@@ -74,110 +75,9 @@ namespace TechpertsSolutions
                 });
             });
 
-            
-            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            builder.Services.AddScoped<ICustomerService,CustomerService>();
-            builder.Services.AddScoped<IAdminService, AdminService>();
-            builder.Services.AddScoped<IEmailService, EmailService>();
-            builder.Services.AddScoped<IAuthService>(provider =>
-            {
-                return new AuthService(
-                    provider.GetRequiredService<UserManager<AppUser>>(),
-                    provider.GetRequiredService<RoleManager<AppRole>>(),
-                    provider.GetRequiredService<IRepository<Admin>>(),
-                    provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<Cart>>(),
-                    provider.GetRequiredService<IRepository<TechCompany>>(),
-                    provider.GetRequiredService<IRepository<DeliveryPerson>>(),
-                    provider.GetRequiredService<ICustomerService>(),
-                    provider.GetRequiredService<IWishListService>(),
-                    provider.GetRequiredService<IPCAssemblyService>(),
-                    provider.GetRequiredService<IEmailService>(),
-                    provider.GetRequiredService<IConfiguration>(),
-                    provider.GetRequiredService<TechpertsContext>(),
-                    provider.GetRequiredService<IFileService>()
-                );
-            });
-            builder.Services.AddScoped<IRoleService>(provider =>
-            {
-                return new RoleService(
-                    provider.GetRequiredService<RoleManager<AppRole>>(),
-                    provider.GetRequiredService<UserManager<AppUser>>(),
-                    provider.GetRequiredService<IRepository<Admin>>(),
-                    provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<TechCompany>>(),
-                    provider.GetRequiredService<IRepository<DeliveryPerson>>(),
-                    provider.GetRequiredService<IRepository<Cart>>(),
-                    provider.GetRequiredService<IRepository<TechpertsSolutions.Core.Entities.WishList>>(),
-                    provider.GetRequiredService<TechpertsContext>(),
-                    provider.GetRequiredService<ICustomerService>()
-                );
-            });
-            builder.Services.AddScoped<ICartService>(provider =>
-            {
-                return new CartService(
-                    provider.GetRequiredService<IRepository<Cart>>(),
-                    provider.GetRequiredService<IRepository<CartItem>>(),
-                    provider.GetRequiredService<IRepository<Product>>(),
-                    provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<Order>>(),
-                    provider.GetRequiredService<IRepository<OrderItem>>(),
-                    provider.GetRequiredService<TechpertsContext>()
-                );
-            });
-            builder.Services.AddScoped<IProductService>(provider =>
-            {
-                return new ProductService(
-                    provider.GetRequiredService<IRepository<Product>>(),
-                    provider.GetRequiredService<IRepository<Specification>>(),
-                    provider.GetRequiredService<IRepository<Warranty>>(),
-                    provider.GetRequiredService<IRepository<Category>>(),
-                    provider.GetRequiredService<IRepository<SubCategory>>(),
-                    provider.GetRequiredService<IRepository<TechCompany>>(),
-                    provider.GetRequiredService<IFileService>(),
-                    provider.GetRequiredService<INotificationService>()
-                );
-            });
-            builder.Services.AddScoped<IDeliveryService, DeliveryService>();
-            builder.Services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
-            builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
-            builder.Services.AddScoped<ISubCategoryService, SubCategoryService>();
-            builder.Services.AddScoped<ISpecificationService, SpecificationService>();
-            builder.Services.AddScoped<IOrderService, OrderService>();
-            builder.Services.AddScoped<IOrderHistoryService, OrderHistoryService>();
-            builder.Services.AddScoped<IPCAssemblyService>(provider =>
-            {
-                return new PCAssemblyService(
-                    provider.GetRequiredService<IRepository<PCAssembly>>(),
-                    provider.GetRequiredService<IRepository<PCAssemblyItem>>(),
-                    provider.GetRequiredService<IRepository<Product>>(),
-                    provider.GetRequiredService<IRepository<Customer>>(),
-                    provider.GetRequiredService<IRepository<ServiceUsage>>(),
-                    provider.GetRequiredService<INotificationService>()
-                );
-            });
-            builder.Services.AddScoped<IServiceUsageService, ServiceUsageService>();
-            builder.Services.AddScoped<ICustomerService, CustomerService>();
-            builder.Services.AddScoped<ITechCompanyService, TechCompanyService>();
-            builder.Services.AddScoped<IWarrantyService, WarrantyService>();
-            builder.Services.AddScoped<IWishListService, WishListService>();
-            builder.Services.AddScoped<IFileService, FileService>();
-            
-            // Register new services
-            builder.Services.AddScoped<IUserManagementService, UserManagementService>();
-            builder.Services.AddScoped<IAdminUserManagementService, AdminUserManagementService>();
-            builder.Services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
-            builder.Services.AddScoped<INotificationService, NotificationService>();
-            builder.Services.AddScoped<INotificationHub, NotificationHubService>();
-            
-            // Register new commission and location services
-            builder.Services.AddScoped<ICommissionService, CommissionService>();
-            builder.Services.AddScoped<ILocationService, LocationService>();
+            //add scope for DI
+            builder.Services.AddApplicationServices();
 
-
-
-            
             builder.Services.AddDbContext<TechpertsContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
                 b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));

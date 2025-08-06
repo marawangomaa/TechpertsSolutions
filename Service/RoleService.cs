@@ -4,13 +4,12 @@ using Core.Interfaces.Services;
 using Core.Utilities;
 using Service.Utilities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs;
-using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data;
 
@@ -25,9 +24,10 @@ namespace Service
         private readonly IRepository<TechCompany> techCompanyRepo;
         private readonly IRepository<DeliveryPerson> deliveryPersonRepo;
         private readonly IRepository<Cart> cartRepo;
-        private readonly IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo;
+        private readonly IRepository<WishList> wishListRepo;
         private readonly TechpertsContext context;
         private readonly ICustomerService customerService;
+        private readonly ITechCompanyService techCompanyService;
 
         public RoleService(
             RoleManager<AppRole> roleManager,
@@ -37,9 +37,10 @@ namespace Service
             IRepository<TechCompany> techCompanyRepo,
             IRepository<DeliveryPerson> deliveryPersonRepo,
             IRepository<Cart> cartRepo,
-            IRepository<TechpertsSolutions.Core.Entities.WishList> wishListRepo,
+            IRepository<WishList> wishListRepo,
             TechpertsContext context,
-            ICustomerService customerService)
+            ICustomerService customerService,
+            ITechCompanyService techCompanyService)
         {
             this.roleManager = roleManager;
             this.userManager = userManager;
@@ -51,6 +52,7 @@ namespace Service
             this.wishListRepo = wishListRepo;
             this.context = context;
             this.customerService = customerService;
+            this.techCompanyService = techCompanyService;
         }
 
         public async Task<GeneralResponse<bool>> CheckRoleAsync(string roleName)
@@ -91,17 +93,7 @@ namespace Service
                         Data = $"{roleName} not found"
                     };
 
-                if (roleName == RoleType.Customer)
-                {
-                    await AddDomainEntityAsync(roleName, user.Id, role.Id);
-                    await context.SaveChangesAsync();
-                }
-                else
-                {
-                    await AddDomainEntityAsync(roleName, user.Id, role.Id);
-                }
-
-                await context.SaveChangesAsync();
+                await AddDomainEntityAsync(roleName, user.Id, role.Id);
                 await transaction.CommitAsync();
 
                 return new GeneralResponse<object>
@@ -158,7 +150,6 @@ namespace Service
             }
 
             await RemoveDomainEntityAsync(roleName, user.Id);
-            await context.SaveChangesAsync();
 
             return new GeneralResponse<string>
             {
@@ -185,14 +176,12 @@ namespace Service
                         await customerRepo.AddAsync(newCustomer);
                         await context.SaveChangesAsync();
 
-                        
                         var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == userId);
 
                         var newCart = new Cart { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
                         await cartRepo.AddAsync(newCart);
 
-                        
-                        var newWishList = new TechpertsSolutions.Core.Entities.WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
+                        var newWishList = new WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
                         await wishListRepo.AddAsync(newWishList);
                         await wishListRepo.SaveChangesAsync();
                     }
@@ -226,21 +215,21 @@ namespace Service
                         await customerService.CleanupCustomerDataAsync(userId);
                         break;
 
+                    case RoleType.TechCompany:
+                        await techCompanyService.CleanupTechCompanyDataAsync(userId);
+                        break;
+
                     case RoleType.Admin:
-                        var admin = (await adminRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        var admin = await adminRepo.GetFirstOrDefaultAsync(a => a.UserId == userId);
                         if (admin != null) adminRepo.Remove(admin);
                         break;
 
-                    case RoleType.TechCompany:
-                        var tc = (await techCompanyRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
-                        if (tc != null) techCompanyRepo.Remove(tc);
-                        break;
-
                     case RoleType.DeliveryPerson:
-                        var dp = (await deliveryPersonRepo.GetAllAsync()).FirstOrDefault(x => x.UserId == userId);
+                        var dp = await deliveryPersonRepo.GetFirstOrDefaultAsync(x => x.UserId == userId);
                         if (dp != null) deliveryPersonRepo.Remove(dp);
                         break;
                 }
+
                 await context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }

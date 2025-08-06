@@ -1,7 +1,10 @@
+using Core.DTOs;
 using Core.DTOs.TechCompanyDTOs;
 using Core.Interfaces.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -19,6 +22,16 @@ namespace TechpertsSolutions.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TechCompanyCreateDTO dto)
         {
+            if (dto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Request body cannot be null.",
+                    Data = null
+                });
+            }
+
             var result = await _service.CreateAsync(dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
@@ -26,6 +39,9 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
+            if (IsInvalidGuid(id, out var errorResponse))
+                return BadRequest(errorResponse);
+
             var result = await _service.GetByIdAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
         }
@@ -40,15 +56,38 @@ namespace TechpertsSolutions.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] TechCompanyUpdateDTO dto)
         {
+            if (IsInvalidGuid(id, out var errorResponse))
+                return BadRequest(errorResponse);
+
+            if (dto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Request body cannot be null.",
+                    Data = null
+                });
+            }
+
             var result = await _service.UpdateAsync(id, dto);
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        // Helper to validate GUID
+        private bool IsInvalidGuid(string id, out GeneralResponse<string> errorResponse)
         {
-            var result = await _service.DeleteAsync(id);
-            return result.Success ? Ok(result) : NotFound(result);
+            errorResponse = null;
+            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            {
+                errorResponse = new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid or missing ID. Expected GUID format.",
+                    Data = id
+                };
+                return true;
+            }
+            return false;
         }
     }
 }

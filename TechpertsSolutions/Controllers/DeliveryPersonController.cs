@@ -1,9 +1,10 @@
+using Core.DTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 using TechpertsSolutions.Core.DTOs;
-using Microsoft.AspNetCore.Authorization;
-using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -21,6 +22,16 @@ namespace TechpertsSolutions.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] DeliveryPersonCreateDTO dto)
         {
+            if (dto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Request body cannot be null.",
+                    Data = null
+                });
+            }
+
             var result = await _deliveryPersonService.CreateAsync(dto);
             return result.Success ? Ok(result) : BadRequest(result);
         }
@@ -28,15 +39,8 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
-                });
-            }
+            if (IsInvalidGuid(id, out var errorResponse))
+                return BadRequest(errorResponse);
 
             var result = await _deliveryPersonService.GetByIdAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
@@ -49,6 +53,7 @@ namespace TechpertsSolutions.Controllers
             return Ok(result);
         }
 
+        
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailable()
         {
@@ -56,16 +61,20 @@ namespace TechpertsSolutions.Controllers
             return Ok(result);
         }
 
+       
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] DeliveryPersonUpdateDTO dto)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            if (IsInvalidGuid(id, out var errorResponse))
+                return BadRequest(errorResponse);
+
+            if (dto == null)
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
+                    Message = "Request body cannot be null.",
+                    Data = null
                 });
             }
 
@@ -73,21 +82,20 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        private bool IsInvalidGuid(string id, out GeneralResponse<string> errorResponse)
         {
+            errorResponse = null;
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
-                return BadRequest(new GeneralResponse<string>
+                errorResponse = new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Invalid or missing ID",
+                    Message = "Invalid or missing ID. Expected GUID format.",
                     Data = id
-                });
+                };
+                return true;
             }
-
-            var result = await _deliveryPersonService.DeleteAsync(id);
-            return result.Success ? Ok(result) : NotFound(result);
+            return false;
         }
     }
-} 
+}
