@@ -507,7 +507,7 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, List<string> subCategoryIds)
+        public async Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, AssignSubCategoriesDTO assignDto)
         {
             try
             {
@@ -522,7 +522,7 @@ namespace Service
                     };
                 }
 
-                foreach (var subCategoryId in subCategoryIds)
+                foreach (var subCategoryId in assignDto.SubCategoryIds)
                 {
                     var exists = await _categorySubCategoryRepository.AnyAsync(cs =>
                         cs.CategoryId == categoryId && cs.SubCategoryId == subCategoryId);

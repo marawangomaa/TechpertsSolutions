@@ -201,7 +201,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(GeneralResponse<object>))]
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(GeneralResponse<object>))]
-        public async Task<IActionResult> AssignMultipleSubCategories(string categoryId, [FromBody] List<string> subCategoryIds)
+        public async Task<IActionResult> AssignMultipleSubCategories(string categoryId, [FromBody] AssignSubCategoriesDTO assignDTO)
         {
             if (!ModelState.IsValid)
             {
@@ -214,7 +214,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _categoryService.AssignMultipleSubCategoriesToCategoryAsync(categoryId, subCategoryIds);
+            var response = await _categoryService.AssignMultipleSubCategoriesToCategoryAsync(categoryId, assignDTO);
             if (!response.Success)
             {
                 return BadRequest(response);

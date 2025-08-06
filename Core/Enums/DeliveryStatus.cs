@@ -10,7 +10,7 @@ namespace Core.Enums
         [StringValue("Assigned")]
         Assigned = 1,
         
-        [StringValue("Picked Up")]
+        [StringValue("PickedUp")]
         PickedUp = 2,
         
         [StringValue("Delivered")]

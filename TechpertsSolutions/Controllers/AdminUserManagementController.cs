@@ -104,8 +104,8 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{id}/role")]
-        public async Task<IActionResult> ChangeUserRole(string id, [FromBody] RoleType role)
+        [HttpPut("{id}/roles")]
+        public async Task<IActionResult> ChangeUserRoles(string id, [FromForm] UserRolesUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
             {
@@ -117,11 +117,25 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _adminUserManagementService.ChangeUserRoleAsync(id, role.GetStringValue());
+            if (dto == null || dto.Roles == null || !dto.Roles.Any())
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "No roles provided.",
+                    Data = null
+                });
+            }
+
+            // Convert enums to string values
+            var roleStrings = dto.Roles.Select(r => r.GetStringValue()).ToList();
+
+            var response = await _adminUserManagementService.ChangeUserRolesAsync(id, roleStrings);
             if (!response.Success)
             {
                 return BadRequest(response);
             }
+
             return Ok(response);
         }
 

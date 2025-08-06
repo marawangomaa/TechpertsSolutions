@@ -14,7 +14,7 @@ namespace Core.DTOs.AdminDTOs
         public string? Country { get; set; }
         public string? ProfilePhotoUrl { get; set; }
         public bool IsActive { get; set; }
-        public string Role { get; set; }
+        public List<string> Roles { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 

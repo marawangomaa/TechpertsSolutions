@@ -22,6 +22,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<ImageUploadResponseDTO>> UploadCategoryImageAsync(IFormFile imageFile, string categoryId);
         Task<GeneralResponse<bool>> DeleteCategoryImageAsync(string categoryId);
         Task<GeneralResponse<object>> AssignSubCategoryToCategoryAsync(string categoryId, AssignSubCategoryDTO assignDto);
-        Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, List<string> subCategoryIds);
+        Task<GeneralResponse<object>> AssignMultipleSubCategoriesToCategoryAsync(string categoryId, AssignSubCategoriesDTO assignDto);
     }
 }

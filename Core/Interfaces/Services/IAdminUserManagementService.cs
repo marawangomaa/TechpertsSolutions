@@ -11,7 +11,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<UserListDTO>> GetUserByIdAsync(string userId);
         Task<GeneralResponse<string>> DeactivateUserAsync(string userId);
         Task<GeneralResponse<string>> ActivateUserAsync(string userId);
-        Task<GeneralResponse<string>> ChangeUserRoleAsync(string userId, string newRole);
+        Task<GeneralResponse<List<string>>> ChangeUserRolesAsync(string userId, List<string> newRoles);
         Task<GeneralResponse<object>> GetUserStatisticsAsync();
     }
 } 

@@ -768,52 +768,173 @@ namespace Service
         {
             var candidateSpecs = candidate.Specifications.ToDictionary(s => s.Key, s => s.Value);
 
-            if (targetCategory == "Motherboard")
-            {
-                var selectedCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
-                if (selectedCpu != null)
-                {
-                    var cpuSocket = selectedCpu.Specifications.FirstOrDefault(s => s.Key == "SocketType")?.Value;
-                    var mbSocket = candidateSpecs.TryGetValue("SocketType", out var value) ? value : null;
-                    if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
-                        return false;
-                }
+            string GetSpec(Product p, string key) => p.Specifications.FirstOrDefault(s => s.Key == key)?.Value;
 
-                var selectedRam = selectedItems.FirstOrDefault(p => p.Category.Name == "RAM");
-                if (selectedRam != null)
-                {
-                    var ramType = selectedRam.Specifications.FirstOrDefault(s => s.Key == "RAMType")?.Value;
-                    var mbSupportedRam = candidateSpecs.TryGetValue("SupportedRAM", out var value) ? value : null;
-                    if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Contains(ramType))
+            switch (targetCategory)
+            {
+                case "Motherboard":
+                    var selectedCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
+                    if (selectedCpu != null)
+                    {
+                        var cpuSocket = GetSpec(selectedCpu, "SocketType");
+                        var mbSocket = candidateSpecs.GetValueOrDefault("SocketType");
+                        if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
+                            return false;
+                    }
+
+                    var selectedRam = selectedItems.FirstOrDefault(p => p.Category.Name == "RAM");
+                    if (selectedRam != null)
+                    {
+                        var ramType = GetSpec(selectedRam, "RAMType");
+                        var mbSupportedRam = candidateSpecs.GetValueOrDefault("SupportedRAM");
+                        if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Split(',').Contains(ramType))
+                            return false;
+                    }
+
+                    var selectedCase = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    if (selectedCase != null)
+                    {
+                        var mbFormFactor = candidateSpecs.GetValueOrDefault("FormFactor");
+                        var caseSupportedFormFactors = GetSpec(selectedCase, "SupportedFormFactors");
+                        if (mbFormFactor == null || caseSupportedFormFactors == null || !caseSupportedFormFactors.Split(',').Contains(mbFormFactor))
+                            return false;
+                    }
+                    break;
+
+                case "Processor":
+                    var mbForCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    if (mbForCpu != null)
+                    {
+                        var mbSocket = GetSpec(mbForCpu, "SocketType");
+                        var cpuSocket = candidateSpecs.GetValueOrDefault("SocketType");
+                        if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
+                            return false;
+                    }
+                    break;
+
+                case "RAM":
+                    var mbForRam = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    if (mbForRam != null)
+                    {
+                        var supportedRam = GetSpec(mbForRam, "SupportedRAM");
+                        var ramType = candidateSpecs.GetValueOrDefault("RAMType");
+                        if (ramType == null || supportedRam == null || !supportedRam.Split(',').Contains(ramType))
+                            return false;
+
+                        var ramSlots = int.Parse(GetSpec(mbForRam, "RAMSlots") ?? "0");
+                        var selectedRamCount = selectedItems.Count(p => p.Category.Name == "RAM");
+                        if (selectedRamCount >= ramSlots)
+                            return false;
+                    }
+                    break;
+
+                case "GraphicsCard":
+                    var mbForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    if (mbForGpu != null)
+                    {
+                        var mbPcieVersion = GetSpec(mbForGpu, "PCIeVersion");
+                        var gpuPcieVersion = candidateSpecs.GetValueOrDefault("PCIeVersion");
+                        if (gpuPcieVersion == null || mbPcieVersion == null)
+                            return false;
+                    }
+
+                    var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    if (caseForGpu != null)
+                    {
+                        var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
+                        var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
+                        if (gpuLength > caseGpuLength)
+                            return false;
+                    }
+                    break;
+
+                case "Storage":
+                    var mbForStorage = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    if (mbForStorage != null)
+                    {
+                        var mbStorageInterfaces = GetSpec(mbForStorage, "StorageInterfaces");
+                        var storageInterface = candidateSpecs.GetValueOrDefault("Interface");
+                        if (storageInterface == null || mbStorageInterfaces == null || !mbStorageInterfaces.Split(',').Contains(storageInterface))
+                            return false;
+                    }
+                    break;
+
+                case "PowerSupply":
+                    var totalPowerDraw = selectedItems.Sum(p =>
+                        int.TryParse(GetSpec(p, "PowerDraw"), out var draw) ? draw : 0
+                    );
+                    var psuWattage = int.TryParse(candidateSpecs.GetValueOrDefault("Wattage"), out var watt) ? watt : 0;
+                    if (psuWattage < totalPowerDraw * 1.2) // 20% buffer
                         return false;
-                }
+                    break;
+
+                case "Case":
+                    var mbInCase = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    if (mbInCase != null)
+                    {
+                        var mbForm = GetSpec(mbInCase, "FormFactor");
+                        var caseSupportedForms = candidateSpecs.GetValueOrDefault("SupportedFormFactors");
+                        if (mbForm == null || caseSupportedForms == null || !caseSupportedForms.Split(',').Contains(mbForm))
+                            return false;
+                    }
+
+                    var gpuInCase = selectedItems.FirstOrDefault(p => p.Category.Name == "GraphicsCard");
+                    if (gpuInCase != null)
+                    {
+                        var caseGpuLength = int.Parse(candidateSpecs.GetValueOrDefault("MaxGPULength") ?? "0");
+                        var gpuLength = int.Parse(GetSpec(gpuInCase, "Length") ?? "0");
+                        if (gpuLength > caseGpuLength)
+                            return false;
+                    }
+                    break;
+
+                case "CPUCooler":
+                    var cpuForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
+                    if (cpuForCooler != null)
+                    {
+                        var cpuSocket = GetSpec(cpuForCooler, "SocketType");
+                        var coolerSupportedSockets = candidateSpecs.GetValueOrDefault("SupportedSockets");
+                        if (cpuSocket == null || coolerSupportedSockets == null || !coolerSupportedSockets.Split(',').Contains(cpuSocket))
+                            return false;
+                    }
+
+                    var caseForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    if (caseForCooler != null)
+                    {
+                        var maxCoolerHeight = int.Parse(GetSpec(caseForCooler, "MaxCoolerHeight") ?? "0");
+                        var coolerHeight = int.Parse(candidateSpecs.GetValueOrDefault("Height") ?? "0");
+                        if (coolerHeight > maxCoolerHeight)
+                            return false;
+                    }
+                    break;
+
+                case "CaseCooler":
+                    var caseForFan = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    if (caseForFan != null)
+                    {
+                        var supportedFanSizes = GetSpec(caseForFan, "SupportedFanSizes");
+                        var fanSize = candidateSpecs.GetValueOrDefault("Size");
+                        if (fanSize == null || supportedFanSizes == null || !supportedFanSizes.Split(',').Contains(fanSize))
+                            return false;
+                    }
+                    break;
+
+                case "Monitor":
+                    var gpuForMonitor = selectedItems.FirstOrDefault(p => p.Category.Name == "GraphicsCard");
+                    if (gpuForMonitor != null)
+                    {
+                        var gpuPorts = GetSpec(gpuForMonitor, "DisplayOutputs");
+                        var monitorInput = candidateSpecs.GetValueOrDefault("InputType");
+                        if (gpuPorts == null || monitorInput == null || !gpuPorts.Split(',').Contains(monitorInput))
+                            return false;
+                    }
+                    break;
+
+                case "Accessories":
+                    return true; // Optional, no strict compatibility
             }
 
-            if (targetCategory == "Processor")
-            {
-                var selectedMb = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
-                if (selectedMb != null)
-                {
-                    var mbSocket = selectedMb.Specifications.FirstOrDefault(s => s.Key == "SocketType")?.Value;
-                    var cpuSocket = candidateSpecs.TryGetValue("SocketType", out var value) ? value : null;
-                    if (cpuSocket == null || mbSocket == null || cpuSocket != mbSocket)
-                        return false;
-                }
-            }
-
-            if (targetCategory == "RAM")
-            {
-                var selectedMb = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
-                if (selectedMb != null)
-                {
-                    var mbSupportedRam = selectedMb.Specifications.FirstOrDefault(s => s.Key == "SupportedRAM")?.Value;
-                    var ramType = candidateSpecs.TryGetValue("RAMType", out var value) ? value : null;
-                    if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Contains(ramType))
-                        return false;
-                }
-            }
-
-            return true;
+            return true; // If all checks pass
         }
 
         // Compatibility score calculation

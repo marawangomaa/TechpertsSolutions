@@ -81,7 +81,7 @@ namespace Service
                         Country = user.Country,
                         ProfilePhotoUrl = user.ProfilePhotoUrl,
                         IsActive = user.IsActive,
-                        Role = roles.FirstOrDefault() ?? "No Role",
+                        Roles = roles.Any() ? roles.ToList() : new List<string> { "No Role" },
                         CreatedAt = user.CreatedAt
                     };
                     userDtos.Add(userDto);
@@ -139,7 +139,7 @@ namespace Service
                     Country = user.Country,
                     ProfilePhotoUrl = user.ProfilePhotoUrl,
                     IsActive = user.IsActive,
-                    Role = roles.FirstOrDefault() ?? "No Role",
+                    Roles = roles.Any() ? roles.ToList() : new List<string> { "No Role" },
                     CreatedAt = user.CreatedAt
                 };
 
@@ -251,27 +251,29 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<string>> ChangeUserRoleAsync(string userId, string newRole)
+        public async Task<GeneralResponse<List<string>>> ChangeUserRolesAsync(string userId, List<string> newRoles)
         {
             try
             {
                 var user = await _userManager.FindByIdAsync(userId);
                 if (user == null)
                 {
-                    return new GeneralResponse<string>
+                    return new GeneralResponse<List<string>>
                     {
                         Success = false,
                         Message = "User not found."
                     };
                 }
 
-                // Check if role exists
-                if (!await _roleManager.RoleExistsAsync(newRole))
+                // Validate roles
+                var invalidRoles = newRoles.Where(role => !_roleManager.RoleExistsAsync(role).Result).ToList();
+                if (invalidRoles.Any())
                 {
-                    return new GeneralResponse<string>
+                    return new GeneralResponse<List<string>>
                     {
                         Success = false,
-                        Message = "Role does not exist."
+                        Message = "Some roles do not exist.",
+                        Data = invalidRoles
                     };
                 }
 
@@ -284,41 +286,41 @@ namespace Service
                     var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
                     if (!removeResult.Succeeded)
                     {
-                        return new GeneralResponse<string>
+                        return new GeneralResponse<List<string>>
                         {
                             Success = false,
                             Message = "Failed to remove current roles.",
-                            Data = string.Join(", ", removeResult.Errors.Select(e => e.Description))
+                            Data = currentRoles.ToList()
                         };
                     }
                 }
 
-                // Add new role
-                var addResult = await _userManager.AddToRoleAsync(user, newRole);
+                // Add new roles
+                var addResult = await _userManager.AddToRolesAsync(user, newRoles);
                 if (!addResult.Succeeded)
                 {
-                    return new GeneralResponse<string>
+                    return new GeneralResponse<List<string>>
                     {
                         Success = false,
-                        Message = "Failed to add new role.",
-                        Data = string.Join(", ", addResult.Errors.Select(e => e.Description))
+                        Message = "Failed to assign new roles.",
+                        Data = newRoles
                     };
                 }
 
-                return new GeneralResponse<string>
+                return new GeneralResponse<List<string>>
                 {
                     Success = true,
-                    Message = "User role changed successfully.",
-                    Data = newRole
+                    Message = "User roles updated successfully.",
+                    Data = newRoles
                 };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<string>
+                return new GeneralResponse<List<string>>
                 {
                     Success = false,
-                    Message = "An error occurred while changing user role.",
-                    Data = ex.Message
+                    Message = "An error occurred while updating roles.",
+                    Data = new List<string> { ex.Message }
                 };
             }
         }
