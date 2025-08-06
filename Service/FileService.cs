@@ -4,6 +4,9 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Identity;
+using TechpertsSolutions.Core.Entities;
+using Core.Interfaces;
 
 namespace Service
 {
@@ -12,12 +15,21 @@ namespace Service
         private readonly IHostEnvironment _environment;
         private readonly IConfiguration _configuration;
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        private readonly long _maxFileSize = 5 * 1024 * 1024; 
+        private readonly long _maxFileSize = 5 * 1024 * 1024;
+        private readonly UserManager<AppUser> userManager;
+        private readonly IRepository<Product> productRepo;
+        private readonly IRepository<Category> categoryRepo;
+        private readonly IRepository<SubCategory> subCategoryRepo;
 
-        public FileService(IHostEnvironment environment, IConfiguration configuration)
+        public FileService(IHostEnvironment environment, IConfiguration configuration, UserManager<AppUser> _userManager,
+            IRepository<Product> _productRepo, IRepository<Category> _categoryRepo, IRepository<SubCategory> _subCategoryRepo)
         {
             _environment = environment;
             _configuration = configuration;
+            userManager = _userManager;
+            productRepo = _productRepo;
+            categoryRepo = _categoryRepo;
+            subCategoryRepo = _subCategoryRepo;
         }
 
         public async Task<string> UploadImageAsync(IFormFile file, string controllerName)
@@ -58,14 +70,54 @@ namespace Service
                 return false;
 
             var fullPath = Path.Combine(_environment.ContentRootPath, "wwwroot", imagePath);
-            
-            if (File.Exists(fullPath))
+
+            if (!File.Exists(fullPath))
+                return false;
+
+            File.Delete(fullPath);
+
+            // === Clean up image path from related entities ===
+
+            // Products
+            var productsWithImage = await productRepo.FindAsync(p => p.ImageUrl == imagePath);
+            foreach (var product in productsWithImage)
             {
-                File.Delete(fullPath);
-                return true;
+                product.ImageUrl = null;
+                productRepo.Update(product);
             }
 
-            return false;
+            // Categories
+            var categoriesWithImage = await categoryRepo.FindAsync(c => c.Image == imagePath);
+            foreach (var category in categoriesWithImage)
+            {
+                category.Image = null;
+                categoryRepo.Update(category);
+            }
+
+            // SubCategories
+            var subCategoriesWithImage = await subCategoryRepo.FindAsync(sc => sc.Image == imagePath);
+            foreach (var subCategory in subCategoriesWithImage)
+            {
+                subCategory.Image = null;
+                subCategoryRepo.Update(subCategory);
+            }
+
+            // AppUsers
+            var usersWithImage = userManager.Users
+                .Where(u => u.ProfilePhotoUrl == imagePath)
+                .ToList();
+            foreach (var user in usersWithImage)
+            {
+                user.ProfilePhotoUrl = null;
+                await userManager.UpdateAsync(user); // Identity update method
+            }
+
+            // Save all repo changes
+            await productRepo.SaveChangesAsync();
+            await categoryRepo.SaveChangesAsync();
+            await subCategoryRepo.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<string> UpdateImageAsync(IFormFile newFile, string oldImagePath, string controllerName)

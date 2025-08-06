@@ -68,7 +68,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("upload-photo")]
         public async Task<IActionResult> UploadProfilePhoto([FromForm] UserProfilePhotoUploadDTO dto)
         {
-            var userId = User.FindFirst("uid")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new GeneralResponse<string>
