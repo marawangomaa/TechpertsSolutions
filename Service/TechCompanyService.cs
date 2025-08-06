@@ -25,34 +25,6 @@ namespace Service
             context = _context;
         }
 
-        public async Task<GeneralResponse<TechCompanyReadDTO>> CreateAsync(TechCompanyCreateDTO dto)
-        {
-            if (dto == null)
-            {
-                return new GeneralResponse<TechCompanyReadDTO>
-                {
-                    Success = false,
-                    Message = "TechCompany data cannot be null.",
-                    Data = null
-                };
-            }
-
-            var entity = TechCompanyMapper.ToEntity(dto);
-            await _techCompanyRepo.AddAsync(entity);
-            await _techCompanyRepo.SaveChangesAsync();
-
-            // Reload entity with includes
-            var fullEntity = await _techCompanyRepo.GetByIdWithIncludesAsync(entity.Id,
-                t => t.User, t => t.Role);
-
-            return new GeneralResponse<TechCompanyReadDTO>
-            {
-                Success = true,
-                Message = "TechCompany created successfully.",
-                Data = TechCompanyMapper.ToReadDTO(fullEntity)
-            };
-        }
-
         public async Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(id) || dto == null)

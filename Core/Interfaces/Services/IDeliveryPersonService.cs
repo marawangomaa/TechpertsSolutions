@@ -10,7 +10,6 @@ namespace Core.Interfaces.Services
 {
     public interface IDeliveryPersonService
     {
-        Task<GeneralResponse<DeliveryPersonReadDTO>> CreateAsync(DeliveryPersonCreateDTO dto);
         Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAllAsync();
         Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(string id, DeliveryPersonUpdateDTO dto);

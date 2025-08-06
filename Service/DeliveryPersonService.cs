@@ -16,33 +16,6 @@ namespace Service
             _deliveryPersonRepo = deliveryPersonRepo;
         }
 
-        public async Task<GeneralResponse<DeliveryPersonReadDTO>> CreateAsync(DeliveryPersonCreateDTO dto)
-        {
-            if (dto == null || string.IsNullOrWhiteSpace(dto.UserId) || string.IsNullOrWhiteSpace(dto.RoleId))
-            {
-                return new GeneralResponse<DeliveryPersonReadDTO>
-                {
-                    Success = false,
-                    Message = "Invalid delivery person data.",
-                    Data = null
-                };
-            }
-
-            var deliveryPerson = DeliveryPersonMapper.ToEntity(dto);
-            await _deliveryPersonRepo.AddAsync(deliveryPerson);
-            await _deliveryPersonRepo.SaveChangesAsync();
-
-            // Fetch with includes to return full DTO (with User and Role)
-            var savedEntity = await _deliveryPersonRepo.GetByIdWithIncludesAsync(deliveryPerson.Id, dp => dp.User, dp => dp.Role);
-
-            return new GeneralResponse<DeliveryPersonReadDTO>
-            {
-                Success = true,
-                Message = "Delivery person created successfully.",
-                Data = DeliveryPersonMapper.ToReadDTO(savedEntity)
-            };
-        }
-
         public async Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

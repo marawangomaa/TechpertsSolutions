@@ -10,7 +10,6 @@ namespace Core.Interfaces.Services
 {
     public interface ITechCompanyService
     {
-        Task<GeneralResponse<TechCompanyReadDTO>> CreateAsync(TechCompanyCreateDTO dto);
         Task<GeneralResponse<TechCompanyReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<TechCompanyReadDTO>>> GetAllAsync();
         Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto);

@@ -19,23 +19,6 @@ namespace TechpertsSolutions.Controllers
             _service = service;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TechCompanyCreateDTO dto)
-        {
-            if (dto == null)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Request body cannot be null.",
-                    Data = null
-                });
-            }
-
-            var result = await _service.CreateAsync(dto);
-            return result.Success ? Ok(result) : BadRequest(result);
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
