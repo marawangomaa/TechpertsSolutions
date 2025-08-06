@@ -24,7 +24,7 @@ namespace Repository.Data.Configurtaions
             builder.HasOne(oi => oi.Product)
                    .WithMany(p => p.OrderItems)
                    .HasForeignKey(oi => oi.ProductId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 }

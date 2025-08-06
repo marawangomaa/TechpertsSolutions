@@ -14,12 +14,10 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Product> builder)
         {
             base.Configure(builder);
-
-            // Foreign Keys with Restrict to avoid multiple cascade paths
             builder.HasOne(p => p.Category)
-                   .WithMany(c => c.Products)
-                   .HasForeignKey(p => p.CategoryId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.SubCategory)
                    .WithMany(sc => sc.Products)
@@ -29,18 +27,17 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(p => p.TechCompany)
                    .WithMany(tc => tc.Products)
                    .HasForeignKey(p => p.TechCompanyId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.Restrict); 
 
-            // FIX: Avoid multiple cascade paths — use Restrict or ClientCascade
             builder.HasMany(p => p.Specifications)
                    .WithOne(s => s.Product)
                    .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.Restrict); // <- changed from Cascade
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(p => p.Warranties)
                    .WithOne(w => w.Product)
                    .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.Restrict); // <- changed from Cascade
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

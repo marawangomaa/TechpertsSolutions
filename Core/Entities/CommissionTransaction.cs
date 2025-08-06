@@ -28,7 +28,7 @@ namespace TechpertsSolutions.Core.Entities
         public decimal VendorPayout { get; set; }
         public decimal PlatformFee { get; set; }
         
-        public string TechCompanyId { get; set; } = string.Empty;
+        public string? TechCompanyId { get; set; } = string.Empty;
         public TechCompany? TechCompany { get; set; }
         
         public string? DeliveryPersonId { get; set; }

@@ -298,7 +298,7 @@ namespace TechpertsSolutions.Controllers
             {
                 Categories = Enum.GetValues(typeof(ProductCategory))
                     .Cast<ProductCategory>()
-                    .Where(c => c != ProductCategory.None)
+                    .Where(c => c != ProductCategory.UnCategorized)
                     .Select(category => new 
                     { 
                         Value = category.ToString(), 
@@ -386,9 +386,10 @@ namespace TechpertsSolutions.Controllers
         {
             return serviceType switch
             {
-                ServiceType.PCBuild => "Custom PC building service",
+                ServiceType.PCAssembly => "Custom PC building service",
                 ServiceType.Maintenance => "Product maintenance and repair service",
                 ServiceType.Delivery => "Product delivery service",
+                ServiceType.ProductSale => "Product sales service",
                 _ => "Unknown service type"
             };
         }

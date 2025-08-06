@@ -26,7 +26,7 @@ namespace Repository.Data.Configurtaions
                    .WithMany(p => p.WishListItems)
                    .HasForeignKey(wli => wli.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.SetNull); 
         }
     }
 }

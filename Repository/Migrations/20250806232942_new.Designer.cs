@@ -12,8 +12,8 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    [Migration("20250806123012_role unassign fixB")]
-    partial class roleunassignfixB
+    [Migration("20250806232942_new")]
+    partial class @new
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -349,7 +349,6 @@ namespace Repository.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
@@ -660,7 +659,6 @@ namespace Repository.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TechCompanyId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -1005,7 +1003,6 @@ namespace Repository.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
@@ -1100,7 +1097,6 @@ namespace Repository.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
@@ -1430,7 +1426,6 @@ namespace Repository.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -1555,9 +1550,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
                         .WithMany("CartItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Cart");
 
@@ -1680,9 +1673,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
                         .WithMany()
-                        .HasForeignKey("TechCompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TechCompanyId");
 
                     b.Navigation("Delivery");
 
@@ -1821,9 +1812,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
                         .WithMany("OrderItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Order");
 
@@ -1865,9 +1854,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
                         .WithMany("PCAssemblyItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("PCAssembly");
 
@@ -1970,9 +1957,7 @@ namespace Repository.Migrations
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
                         .WithMany("WishListItems")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductId");
 
                     b.HasOne("TechpertsSolutions.Core.Entities.WishList", "WishList")
                         .WithMany("WishListItems")

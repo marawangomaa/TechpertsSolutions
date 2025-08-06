@@ -595,7 +595,7 @@ namespace Service
                 product.status = status;
 
                 // Update category if changed
-                if (category != ProductCategory.None)
+                if (category != ProductCategory.UnCategorized)
                 {
                     var categoryName = category.GetStringValue();
                     var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);

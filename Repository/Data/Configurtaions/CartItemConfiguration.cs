@@ -18,7 +18,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             builder.HasOne(ci => ci.Product)
                    .WithMany(p => p.CartItems)
                    .HasForeignKey(ci => ci.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.SetNull); 
 
             builder.HasOne(ci => ci.Cart)
                    .WithMany(c => c.CartItems)

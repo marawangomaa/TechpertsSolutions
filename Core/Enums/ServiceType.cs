@@ -15,8 +15,5 @@ namespace Core.Enums
         
         [StringValue("Delivery")]
         Delivery = 3,
-        
-        [StringValue("PCBuild")]
-        PCBuild = 4
     }
 }
