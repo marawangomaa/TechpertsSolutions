@@ -24,7 +24,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(string assemblyId);
         Task<GeneralResponse<PCBuildTotalDTO>> CalculateBuildTotalAsync(string assemblyId);
         Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetFilteredCompatibleComponentsAsync(string assemblyId, string targetCategoryName);
-        Task<GeneralResponse<CartReadDTO>> SaveBuildToCartAsync(string assemblyId, string customerId, decimal assemblyFee);
+        Task<GeneralResponse<bool>> SaveBuildToCartAsync(string assemblyId,string customerId,decimal assemblyFee,ICartService cartService);
         Task<GeneralResponse<PCBuildTableDTO>> GetPCBuildTableAsync(string assemblyId);
     }
 }

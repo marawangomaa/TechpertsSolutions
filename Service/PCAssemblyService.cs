@@ -564,31 +564,36 @@ namespace Service
             };
         }
 
-        public async Task<GeneralResponse<CartReadDTO>> SaveBuildToCartAsync(string assemblyId, string customerId, decimal assemblyFee)
+        public async Task<GeneralResponse<bool>> SaveBuildToCartAsync(
+                                                    string assemblyId,
+                                                    string customerId,
+                                                    decimal assemblyFee,
+                                                    ICartService cartService)
         {
             if (string.IsNullOrWhiteSpace(assemblyId) || string.IsNullOrWhiteSpace(customerId))
             {
-                return new GeneralResponse<CartReadDTO>
+                return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Assembly ID and Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = false
                 };
             }
 
             try
             {
                 // Get the assembly with all components
-                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                    a => a.Id == assemblyId,
                     "PCAssemblyItems,PCAssemblyItems.Product");
 
                 if (assembly == null)
                 {
-                    return new GeneralResponse<CartReadDTO>
+                    return new GeneralResponse<bool>
                     {
                         Success = false,
                         Message = "PC Assembly not found.",
-                        Data = null
+                        Data = false
                     };
                 }
 
@@ -604,38 +609,36 @@ namespace Service
                 _pcAssemblyRepo.Update(assembly);
                 await _pcAssemblyRepo.SaveChangesAsync();
 
-                // Create a special cart item for the PC build
-                var pcBuildItem = new CartItemDTO
+                // Add to cart using the cart service
+                var addResult = await cartService.AddItemAsync(customerId, new CartItemDTO
                 {
-                    ProductId = assemblyId, // Using assembly ID as product ID for PC builds
+                    ProductId = assembly.Id,  // Assuming you treat the PC Build like a product
                     Quantity = 1,
-                    UnitPrice = totalAmount,
-                    TotalPrice = totalAmount
-                };
-
-                // Add to cart (this would need to be implemented in cart service)
-                // For now, return success with the calculated total
-                return new GeneralResponse<CartReadDTO>
+                    UnitPrice = totalAmount
+                });
+                if (string.IsNullOrWhiteSpace(addResult))
+                {
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Failed to add PC Build to cart.",
+                        Data = false
+                    };
+                }
+                return new GeneralResponse<bool>
                 {
                     Success = true,
                     Message = "PC Build saved to cart successfully.",
-                    Data = new CartReadDTO
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        CustomerId = customerId,
-                        CreatedAt = DateTime.UtcNow,
-                        SubTotal = totalAmount,
-                        CartItems = new List<CartItemReadDTO>()
-                    }
+                    Data = true
                 };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return new GeneralResponse<CartReadDTO>
+                return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "Failed to save PC build to cart.",
-                    Data = null
+                    Message = "An error occurred while saving the PC build to cart.",
+                    Data = false
                 };
             }
         }
