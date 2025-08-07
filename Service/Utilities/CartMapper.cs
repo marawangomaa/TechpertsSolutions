@@ -1,8 +1,6 @@
-﻿
-using Core.DTOs.CartDTOs;
+﻿using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TechpertsSolutions.Core.Entities;
@@ -11,7 +9,6 @@ namespace Service.Utilities
 {
     public static class CartMapper
     {
-       
         public static CartReadDTO MapToCartReadDTO(Cart cart)
         {
             if (cart == null)
@@ -19,14 +16,13 @@ namespace Service.Utilities
                 return null;
             }
 
-            var cartItemsReadDTO = cart.CartItems != null
-                ? cart.CartItems.Where(item => item != null)
-                               .Select(MapToCartItemReadDTO)
-                               .Where(dto => dto != null)
-                               .ToList()
-                : new List<CartItemReadDTO>();
+            var cartItemsReadDTO = cart.CartItems?
+                                     .Where(item => item != null)
+                                     .Select(MapToCartItemReadDTO)
+                                     .Where(dto => dto != null)
+                                     .ToList()
+                                 ?? new List<CartItemReadDTO>();
 
-            
             decimal subTotal = cartItemsReadDTO.Sum(item => item.ItemTotal);
 
             return new CartReadDTO
@@ -35,7 +31,7 @@ namespace Service.Utilities
                 CustomerId = cart.CustomerId ?? string.Empty,
                 CreatedAt = cart.CreatedAt,
                 CartItems = cartItemsReadDTO,
-                SubTotal = subTotal 
+                SubTotal = subTotal
             };
         }
 
@@ -44,49 +40,37 @@ namespace Service.Utilities
             if (item == null)
                 return null;
 
-            bool isCustom = item.IsCustomBuild;
-
+            // This mapper assumes the CartService has already calculated the final prices
+            // and has passed a DTO with the correct values.
             return new CartItemReadDTO
             {
                 Id = item.Id ?? string.Empty,
-                ProductId = isCustom ? item.PcAssemblyId : item.ProductId,
-                ProductName = isCustom
-                    ? item.PCAssembly?.Name ?? "Custom PC Build"
-                    : item.Product?.Name ?? "Unknown Product",
-                Price = isCustom
-                    ? item.UnitPrice // Includes assembly fee
-                    : item.Product?.Price ?? 0,
+                ProductId = item.ProductId ?? string.Empty,
+                ProductName = item.Product?.Name ?? "Unknown Product",
+                UnitPrice = item.UnitPrice, // UnitPrice should be the final calculated price from the service
                 Quantity = item.Quantity,
-                ImageUrl = isCustom
-                    ? "/images/custom-build.png"
-                    : item.Product?.ImageUrl ?? string.Empty,
-                Stock = isCustom
-                    ? 1
-                    : item.Product?.Stock ?? 0,
-                IsCustomBuild = isCustom,
-
-                // ✅ New fields for custom builds
-                AssemblyFee = isCustom ? item.AssemblyFee : null,
-                ProductTotal = isCustom ? item.ProductTotal : null
+                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
+                Stock = item.Product?.Stock ?? 0,
+                // Assuming ItemTotal is a calculated property in CartItemReadDTO
+                ItemTotal = item.UnitPrice * item.Quantity
             };
         }
-
 
         public static CartItem MapToCartItemEntity(CartItemDTO dto)
         {
             return new CartItem
             {
                 ProductId = dto.ProductId,
-                Quantity = dto.Quantity 
-                
+                Quantity = dto.Quantity
             };
         }
+
         public static CartItemDTO MapToCartItemDTO(CartItem item)
         {
             return new CartItemDTO
             {
                 ProductId = item.ProductId,
-                Quantity = item.Quantity 
+                Quantity = item.Quantity
             };
         }
 
@@ -104,16 +88,15 @@ namespace Service.Utilities
                 OrderDate = order.OrderDate,
                 TotalAmount = order.TotalAmount,
                 Status = order.Status,
-                OrderItems = order.OrderItems != null
-                    ? order.OrderItems.Where(item => item != null)
-                                     .Select(MapToOrderItemReadDTO)
-                                     .Where(dto => dto != null)
-                                     .ToList()
-                    : new List<OrderItemReadDTO>()
+                OrderItems = order.OrderItems?
+                                .Where(item => item != null)
+                                .Select(MapToOrderItemReadDTO)
+                                .Where(dto => dto != null)
+                                .ToList()
+                            ?? new List<OrderItemReadDTO>()
             };
         }
 
-   
         public static OrderItemReadDTO MapToOrderItemReadDTO(OrderItem orderItem)
         {
             if (orderItem == null)
@@ -125,7 +108,7 @@ namespace Service.Utilities
             {
                 Id = orderItem.Id ?? string.Empty,
                 ProductId = orderItem.ProductId ?? string.Empty,
-                ProductName = orderItem.Product?.Name ?? "Unknown Product", 
+                ProductName = orderItem.Product?.Name ?? "Unknown Product",
                 Quantity = orderItem.Quantity,
                 UnitPrice = orderItem.UnitPrice,
                 ImageUrl = orderItem.Product?.ImageUrl ?? string.Empty,

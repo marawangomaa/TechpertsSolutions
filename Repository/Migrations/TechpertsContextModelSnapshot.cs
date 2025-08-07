@@ -339,9 +339,6 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("AssemblyFee")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("CartId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -351,17 +348,11 @@ namespace Repository.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<bool>("IsCustomBuild")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("PcAssemblyId")
+                    b.Property<string>("PCAssemblyId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal?>("ProductTotal")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -378,7 +369,7 @@ namespace Repository.Migrations
 
                     b.HasIndex("CartId");
 
-                    b.HasIndex("PcAssemblyId");
+                    b.HasIndex("PCAssemblyId");
 
                     b.HasIndex("ProductId");
 
@@ -1627,7 +1618,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
                         .WithMany()
-                        .HasForeignKey("PcAssemblyId")
+                        .HasForeignKey("PCAssemblyId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")

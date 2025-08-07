@@ -16,9 +16,10 @@ namespace Core.DTOs.CartDTOs
         public int Quantity { get; set; } 
         public string ImageUrl { get; set; } = string.Empty;
         public int Stock { get; set; } 
-        public decimal ItemTotal => Price * Quantity;
+        public decimal ItemTotal { get; set; }
         public bool IsCustomBuild { get; set; }
         public decimal? AssemblyFee { get; set; }
         public decimal? ProductTotal { get; set; }
+        public decimal UnitPrice { get; set; }
     }
 }

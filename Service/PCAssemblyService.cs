@@ -727,7 +727,7 @@ namespace Service
                     Components = components,
                     TotalCost = totalCost,
                     AssemblyFee = assembly.AssemblyFee ?? 0,
-                    GrandTotal = totalCost + (assembly.AssemblyFee ?? 0),
+                    GrandTotal = totalCost,
                     IsComplete = assembly.Status == PCAssemblyStatus.Completed
                 };
 
@@ -993,45 +993,30 @@ namespace Service
                     PcAssemblyId = assembly.Id,
                     ProductId = assemblyItem.ProductId,
                     Quantity = assemblyItem.Quantity,
-                    UnitPrice = assemblyItem.UnitPrice * 1.1m,
+                    // Price calculation is now handled inside AddItemPcAssemblyAsync, so it's removed here
                     ProductTotal = assemblyItem.Total,
                     IsCustomBuild = true,
                     AssemblyFee = assembly.AssemblyFee ?? 0
                 };
 
-                await cartService.AddItemPcAssemblyAsync(customerId, cartItemDto);
-            }
-
-            // Check if there is an assembly fee and add it to the cart
-            if (assembly.AssemblyFee.HasValue && assembly.AssemblyFee.Value > 0)
-            {
-                // This is a crucial assumption: you need a way to represent the assembly fee in the cart.
-                // A common approach is to have a dedicated "service" product in your database for this.
-                // Replace "YOUR_ASSEMBLY_FEE_PRODUCT_ID" with the actual ID of this service product.
-                var assemblyFeeProductId = "YOUR_ASSEMBLY_FEE_PRODUCT_ID";
-
-                // You might need a more specialized method on ICartService to handle fees
-                // instead of a regular product.
-                // For this example, we'll treat it as a special product.
-                var assemblyFeeDto = new CartItemDTO
+                var result = await cartService.AddItemPcAssemblyAsync(customerId, cartItemDto);
+                if (result.StartsWith("?"))
                 {
-                    ProductId = assemblyFeeProductId,
-                    Quantity = 1,
-                };
-
-                // Add the fee to the cart. The CartService's AddItemAsync should handle its price.
-                await cartService.AddItemAsync(customerId, assemblyFeeDto);
+                    return new GeneralResponse<bool> { Success = false, Message = result.Substring(2), Data = false };
+                }
             }
+
+            // The separate assembly fee logic has been removed from this method.
 
             // After moving to the cart, you might want to change the assembly's status.
-            assembly.Status = PCAssemblyStatus.Completed; // Or a new status like 'MovedToCart'
+            assembly.Status = PCAssemblyStatus.Completed;
             _pcAssemblyRepo.Update(assembly);
             await _pcAssemblyRepo.SaveChangesAsync();
 
             return new GeneralResponse<bool>
             {
                 Success = true,
-                Message = "PC Assembly and its fee have been moved to the cart.",
+                Message = "PC Assembly has been moved to the cart successfully.",
                 Data = true
             };
         }

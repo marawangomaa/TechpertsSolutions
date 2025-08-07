@@ -8,17 +8,25 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class CartItem : BaseEntity
     {
-        public string? ProductId { get; set; }
-        public string? PcAssemblyId { get; set; }  // Add this
-        public bool IsCustomBuild { get; set; }
-        public decimal UnitPrice { get; set; }
-        public Product Product { get; set; }
-        public decimal? ProductTotal { get; set; }
-        public decimal? AssemblyFee { get; set; }
-        public int Quantity { get; set; }
-        public string CartId { get; set; }
-        public Cart Cart { get; set; }
-        public PCAssembly? PCAssembly { get; set; }
+        // Foreign key to the Product
+        public string ProductId { get; set; }
 
+        // This is the correct foreign key to the PCAssembly
+        public string? PCAssemblyId { get; set; }
+
+        public int Quantity { get; set; }
+
+        // This will store the base price of the product
+        public decimal UnitPrice { get; set; }
+
+        // Foreign key to the Cart
+        public string CartId { get; set; }
+
+        // Navigation properties
+        public Product Product { get; set; }
+        public Cart Cart { get; set; }
+
+        // Navigation property to the PCAssembly
+        public PCAssembly? PCAssembly { get; set; }
     }
 }

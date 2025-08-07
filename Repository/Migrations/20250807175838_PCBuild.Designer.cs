@@ -12,8 +12,8 @@ using TechpertsSolutions.Repository.Data;
 namespace Repository.Migrations
 {
     [DbContext(typeof(TechpertsContext))]
-    [Migration("20250807105553_new")]
-    partial class @new
+    [Migration("20250807175838_PCBuild")]
+    partial class PCBuild
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -351,12 +351,17 @@ namespace Repository.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<string>("PCAssemblyId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("ProductId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -366,6 +371,8 @@ namespace Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CartId");
+
+                    b.HasIndex("PCAssemblyId");
 
                     b.HasIndex("ProductId");
 
@@ -1612,13 +1619,19 @@ namespace Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
+                        .WithMany()
+                        .HasForeignKey("PCAssemblyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
                         .WithMany("CartItems")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Cart");
+
+                    b.Navigation("PCAssembly");
 
                     b.Navigation("Product");
                 });

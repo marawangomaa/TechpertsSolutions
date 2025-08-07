@@ -52,13 +52,7 @@ namespace Service
 
         public async Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId)
         {
-            
-            if (string.IsNullOrWhiteSpace(customerId))
-            {
-                return null;
-            }
-
-            if (!Guid.TryParse(customerId, out _))
+            if (string.IsNullOrWhiteSpace(customerId) || !Guid.TryParse(customerId, out _))
             {
                 return null;
             }
@@ -66,35 +60,71 @@ namespace Service
             var customer = await customerRepo.GetByIdAsync(customerId);
             if (customer == null)
             {
-                return null; 
+                return null;
             }
 
-            // Optimized includes for cart with items and their products
+            // Include PCAssembly to access the AssemblyFee
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
-                includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany,CartItems.PCAssembly"
+                includeProperties: "CartItems,CartItems.Product,CartItems.PCAssembly"
             );
 
             if (cart == null)
             {
-                
                 cart = new Cart
                 {
                     CustomerId = customerId,
                     CreatedAt = DateTime.UtcNow,
                     CartItems = new List<CartItem>()
                 };
-
                 await cartRepo.AddAsync(cart);
                 await cartRepo.SaveChangesAsync();
             }
 
-            return CartMapper.MapToCartReadDTO(cart);
+            // --- New Logic: Calculate the prices before mapping ---
+            decimal cartTotal = 0;
+            var cartItemsToMap = new List<CartItemReadDTO>();
+            const decimal assemblyFeePercentage = 0.1m; // 10% fee
+
+            foreach (var item in cart.CartItems)
+            {
+                // Get the base unit price from the cart item
+                decimal basePrice = item.UnitPrice;
+                decimal finalUnitPrice = basePrice;
+
+                // If the item is part of a PC assembly, apply the fee
+                if (!string.IsNullOrEmpty(item.PCAssemblyId) && item.PCAssembly != null)
+                {
+                    finalUnitPrice = Math.Round(basePrice * (1 + assemblyFeePercentage), 2);
+                }
+
+                decimal itemTotalPrice = finalUnitPrice * item.Quantity;
+                cartTotal += itemTotalPrice;
+
+                cartItemsToMap.Add(new CartItemReadDTO
+                {
+                    Id = item.Id,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product?.Name ?? string.Empty,
+                    UnitPrice = finalUnitPrice,
+                    Quantity = item.Quantity,
+                    ImageUrl = item.Product?.ImageUrl,
+                    ProductTotal = itemTotalPrice
+                });
+            }
+
+            return new CartReadDTO
+            {
+                Id = cart.Id,
+                CustomerId = cart.CustomerId,
+                CartItems = cartItemsToMap,
+                SubTotal = cartTotal
+            };
         }
 
         public async Task<GeneralResponse<CartReadDTO>> GetOrCreateCartAsync(string customerId)
         {
-            
+            // --- 1. Validation for Customer ID ---
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<CartReadDTO>
@@ -117,49 +147,75 @@ namespace Service
 
             try
             {
-                var customer = await customerRepo.GetByIdAsync(customerId);
-                if (customer == null)
-                {
-                    return new GeneralResponse<CartReadDTO>
-                    {
-                        Success = false,
-                        Message = "Customer not found.",
-                        Data = null
-                    };
-                }
-
-                // Optimized includes for cart with items and their products
+                // --- 2. Fetch or Create Cart ---
+                // The query now includes 'PCAssembly' to access the assembly fee data.
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.CustomerId == customerId,
-                    includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany" 
+                    includeProperties: "CartItems,CartItems.Product,CartItems.PCAssembly"
                 );
 
                 if (cart == null)
                 {
-                    
                     cart = new Cart
                     {
                         CustomerId = customerId,
                         CreatedAt = DateTime.UtcNow,
                         CartItems = new List<CartItem>()
                     };
-
                     await cartRepo.AddAsync(cart);
                     await cartRepo.SaveChangesAsync();
-
-                    return new GeneralResponse<CartReadDTO>
-                    {
-                        Success = true,
-                        Message = "New cart created successfully.",
-                        Data = CartMapper.MapToCartReadDTO(cart)
-                    };
                 }
+
+                // --- 3. Dynamic Price Calculation ---
+                // This is the core logic. It iterates through cart items and applies the service fee if needed.
+                decimal cartTotal = 0;
+                var cartItemsToMap = new List<CartItemReadDTO>();
+
+                foreach (var item in cart.CartItems)
+                {
+                    // The base price is the UnitPrice stored in the CartItem, which should be the product's original price.
+                    decimal basePrice = item.UnitPrice;
+                    decimal finalUnitPrice = basePrice;
+
+                    // Check if the item is linked to a PCAssembly.
+                    // The 'PCAssemblyId' property is null for items from wishlists or product pages.
+                    if (!string.IsNullOrEmpty(item.PCAssemblyId) && item.PCAssembly != null)
+                    {
+                        // Retrieve the assembly fee percentage from the linked PCAssembly.
+                        // Assuming AssemblyFee is stored as a percentage (e.g., 0.1 for 10%).
+                        decimal assemblyFeePercentage = item.PCAssembly.AssemblyFee ?? 0;
+                        finalUnitPrice = Math.Round(basePrice * (1 + assemblyFeePercentage), 2);
+                    }
+
+                    decimal itemTotalPrice = finalUnitPrice * item.Quantity;
+                    cartTotal += itemTotalPrice;
+
+                    cartItemsToMap.Add(new CartItemReadDTO
+                    {
+                        Id = item.Id,
+                        ProductId = item.ProductId,
+                        ProductName = item.Product?.Name ?? string.Empty,
+                        UnitPrice = finalUnitPrice, // Use the calculated price here
+                        Quantity = item.Quantity,
+                        ImageUrl = item.Product?.ImageUrl,
+                        ProductTotal = itemTotalPrice
+                    });
+                }
+
+                // --- 4. Map to final DTO and Return Response ---
+                var cartReadDto = new CartReadDTO
+                {
+                    Id = cart.Id,
+                    CustomerId = cart.CustomerId,
+                    CartItems = cartItemsToMap,
+                    SubTotal = cartTotal
+                };
 
                 return new GeneralResponse<CartReadDTO>
                 {
                     Success = true,
                     Message = "Cart retrieved successfully.",
-                    Data = CartMapper.MapToCartReadDTO(cart)
+                    Data = cartReadDto
                 };
             }
             catch (Exception ex)
@@ -167,7 +223,7 @@ namespace Service
                 return new GeneralResponse<CartReadDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while retrieving the cart.",
+                    Message = $"An unexpected error occurred while retrieving the cart: {ex.Message}",
                     Data = null
                 };
             }
@@ -228,11 +284,10 @@ namespace Service
                 await cartRepo.SaveChangesAsync(); 
             }
 
-            var existingItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
+            var existingItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId && i.PCAssemblyId == null);
 
             if (existingItem != null)
             {
-                
                 int newQuantity = existingItem.Quantity + itemDto.Quantity;
                 if (product.Stock < newQuantity)
                     return $"? Cannot add {itemDto.Quantity} more. Total requested ({newQuantity}) exceeds available stock ({product.Stock}).";
@@ -244,12 +299,14 @@ namespace Service
             }
             else
             {
-                
+                // --- CORRECTED LOGIC: Store the product's base price and set PCAssemblyId to null ---
                 var newItem = new CartItem
                 {
                     ProductId = itemDto.ProductId,
                     CartId = cart.Id,
-                    Quantity = itemDto.Quantity
+                    Quantity = itemDto.Quantity,
+                    UnitPrice = product.Price, // Store the product's base price
+                    PCAssemblyId = null // This indicates a regular product
                 };
 
                 await cartItemRepo.AddAsync(newItem);
@@ -271,20 +328,17 @@ namespace Service
             if (itemDto.Quantity <= 0)
                 return "? Quantity must be greater than zero.";
 
-            // --- 2. Fetch PC Assembly Item data ---
             var pcAssemblyItem = await pcAssemblyItemRepo.GetFirstOrDefaultAsync(
-                i => i.PCAssemblyId == itemDto.PcAssemblyId && i.ProductId == itemDto.ProductId,
-                query => query.Include(i => i.Product)
-            );
+         i => i.PCAssemblyId == itemDto.PcAssemblyId && i.ProductId == itemDto.ProductId,
+         query => query.Include(i => i.Product)
+     );
 
             if (pcAssemblyItem == null || pcAssemblyItem.Product == null)
                 return $"? Product with ID {itemDto.ProductId} not found in PC Assembly with ID {itemDto.PcAssemblyId}.";
 
-            // Stock check
             if (pcAssemblyItem.Product.Stock < itemDto.Quantity)
                 return $"? Not enough stock for product '{pcAssemblyItem.Product.Name}'. Available: {pcAssemblyItem.Product.Stock}, Requested: {itemDto.Quantity}.";
 
-            // --- 3. Get or create the cart ---
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
                 query => query.Include(c => c.CartItems)
@@ -302,50 +356,30 @@ namespace Service
                 await cartRepo.SaveChangesAsync();
             }
 
-            // --- 4. Add or update the product item in the cart ---
-            var existingProductItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId);
+            // --- CORRECTED LOGIC: Find item by both ProductId AND PCAssemblyId ---
+            var existingItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == itemDto.ProductId && i.PCAssemblyId == itemDto.PcAssemblyId);
 
-            if (existingProductItem != null)
+            if (existingItem != null)
             {
-                existingProductItem.Quantity += itemDto.Quantity;
-                cartItemRepo.Update(existingProductItem);
+                existingItem.Quantity += itemDto.Quantity;
+                cartItemRepo.Update(existingItem);
             }
             else
             {
+                // --- CORRECTED LOGIC: Create a new cart item with the PC Assembly ID ---
                 var newProductItem = new CartItem
                 {
                     ProductId = itemDto.ProductId,
                     CartId = cart.Id,
                     Quantity = itemDto.Quantity,
-                    UnitPrice = pcAssemblyItem.UnitPrice, // Use the price from the PC Assembly item
+                    UnitPrice = pcAssemblyItem.UnitPrice,
+                    PCAssemblyId = itemDto.PcAssemblyId // The key identifier for a PC assembly item
                 };
                 await cartItemRepo.AddAsync(newProductItem);
             }
 
-            // --- 5. Add or update the assembly fee as a separate cart item ---
-            // Fetch the PC Assembly to get the fee.
-            var pcAssembly = await pcAssemblyRepo.GetByIdAsync(itemDto.PcAssemblyId);
-            if (pcAssembly != null && pcAssembly.AssemblyFee.HasValue && pcAssembly.AssemblyFee.Value > 0)
-            {
-                // You must have a dedicated product for the assembly fee in your database.
-                string AssemblyFeeProductId = itemDto.ProductId;
-                var existingFeeItem = cart.CartItems?.FirstOrDefault(i => i.ProductId == AssemblyFeeProductId);
-
-                if (existingFeeItem == null)
-                {
-                    var newFeeItem = new CartItem
-                    {
-                        ProductId = AssemblyFeeProductId,
-                        CartId = cart.Id,
-                        Quantity = 1,
-                        UnitPrice = pcAssembly.AssemblyFee.Value
-                    };
-                    await cartItemRepo.AddAsync(newFeeItem);
-                }
-            }
-
             await cartRepo.SaveChangesAsync();
-            return "✔ Product and assembly fee added successfully.";
+            return "✔ Product added successfully.";
         }
 
         public async Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto)
@@ -573,14 +607,14 @@ namespace Service
                 };
             }
 
-            
+
             using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
             {
-                
                 var cart = await cartRepo.GetFirstOrDefaultAsync(
                     c => c.CustomerId == customerId,
-                    includeProperties: "CartItems.Product,Customer"
+                    // Include PCAssembly to check for assembly fee and product price
+                    includeProperties: "CartItems.Product,CartItems.PCAssembly,Customer"
                 );
 
                 if (cart == null)
@@ -668,20 +702,30 @@ namespace Service
                 
                 foreach (var cartItem in itemsToCheckout)
                 {
+                    // --- CORRECTED LOGIC: Calculate final price before creating OrderItem ---
+                    decimal finalUnitPrice = cartItem.UnitPrice;
+                    if (!string.IsNullOrEmpty(cartItem.PCAssemblyId) && cartItem.PCAssembly != null)
+                    {
+                        // This logic is now consistent with GetOrCreateCartAsync
+                        decimal assemblyFeePercentage = cartItem.PCAssembly.AssemblyFee ?? 0;
+                        finalUnitPrice = Math.Round(finalUnitPrice * (1 + assemblyFeePercentage), 2);
+                    }
+
+                    decimal itemTotal = finalUnitPrice * cartItem.Quantity;
+
                     var orderItem = new OrderItem
                     {
                         Id = Guid.NewGuid().ToString(),
                         OrderId = newOrder.Id,
                         ProductId = cartItem.ProductId,
                         Quantity = cartItem.Quantity,
-                        UnitPrice = cartItem.Product.Price,
-                        ItemTotal = (int)(cartItem.Quantity * cartItem.Product.Price)
+                        UnitPrice = finalUnitPrice, // Use the calculated final price
+                        ItemTotal = itemTotal
                     };
 
                     newOrder.OrderItems.Add(orderItem);
-                    totalAmount += orderItem.ItemTotal;
+                    totalAmount += itemTotal;
 
-                    
                     cartItem.Product.Stock -= cartItem.Quantity;
                     productRepo.Update(cartItem.Product);
                 }
