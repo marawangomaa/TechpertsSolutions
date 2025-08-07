@@ -26,6 +26,17 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
                    .WithMany(c => c.CartItems)
                    .HasForeignKey(ci => ci.CartId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(ci => ci.ProductId)
+                    .IsRequired(false); //  Make it optional
+
+            builder.HasOne(ci => ci.PCAssembly)
+                   .WithMany()
+                   .HasForeignKey(ci => ci.PcAssemblyId)
+                   .OnDelete(DeleteBehavior.Restrict); // Or ClientSetNull
+
+            builder.Property(ci => ci.PcAssemblyId)
+                   .IsRequired(false); // Also optional
         }
     }
 }
