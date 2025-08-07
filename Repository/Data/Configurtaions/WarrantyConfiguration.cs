@@ -14,10 +14,11 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Warranty> builder)
         {
             base.Configure(builder);
+            // Deleting a Product will cascade to delete its warranties.
             builder.HasOne(w => w.Product)
                    .WithMany(p => p.Warranties)
                    .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

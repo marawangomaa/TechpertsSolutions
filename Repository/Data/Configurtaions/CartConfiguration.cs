@@ -16,15 +16,17 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Cart> builder)
         {
             base.Configure(builder);
+            // Deleting a Customer should cascade to delete their Cart.
             builder.HasOne(c => c.Customer)
                    .WithOne(ct => ct.Cart)
                    .HasForeignKey<Cart>(c => c.CustomerId)
                    .IsRequired()
                    .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasIndex(c => c.CustomerId)
-                   .IsUnique();
+            // A Customer can only have one Cart.
+            builder.HasIndex(c => c.CustomerId).IsUnique();
 
+            // Deleting a Cart should cascade to delete all its CartItems.
             builder.HasMany(c => c.CartItems)
                    .WithOne(ci => ci.Cart)
                    .HasForeignKey(ci => ci.CartId)

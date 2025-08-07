@@ -13,25 +13,25 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<CategorySubCategory> builder)
         {
-            // Configure as many-to-many relationship table
+            // Composite key for the join table.
             builder.HasKey(cs => new { cs.CategoryId, cs.SubCategoryId });
 
-            // Configure relationship with Category
+            // Deleting a Category will cascade to delete the join table entries.
             builder.HasOne(cs => cs.Category)
-                   .WithMany(c => c.SubCategories)
-                   .HasForeignKey(cs => cs.CategoryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(cs => cs.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure relationship with SubCategory
+            // Deleting a SubCategory will cascade to delete the join table entries.
             builder.HasOne(cs => cs.SubCategory)
-                   .WithMany(sc => sc.CategorySubCategories)
-                   .HasForeignKey(cs => cs.SubCategoryId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(sc => sc.CategorySubCategories)
+                .HasForeignKey(cs => cs.SubCategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure AssignedAt as required
+            // Default value for AssignedAt.
             builder.Property(cs => cs.AssignedAt)
-                   .IsRequired()
-                   .HasDefaultValueSql("GETUTCDATE()");
+                .IsRequired()
+                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 } 

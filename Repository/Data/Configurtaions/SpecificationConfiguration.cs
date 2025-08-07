@@ -12,10 +12,11 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Specification> builder)
         {
             base.Configure(builder);
+            // Deleting a Product will cascade to delete its Specifications.
             builder.HasOne(s => s.Product)
-                   .WithMany(p => p.Specifications)
-                   .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                .WithMany(p => p.Specifications)
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

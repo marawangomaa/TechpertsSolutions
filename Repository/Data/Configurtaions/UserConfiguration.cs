@@ -13,7 +13,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
     {
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
-
+            // Configuration for AppUser goes here. All relationships are configured on the dependent entities.
         }
     }
 }

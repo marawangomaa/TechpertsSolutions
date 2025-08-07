@@ -15,20 +15,22 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<ServiceUsage> builder)
         {
             base.Configure(builder);
+            // Deleting a Maintenance record will cascade to delete its associated ServiceUsages.
             builder.HasOne(su => su.Maintenance)
-                   .WithMany(m => m.ServiceUsages)
-                   .HasForeignKey(su => su.MaintenanceId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                .WithMany(m => m.ServiceUsages)
+                .HasForeignKey(su => su.MaintenanceId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a ServiceUsage is restricted if it's linked to Orders or PCAssemblies.
             builder.HasMany(su => su.Orders)
-                   .WithOne(o => o.ServiceUsage)
-                   .HasForeignKey(o => o.ServiceUsageId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                .WithOne(o => o.ServiceUsage)
+                .HasForeignKey(o => o.ServiceUsageId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(su => su.PCAssemblies)
-                   .WithOne(pca => pca.ServiceUsage)
-                   .HasForeignKey(pca => pca.ServiceUsageId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                .WithOne(pca => pca.ServiceUsage)
+                .HasForeignKey(pca => pca.ServiceUsageId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

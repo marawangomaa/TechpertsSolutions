@@ -14,40 +14,28 @@ namespace TechpertsSolutions.Repository.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure composite key for CategorySubCategory
-            modelBuilder.Entity<CategorySubCategory>(entity =>
-            {
-                entity.HasKey(e => new { e.CategoryId, e.SubCategoryId });
-
-                entity.HasOne(e => e.Category)
-                      .WithMany(c => c.SubCategories)
-                      .HasForeignKey(e => e.CategoryId)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.SubCategory)
-                      .WithMany(sc => sc.CategorySubCategories)
-                      .HasForeignKey(e => e.SubCategoryId)
-                      .OnDelete(DeleteBehavior.Cascade);
-
-                entity.Property(e => e.AssignedAt)
-                      .IsRequired()
-                      .HasDefaultValueSql("GETUTCDATE()");
-            });
-
-            // Apply default value for CreatedAt for all entities implementing IEntity
+            // This loop applies default values for CreatedAt and UpdatedAt to all entities
+            // that implement IEntity (like BaseEntity).
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 var clrType = entityType.ClrType;
-                if (typeof(IEntity).IsAssignableFrom(clrType) && clrType != typeof(CategorySubCategory))
+                if (typeof(IEntity).IsAssignableFrom(clrType))
                 {
                     var entity = modelBuilder.Entity(clrType);
 
-                    entity.Property("CreatedAt")
-                          .HasDefaultValueSql("GETUTCDATE()");
+                    if (entityType.FindProperty("CreatedAt") != null)
+                    {
+                        entity.Property("CreatedAt").HasDefaultValueSql("GETUTCDATE()");
+                    }
+
+                    if (entityType.FindProperty("UpdatedAt") != null)
+                    {
+                        entity.Property("UpdatedAt").HasDefaultValueSql("GETUTCDATE()");
+                    }
                 }
             }
 
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AssemblyReference).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TechpertsContext).Assembly);
         }
 
         public DbSet<Admin> Admins { get; set; }

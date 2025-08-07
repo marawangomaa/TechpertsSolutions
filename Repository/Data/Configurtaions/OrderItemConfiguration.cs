@@ -16,15 +16,17 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<OrderItem> builder)
         {
             base.Configure(builder);
+            // Deleting an Order will cascade to delete its items.
             builder.HasOne(oi => oi.Order)
                    .WithMany(o => o.OrderItems)
                    .HasForeignKey(oi => oi.OrderId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Product is restricted if it's in an existing OrderItem.
             builder.HasOne(oi => oi.Product)
                    .WithMany(p => p.OrderItems)
                    .HasForeignKey(oi => oi.ProductId)
-                   .OnDelete(DeleteBehavior.SetNull); 
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

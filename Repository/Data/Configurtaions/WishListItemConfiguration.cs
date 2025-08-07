@@ -16,17 +16,19 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<WishListItem> builder)
         {
             base.Configure(builder);
+            // Deleting a WishList will cascade to delete its items.
             builder.HasOne(wli => wli.WishList)
                    .WithMany(wl => wl.WishListItems)
                    .HasForeignKey(wli => wli.WishListId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Product is restricted if it's in a WishList.
             builder.HasOne(wli => wli.Product)
                    .WithMany(p => p.WishListItems)
                    .HasForeignKey(wli => wli.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.SetNull); 
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

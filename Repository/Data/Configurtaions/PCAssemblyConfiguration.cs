@@ -15,22 +15,25 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<PCAssembly> builder)
         {
             base.Configure(builder);
+            // Deleting a Customer is restricted if they have an existing PCAssembly.
             builder.HasOne(pc => pc.Customer)
                    .WithMany(c => c.PCAssembly)
                    .HasForeignKey(pc => pc.CustomerId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting a ServiceUsage is restricted if it's linked to a PCAssembly.
             builder.HasOne(pc => pc.ServiceUsage)
                    .WithMany(su => su.PCAssemblies)
                    .HasForeignKey(pc => pc.ServiceUsageId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting a PCAssembly will cascade to delete all its items.
             builder.HasMany(pc => pc.PCAssemblyItems)
                    .WithOne(pci => pci.PCAssembly)
                    .HasForeignKey(pci => pci.PCAssemblyId)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

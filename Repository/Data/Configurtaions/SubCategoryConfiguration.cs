@@ -14,21 +14,19 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<SubCategory> builder)
         {
             base.Configure(builder);
-
-            // Configure many-to-many relationship through CategorySubCategory
+            // This many-to-many relationship with Category is handled in CategorySubCategoryConfiguration.
             builder.HasMany(sc => sc.CategorySubCategories)
                    .WithOne(cs => cs.SubCategory)
                    .HasForeignKey(cs => cs.SubCategoryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure relationship with Products
+            // Deleting a SubCategory is restricted if it contains Products.
             builder.HasMany(sc => sc.Products)
                    .WithOne(p => p.SubCategory)
                    .HasForeignKey(p => p.SubCategoryId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure unique index on Name
-            builder.HasIndex(sc => sc.Name).IsUnique();
+         
         }
     }
 }

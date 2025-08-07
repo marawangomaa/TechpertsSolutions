@@ -15,10 +15,11 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<OrderHistory> builder)
         {
             base.Configure(builder);
+            // Deleting an OrderHistory will set the foreign key on Orders to null.
             builder.HasMany(oh => oh.Orders)
                    .WithOne(o => o.OrderHistory)
                    .HasForeignKey(o => o.OrderHistoryId)
-                   .OnDelete(DeleteBehavior.SetNull); 
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

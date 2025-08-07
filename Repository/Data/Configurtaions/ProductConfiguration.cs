@@ -14,30 +14,33 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Product> builder)
         {
             base.Configure(builder);
+            // Deleting a Category, SubCategory, or TechCompany is restricted if products are associated with them.
             builder.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.SubCategory)
-                   .WithMany(sc => sc.Products)
-                   .HasForeignKey(p => p.SubCategoryId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                .WithMany(sc => sc.Products)
+                .HasForeignKey(p => p.SubCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.TechCompany)
-                   .WithMany(tc => tc.Products)
-                   .HasForeignKey(p => p.TechCompanyId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                .WithMany(tc => tc.Products)
+                .HasForeignKey(p => p.TechCompanyId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting a Product will cascade to delete its Specifications.
             builder.HasMany(p => p.Specifications)
-                   .WithOne(s => s.Product)
-                   .HasForeignKey(s => s.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(s => s.Product)
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Product will cascade to delete its Warranties.
             builder.HasMany(p => p.Warranties)
-                   .WithOne(w => w.Product)
-                   .HasForeignKey(w => w.ProductId)
-                   .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(w => w.Product)
+                .HasForeignKey(w => w.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

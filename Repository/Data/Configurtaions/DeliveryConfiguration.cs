@@ -15,23 +15,26 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<Delivery> builder)
         {
             base.Configure(builder);
-            builder.HasMany(d => d.TechCompanies)
-                    .WithMany(t => t.Deliveries);
+            // Many-to-many with TechCompanies is configured on the other side.
+            builder.HasMany(d => d.TechCompanies).WithMany(t => t.Deliveries);
 
+            // Deleting a Customer is restricted if they have a delivery associated with them.
             builder.HasOne(d => d.Customer)
                    .WithMany()
                    .HasForeignKey(d => d.CustomerId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting a DeliveryPerson is restricted if they are assigned to a delivery.
             builder.HasOne(d => d.DeliveryPerson)
                    .WithMany(dp => dp.Deliveries)
                    .HasForeignKey(d => d.DeliveryPersonId)
-                   .OnDelete(DeleteBehavior.SetNull);
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting an Order is restricted if it has a delivery.
             builder.HasOne(d => d.Order)
                    .WithOne(o => o.Delivery)
                    .HasForeignKey<Delivery>(d => d.OrderId)
-                   .OnDelete(DeleteBehavior.SetNull); 
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -10,15 +10,17 @@ namespace TechpertsSolutions.Repository.Data.Configurations
         public override void Configure(EntityTypeBuilder<Admin> builder)
         {
             base.Configure(builder);
+            // Deleting a User should also delete the associated Admin record.
             builder.HasOne(a => a.User)
                    .WithOne(u => u.Admin)
                    .HasForeignKey<Admin>(a => a.Id)
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Role is restricted if it's assigned to any Admin.
             builder.HasOne(a => a.Role)
                    .WithMany()
                    .HasForeignKey(a => a.RoleId)
-                   .OnDelete(DeleteBehavior.Restrict); 
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

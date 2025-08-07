@@ -16,17 +16,19 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<PCAssemblyItem> builder)
         {
             base.Configure(builder);
+            // Deleting a PCAssembly will cascade to delete its items.
             builder.HasOne(pci => pci.PCAssembly)
                    .WithMany(pc => pc.PCAssemblyItems)
                    .HasForeignKey(pci => pci.PCAssemblyId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.Cascade); 
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Product is restricted if it's in a PCAssemblyItem.
             builder.HasOne(pci => pci.Product)
                    .WithMany(p => p.PCAssemblyItems)
                    .HasForeignKey(pci => pci.ProductId)
                    .IsRequired()
-                   .OnDelete(DeleteBehavior.SetNull); 
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

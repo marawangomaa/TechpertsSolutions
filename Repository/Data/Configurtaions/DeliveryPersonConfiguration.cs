@@ -15,20 +15,23 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<DeliveryPerson> builder)
         {
             base.Configure(builder);
+            // Deleting a User should also delete the associated DeliveryPerson.
             builder.HasOne(dp => dp.User)
-                 .WithOne(u => u.DeliveryPerson)
-                 .HasForeignKey<DeliveryPerson>(dp => dp.UserId)
-                 .OnDelete(DeleteBehavior.Cascade); 
+                   .WithOne(u => u.DeliveryPerson)
+                   .HasForeignKey<DeliveryPerson>(dp => dp.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
+            // Deleting a Role is restricted if it's assigned to any DeliveryPerson.
             builder.HasOne(dp => dp.Role)
-                 .WithMany()
-                 .HasForeignKey(dp => dp.RoleId)
-                 .OnDelete(DeleteBehavior.Restrict); 
+                   .WithMany()
+                   .HasForeignKey(dp => dp.RoleId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
+            // Deleting a DeliveryPerson will set the foreign key on Deliveries to null.
             builder.HasMany(dp => dp.Deliveries)
-                 .WithOne(d => d.DeliveryPerson)
-                 .HasForeignKey(d => d.DeliveryPersonId)
-                 .OnDelete(DeleteBehavior.SetNull); 
+                   .WithOne(d => d.DeliveryPerson)
+                   .HasForeignKey(d => d.DeliveryPersonId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 } 
