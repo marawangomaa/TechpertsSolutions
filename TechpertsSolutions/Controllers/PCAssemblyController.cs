@@ -301,14 +301,14 @@ namespace TechpertsSolutions.Controllers
             {
                 if (string.IsNullOrWhiteSpace(customerId))
                 {
-                    return BadRequest(new GeneralResponse<string> 
-                    { 
-                        Success = false, 
-                        Message = "Customer ID is required." 
+                    return BadRequest(new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Customer ID is required."
                     });
                 }
 
-                var result = await _pcAssemblyService.SaveBuildToCartAsync(assemblyId, customerId, assemblyFee);
+                var result = await _pcAssemblyService.SaveBuildToCartAsync(assemblyId, customerId, assemblyFee, _cartService);
                 return result.Success ? Ok(result) : BadRequest(result);
             }
             catch (Exception ex)
