@@ -10,6 +10,7 @@ namespace Core.Interfaces.Services
         Task<CartReadDTO?> GetCartByCustomerIdAsync(string customerId);
         Task<GeneralResponse<CartReadDTO>> GetOrCreateCartAsync(string customerId);
         Task<string> AddItemAsync(string customerId, CartItemDTO itemDto);
+        Task<string> AddItemPcAssemblyAsync(string customerId, CartAssemblyItemDTO itemDto);
         Task<string> UpdateItemQuantityAsync(string customerId, CartUpdateItemQuantityDTO updateDto);
         Task<string> RemoveItemAsync(string customerId, string productId);
         Task<string> ClearCartAsync(string customerId);

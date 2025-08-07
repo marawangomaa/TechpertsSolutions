@@ -610,9 +610,10 @@ namespace Service
                 await _pcAssemblyRepo.SaveChangesAsync();
 
                 // Add to cart using the cart service
-                var addResult = await cartService.AddItemAsync(customerId, new CartItemDTO
+                var addResult = await cartService.AddItemPcAssemblyAsync(customerId, new CartAssemblyItemDTO
                 {
-                    ProductId = assembly.Id,  // Assuming you treat the PC Build like a product
+                    IsCustomBuild = true,
+                    PcAssemblyId = assembly.Id,
                     Quantity = 1,
                     UnitPrice = totalAmount
                 });
@@ -632,12 +633,12 @@ namespace Service
                     Data = true
                 };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "An error occurred while saving the PC build to cart.",
+                    Message = $"An error occurred while saving the PC build to cart. {ex}",
                     Data = false
                 };
             }

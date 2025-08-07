@@ -42,27 +42,32 @@ namespace Service.Utilities
         public static CartItemReadDTO MapToCartItemReadDTO(CartItem item)
         {
             if (item == null)
-            {
                 return null;
-            }
 
-            var price = item.Product?.Price ?? 0;
-            var quantity = item.Quantity;
+            bool isCustom = item.IsCustomBuild;
 
             return new CartItemReadDTO
             {
                 Id = item.Id ?? string.Empty,
-                ProductId = item.ProductId ?? string.Empty,
-                ProductName = item.Product?.Name ?? "Unknown Product",
-                Price = price,
-                Quantity = quantity,
-                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
-                Stock = item.Product?.Stock ?? 0
-                // ItemTotal is calculated automatically via the property
+                ProductId = isCustom ? item.PcAssemblyId : item.ProductId,
+                ProductName = isCustom
+                    ? item.PCAssembly?.Name ?? "Custom PC Build"
+                    : item.Product?.Name ?? "Unknown Product",
+                Price = isCustom
+                    ? item.UnitPrice  // Save this when adding to cart
+                    : item.Product?.Price ?? 0,
+                Quantity = item.Quantity,
+                ImageUrl = isCustom
+                    ? "/images/custom-build.png" // Replace with actual custom build image if any
+                    : item.Product?.ImageUrl ?? string.Empty,
+                Stock = isCustom
+                    ? 1 // For custom build assume 1 always
+                    : item.Product?.Stock ?? 0,
+                IsCustomBuild = isCustom
             };
         }
 
-        
+
         public static CartItem MapToCartItemEntity(CartItemDTO dto)
         {
             return new CartItem

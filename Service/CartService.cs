@@ -1,4 +1,4 @@
-
+﻿
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
@@ -24,6 +24,7 @@ namespace Service
         private readonly IRepository<Customer> customerRepo;
         private readonly IRepository<Order> orderRepo;
         private readonly IRepository<OrderItem> orderItemRepo;
+        private readonly IRepository<PCAssembly> pcAssemblyRepo;
         private readonly TechpertsContext dbContext; 
 
         public CartService(
@@ -33,6 +34,7 @@ namespace Service
             IRepository<Customer> _customerRepo,
             IRepository<Order> _orderRepo,
             IRepository<OrderItem> _orderItemRepo,
+            IRepository<PCAssembly> _pcAssemblyRepo,
             TechpertsContext _dbContext)
         {
             cartRepo = _cartRepo;
@@ -41,6 +43,7 @@ namespace Service
             customerRepo = _customerRepo;
             orderRepo = _orderRepo;
             orderItemRepo = _orderItemRepo;
+            pcAssemblyRepo = _pcAssemblyRepo;
             dbContext = _dbContext;
         }
 
@@ -66,7 +69,7 @@ namespace Service
             // Optimized includes for cart with items and their products
             var cart = await cartRepo.GetFirstOrDefaultAsync(
                 c => c.CustomerId == customerId,
-                includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany" 
+                includeProperties: "CartItems,CartItems.Product,CartItems.Product.Category,CartItems.Product.SubCategory,CartItems.Product.TechCompany,CartItems.PCAssembly"
             );
 
             if (cart == null)
@@ -249,6 +252,76 @@ namespace Service
                 await cartItemRepo.AddAsync(newItem);
                 await cartItemRepo.SaveChangesAsync();
                 return "? Item added successfully.";
+            }
+        }
+        public async Task<string> AddItemPcAssemblyAsync(string customerId, CartAssemblyItemDTO itemDto)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+                return "? Customer ID cannot be null or empty.";
+
+            if (!Guid.TryParse(customerId, out _))
+                return "? Invalid Customer ID format. Expected GUID format.";
+
+            if (itemDto == null)
+                return "? Item data cannot be null.";
+
+            if (string.IsNullOrWhiteSpace(itemDto.PcAssemblyId))
+                return "? PC Assembly ID cannot be null or empty.";
+
+            if (!Guid.TryParse(itemDto.PcAssemblyId, out _))
+                return "? Invalid PC Assembly ID format. Expected GUID format.";
+
+            if (itemDto.Quantity <= 0)
+                return "? Quantity must be greater than zero.";
+
+            var customer = await customerRepo.GetByIdAsync(customerId);
+            if (customer == null)
+                return $"? Customer with ID {customerId} not found.";
+
+            var pcAssembly = await pcAssemblyRepo.GetByIdAsync(itemDto.PcAssemblyId);
+            if (pcAssembly == null)
+                return $"? PC Assembly with ID {itemDto.PcAssemblyId} not found.";
+
+            var cart = await cartRepo.GetFirstOrDefaultAsync(
+                c => c.CustomerId == customerId,
+                includeProperties: "CartItems"
+            );
+
+            if (cart == null)
+            {
+                cart = new Cart
+                {
+                    CustomerId = customerId,
+                    CreatedAt = DateTime.UtcNow,
+                    CartItems = new List<CartItem>()
+                };
+                await cartRepo.AddAsync(cart);
+                await cartRepo.SaveChangesAsync();
+            }
+
+            var existingItem = cart.CartItems?.FirstOrDefault(i => i.PcAssemblyId == itemDto.PcAssemblyId);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity += itemDto.Quantity;
+                cartItemRepo.Update(existingItem);
+                await cartItemRepo.SaveChangesAsync();
+                return "✔ Custom build quantity updated successfully.";
+            }
+            else
+            {
+                var newItem = new CartItem
+                {
+                    IsCustomBuild = true,
+                    PcAssemblyId = itemDto.PcAssemblyId,
+                    CartId = cart.Id,
+                    Quantity = itemDto.Quantity,
+                    UnitPrice = itemDto.UnitPrice
+                };
+
+                await cartItemRepo.AddAsync(newItem);
+                await cartItemRepo.SaveChangesAsync();
+                return "✔ Custom build added successfully.";
             }
         }
 
