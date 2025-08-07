@@ -18,5 +18,7 @@ namespace Core.DTOs.CartDTOs
         public int Stock { get; set; } 
         public decimal ItemTotal => Price * Quantity;
         public bool IsCustomBuild { get; set; }
+        public decimal? AssemblyFee { get; set; }
+        public decimal? ProductTotal { get; set; }
     }
 }

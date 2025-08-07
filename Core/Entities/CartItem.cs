@@ -13,6 +13,8 @@ namespace TechpertsSolutions.Core.Entities
         public bool IsCustomBuild { get; set; }
         public decimal UnitPrice { get; set; }
         public Product Product { get; set; }
+        public decimal? ProductTotal { get; set; }
+        public decimal? AssemblyFee { get; set; }
         public int Quantity { get; set; }
         public string CartId { get; set; }
         public Cart Cart { get; set; }

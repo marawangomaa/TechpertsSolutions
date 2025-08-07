@@ -26,5 +26,6 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetFilteredCompatibleComponentsAsync(string assemblyId, string targetCategoryName);
         Task<GeneralResponse<bool>> SaveBuildToCartAsync(string assemblyId,string customerId,decimal assemblyFee,ICartService cartService);
         Task<GeneralResponse<PCBuildTableDTO>> GetPCBuildTableAsync(string assemblyId);
+        Task<GeneralResponse<bool>> MoveAssemblyToCartAsync(string assemblyId, ICartService cartService);
     }
 }

@@ -1,4 +1,4 @@
-using Core.DTOs;
+﻿using Core.DTOs;
 using Core.DTOs.CartDTOs;
 using Core.DTOs.PCAssemblyDTOs;
 using Core.Enums;
@@ -565,10 +565,10 @@ namespace Service
         }
 
         public async Task<GeneralResponse<bool>> SaveBuildToCartAsync(
-                                                    string assemblyId,
-                                                    string customerId,
-                                                    decimal assemblyFee,
-                                                    ICartService cartService)
+     string assemblyId,
+     string customerId,
+     decimal assemblyFee,
+     ICartService cartService)
         {
             if (string.IsNullOrWhiteSpace(assemblyId) || string.IsNullOrWhiteSpace(customerId))
             {
@@ -582,7 +582,6 @@ namespace Service
 
             try
             {
-                // Get the assembly with all components
                 var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
                     a => a.Id == assemblyId,
                     "PCAssemblyItems,PCAssemblyItems.Product");
@@ -597,11 +596,9 @@ namespace Service
                     };
                 }
 
-                // Calculate total including assembly fee
                 var componentsTotal = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0;
                 var totalAmount = componentsTotal + assemblyFee;
 
-                // Update assembly with fee and mark as completed
                 assembly.AssemblyFee = assemblyFee;
                 assembly.Status = PCAssemblyStatus.Completed;
                 assembly.CompletedDate = DateTime.UtcNow;
@@ -609,14 +606,16 @@ namespace Service
                 _pcAssemblyRepo.Update(assembly);
                 await _pcAssemblyRepo.SaveChangesAsync();
 
-                // Add to cart using the cart service
                 var addResult = await cartService.AddItemPcAssemblyAsync(customerId, new CartAssemblyItemDTO
                 {
                     IsCustomBuild = true,
                     PcAssemblyId = assembly.Id,
                     Quantity = 1,
-                    UnitPrice = totalAmount
+                    UnitPrice = totalAmount,       // ✅ Price includes fee
+                    ProductTotal = componentsTotal,
+                    AssemblyFee = assemblyFee
                 });
+
                 if (string.IsNullOrWhiteSpace(addResult))
                 {
                     return new GeneralResponse<bool>
@@ -626,6 +625,7 @@ namespace Service
                         Data = false
                     };
                 }
+
                 return new GeneralResponse<bool>
                 {
                     Success = true,
@@ -956,6 +956,84 @@ namespace Service
             }
 
             return total == 0 ? 0 : (decimal)matched / total;
+        }
+
+
+        public async Task<GeneralResponse<bool>> MoveAssemblyToCartAsync(string assemblyId, ICartService cartService)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyId))
+            {
+                return new GeneralResponse<bool> { Success = false, Message = "Assembly ID cannot be null or empty.", Data = false };
+            }
+
+            // Get the PC assembly with all its items
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                query => query.Include(a => a.PCAssemblyItems)
+            );
+
+            if (assembly == null)
+            {
+                return new GeneralResponse<bool> { Success = false, Message = "PC Assembly not found.", Data = false };
+            }
+
+            // A customerId is required to add to a cart
+            if (string.IsNullOrWhiteSpace(assembly.CustomerId))
+            {
+                return new GeneralResponse<bool> { Success = false, Message = "Customer ID is not associated with this PC Assembly.", Data = false };
+            }
+
+            var customerId = assembly.CustomerId;
+
+            // Add all components to the cart
+            foreach (var assemblyItem in assembly.PCAssemblyItems)
+            {
+                var cartItemDto = new CartAssemblyItemDTO
+                {
+                    PcAssemblyId = assembly.Id,
+                    ProductId = assemblyItem.ProductId,
+                    Quantity = assemblyItem.Quantity,
+                    UnitPrice = assemblyItem.UnitPrice * 1.1m,
+                    ProductTotal = assemblyItem.Total,
+                    IsCustomBuild = true,
+                    AssemblyFee = assembly.AssemblyFee ?? 0
+                };
+
+                await cartService.AddItemPcAssemblyAsync(customerId, cartItemDto);
+            }
+
+            // Check if there is an assembly fee and add it to the cart
+            if (assembly.AssemblyFee.HasValue && assembly.AssemblyFee.Value > 0)
+            {
+                // This is a crucial assumption: you need a way to represent the assembly fee in the cart.
+                // A common approach is to have a dedicated "service" product in your database for this.
+                // Replace "YOUR_ASSEMBLY_FEE_PRODUCT_ID" with the actual ID of this service product.
+                var assemblyFeeProductId = "YOUR_ASSEMBLY_FEE_PRODUCT_ID";
+
+                // You might need a more specialized method on ICartService to handle fees
+                // instead of a regular product.
+                // For this example, we'll treat it as a special product.
+                var assemblyFeeDto = new CartItemDTO
+                {
+                    ProductId = assemblyFeeProductId,
+                    Quantity = 1,
+                };
+
+                // Add the fee to the cart. The CartService's AddItemAsync should handle its price.
+                await cartService.AddItemAsync(customerId, assemblyFeeDto);
+            }
+
+            // After moving to the cart, you might want to change the assembly's status.
+            assembly.Status = PCAssemblyStatus.Completed; // Or a new status like 'MovedToCart'
+            _pcAssemblyRepo.Update(assembly);
+            await _pcAssemblyRepo.SaveChangesAsync();
+
+            return new GeneralResponse<bool>
+            {
+                Success = true,
+                Message = "PC Assembly and its fee have been moved to the cart.",
+                Data = true
+            };
         }
     }
 }

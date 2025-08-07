@@ -322,7 +322,16 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-
+        [HttpPost("{assemblyId}/move-to-cart")]
+        public async Task<IActionResult> MoveAssemblyToCart(string assemblyId)
+        {
+            var response = await _pcAssemblyService.MoveAssemblyToCartAsync(assemblyId, _cartService);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
 
 
     }

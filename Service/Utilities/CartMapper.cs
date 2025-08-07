@@ -1,4 +1,4 @@
-
+﻿
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
@@ -54,16 +54,20 @@ namespace Service.Utilities
                     ? item.PCAssembly?.Name ?? "Custom PC Build"
                     : item.Product?.Name ?? "Unknown Product",
                 Price = isCustom
-                    ? item.UnitPrice  // Save this when adding to cart
+                    ? item.UnitPrice // Includes assembly fee
                     : item.Product?.Price ?? 0,
                 Quantity = item.Quantity,
                 ImageUrl = isCustom
-                    ? "/images/custom-build.png" // Replace with actual custom build image if any
+                    ? "/images/custom-build.png"
                     : item.Product?.ImageUrl ?? string.Empty,
                 Stock = isCustom
-                    ? 1 // For custom build assume 1 always
+                    ? 1
                     : item.Product?.Stock ?? 0,
-                IsCustomBuild = isCustom
+                IsCustomBuild = isCustom,
+
+                // ✅ New fields for custom builds
+                AssemblyFee = isCustom ? item.AssemblyFee : null,
+                ProductTotal = isCustom ? item.ProductTotal : null
             };
         }
 
