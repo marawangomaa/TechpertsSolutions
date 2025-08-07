@@ -21,9 +21,9 @@ namespace TechpertsSolutions.Core.Entities
         public decimal? DeliveryFee { get; set; }
         public string? PickupAddress { get; set; }
         public DateTime? PickupDate { get; set; }
-        public string? DeliveryPersonId { get; set; }
+        public string DeliveryPersonId { get; set; }
         public string? CustomerId { get; set; }
-        public string? OrderId { get; set; }
+        public string OrderId { get; set; }
         public Order? Order { get; set; }
         
         public DeliveryPerson? DeliveryPerson { get; set; }

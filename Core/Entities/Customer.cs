@@ -10,9 +10,9 @@ namespace TechpertsSolutions.Core.Entities
     public class Customer : BaseEntity
     {
         public string UserId { get; set; }
-        public AppUser User { get; set; }
+        public AppUser? User { get; set; }
         public string RoleId { get; set; }
-        public AppRole Role { get; set; }
+        public AppRole? Role { get; set; }
         
         // Role-specific dashboard data
         public Cart? Cart { get; set; }

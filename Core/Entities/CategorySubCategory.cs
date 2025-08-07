@@ -12,9 +12,9 @@ namespace TechpertsSolutions.Core.Entities
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string CategoryId { get; set; }
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
         public string SubCategoryId { get; set; }
-        public SubCategory SubCategory { get; set; }
+        public SubCategory? SubCategory { get; set; }
         
         // Composite primary key for many-to-many relationship
         public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
