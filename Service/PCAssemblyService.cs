@@ -842,14 +842,14 @@ namespace Service
                             return false;
                     }
 
-                    var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
-                    if (caseForGpu != null)
-                    {
-                        var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
-                        var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
-                        if (gpuLength > caseGpuLength)
-                            return false;
-                    }
+                    //var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    //if (caseForGpu != null)
+                    //{
+                    //    var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
+                    //    var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
+                    //    if (gpuLength > caseGpuLength)
+                    //        return false;
+                    //}
                     break;
 
                 case "Storage":
@@ -902,14 +902,14 @@ namespace Service
                             return false;
                     }
 
-                    var caseForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
-                    if (caseForCooler != null)
-                    {
-                        var maxCoolerHeight = int.Parse(GetSpec(caseForCooler, "MaxCoolerHeight") ?? "0");
-                        var coolerHeight = int.Parse(candidateSpecs.GetValueOrDefault("Height") ?? "0");
-                        if (coolerHeight > maxCoolerHeight)
-                            return false;
-                    }
+                    //var caseForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    //if (caseForCooler != null)
+                    //{
+                    //    var maxCoolerHeight = int.Parse(GetSpec(caseForCooler, "MaxCoolerHeight") ?? "0");
+                    //    var coolerHeight = int.Parse(candidateSpecs.GetValueOrDefault("Height") ?? "0");
+                    //    if (coolerHeight > maxCoolerHeight)
+                    //        return false;
+                    //}
                     break;
 
                 case "CaseCooler":
