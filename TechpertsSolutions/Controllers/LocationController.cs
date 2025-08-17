@@ -1,8 +1,9 @@
-using Core.DTOs.LocationDTOs;
 using Core.DTOs;
+using Core.DTOs.LocationDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -11,87 +12,77 @@ namespace TechpertsSolutions.Controllers
     [Authorize]
     public class LocationController : ControllerBase
     {
-        private readonly ILocationService _locationService;
+        private readonly LocationService _locationService;
 
-        public LocationController(ILocationService locationService)
+        public LocationController(LocationService locationService)
         {
             _locationService = locationService;
         }
 
-        [HttpPost("nearest")]
-        public async Task<ActionResult<GeneralResponse<IEnumerable<NearestTechCompanyDTO>>>> GetNearestTechCompanies([FromBody] LocationSearchDTO searchDto)
-        {
-            var result = await _locationService.GetNearestTechCompaniesAsync(searchDto);
-            return Ok(result);
-        }
-
-        [HttpGet("nearest")]
-        public async Task<ActionResult<GeneralResponse<NearestTechCompanyDTO>>> GetNearestTechCompany(
-            [FromQuery] double latitude, 
-            [FromQuery] double longitude, 
-            [FromQuery] string? serviceType = null)
-        {
-            var result = await _locationService.GetNearestTechCompanyAsync(latitude, longitude, serviceType);
-            return Ok(result);
-        }
-
         [HttpGet("distance")]
-        public async Task<ActionResult<GeneralResponse<double>>> CalculateDistance(
-            [FromQuery] double lat1, 
-            [FromQuery] double lon1, 
-            [FromQuery] double lat2, 
+        public ActionResult<double> CalculateDistance(
+            [FromQuery] double lat1,
+            [FromQuery] double lon1,
+            [FromQuery] double lat2,
             [FromQuery] double lon2)
         {
-            var result = await _locationService.CalculateDistanceAsync(lat1, lon1, lat2, lon2);
-            return Ok(result);
+            var distance = _locationService.CalculateDistance(lat1, lon1, lat2, lon2);
+            return Ok(distance);
         }
 
-        [HttpGet("geocode")]
-        public async Task<ActionResult<GeneralResponse<LocationDTO>>> GetLocationFromAddress([FromQuery] string address)
+        [HttpGet("midpoint")]
+        public ActionResult<(double Lat, double Lon)> GetMidpoint(
+            [FromQuery] double lat1,
+            [FromQuery] double lon1,
+            [FromQuery] double lat2,
+            [FromQuery] double lon2)
         {
-            var result = await _locationService.GetLocationFromAddressAsync(address);
-            return Ok(result);
+            var midpoint = _locationService.GetMidpoint(lat1, lon1, lat2, lon2);
+            return Ok(midpoint);
         }
 
-        [HttpGet("reverse-geocode")]
-        public async Task<ActionResult<GeneralResponse<LocationDTO>>> GetAddressFromCoordinates(
-            [FromQuery] double latitude, 
-            [FromQuery] double longitude)
+        [HttpGet("company-to-customer")]
+        public ActionResult<double> CompanyToCustomer(
+            [FromQuery] double companyLat,
+            [FromQuery] double companyLon,
+            [FromQuery] double customerLat,
+            [FromQuery] double customerLon)
         {
-            var result = await _locationService.GetAddressFromCoordinatesAsync(latitude, longitude);
-            return Ok(result);
+            var distance = _locationService.CompanyToCustomer(companyLat, companyLon, customerLat, customerLon);
+            return Ok(distance);
         }
 
-        [HttpPut("user/{userId}")]
-        public async Task<ActionResult<GeneralResponse<bool>>> UpdateUserLocation(
-            string userId, 
-            [FromQuery] double latitude, 
-            [FromQuery] double longitude)
+        [HttpGet("company-to-driver")]
+        public ActionResult<double> CompanyToDriver(
+            [FromQuery] double companyLat,
+            [FromQuery] double companyLon,
+            [FromQuery] double driverLat,
+            [FromQuery] double driverLon)
         {
-            var result = await _locationService.UpdateUserLocationAsync(userId, latitude, longitude);
-            return Ok(result);
+            var distance = _locationService.CompanyToDriver(companyLat, companyLon, driverLat, driverLon);
+            return Ok(distance);
         }
 
-        [HttpPut("techcompany/{techCompanyId}")]
-        [Authorize(Roles = "TechCompany")]
-        public async Task<ActionResult<GeneralResponse<bool>>> UpdateTechCompanyLocation(
-            string techCompanyId, 
-            [FromQuery] double latitude, 
-            [FromQuery] double longitude, 
-            [FromQuery] string address)
+        [HttpGet("driver-to-customer")]
+        public ActionResult<double> DriverToCustomer(
+            [FromQuery] double driverLat,
+            [FromQuery] double driverLon,
+            [FromQuery] double customerLat,
+            [FromQuery] double customerLon)
         {
-            var result = await _locationService.UpdateTechCompanyLocationAsync(techCompanyId, latitude, longitude, address);
-            return Ok(result);
+            var distance = _locationService.DriverToCustomer(driverLat, driverLon, customerLat, customerLon);
+            return Ok(distance);
         }
 
-        [HttpGet("radius")]
-        public async Task<ActionResult<GeneralResponse<IEnumerable<NearestTechCompanyDTO>>>> GetTechCompaniesInRadius(
-            [FromQuery] double latitude, 
-            [FromQuery] double longitude, 
-            [FromQuery] double radiusInKm)
+        [HttpGet("driver-to-company")]
+        public ActionResult<double> DriverToCompany(
+            [FromQuery] double driverLat,
+            [FromQuery] double driverLon,
+            [FromQuery] double companyLat,
+            [FromQuery] double companyLon)
         {
-            var result = await _locationService.GetTechCompaniesInRadiusAsync(latitude, longitude, radiusInKm);
-            return Ok(result);
+            var distance = _locationService.DriverToCompany(driverLat, driverLon, companyLat, companyLon);
+            return Ok(distance);
         }
     }
-} 
+}

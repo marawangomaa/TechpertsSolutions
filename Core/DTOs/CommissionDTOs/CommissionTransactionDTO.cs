@@ -21,7 +21,7 @@ namespace Core.DTOs.CommissionDTOs
         public decimal PlatformFee { get; set; }
         public string TechCompanyId { get; set; } = string.Empty;
         public string? DeliveryPersonId { get; set; }
-        public CommissionStatus Status { get; set; }
+        //public CommissionStatus Status { get; set; }
         public DateTime? PayoutDate { get; set; }
         public string? PayoutReference { get; set; }
         public DateTime CreatedAt { get; set; }

@@ -1,4 +1,5 @@
 using Core.Enums;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -30,8 +31,8 @@ namespace Core.DTOs.ProductDTOs
         [Range(0, double.MaxValue, ErrorMessage = "Discount price cannot be negative")]
         public decimal? DiscountPrice { get; set; }
 
-        public List<SpecificationCreateDTO>? Specifications { get; set; }
-        public List<WarrantyCreateDTO>? Warranties { get; set; }
+        //public List<SpecificationCreateDTO>? Specifications { get; set; }
+        //public List<WarrantyCreateDTO>? Warranties { get; set; }
 
         // Custom validation method
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -43,5 +44,7 @@ namespace Core.DTOs.ProductDTOs
                     new[] { nameof(DiscountPrice) });
             }
         }
+        //public IFormFile? ImageUrl { get; set; }
+        //public List<IFormFile>? ImageUrls { get; set; }
     }
 }

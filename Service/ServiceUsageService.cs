@@ -137,7 +137,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = serviceType,
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 1
                 };
 
@@ -300,7 +300,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = serviceType,
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 0
                 };
 

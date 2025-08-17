@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Core.DTOs;
+using Core.DTOs.DeliveryPersonDTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -18,12 +19,14 @@ namespace TechpertsSolutions.Controllers
         private readonly IAdminService _adminService;
         private readonly IProductService _productService;
         private readonly IOrderService _orderService;
+        private readonly IDeliveryPersonService _deliveryPersonService;
 
-        public AdminsController(IAdminService adminService, IProductService productService, IOrderService orderService)
+        public AdminsController(IAdminService adminService, IProductService productService, IDeliveryPersonService deliveryPersonService, IOrderService orderService)
         {
             _adminService = adminService;
-            _productService = productService;
             _orderService = orderService;
+            _productService = productService;
+            _deliveryPersonService = deliveryPersonService;
         }
 
         [HttpGet("all")]
@@ -134,11 +137,6 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        
-        
-        
-        
-        
         [HttpGet("orders/status/{status}")]
         public async Task<IActionResult> GetOrdersByStatus(OrderStatus status)
         {
@@ -146,11 +144,12 @@ namespace TechpertsSolutions.Controllers
             return Ok(response);
         }
 
-        
-        
-        
-        
-        
+        [HttpPut("deliveryPerson/{deliveryPersonid}")]
+        public async Task<IActionResult> updateDeliveryPerson(string id, DeliveryPersonUpdateDTO dto) 
+        {
+            var response = await _deliveryPersonService.UpdateAsync(id, dto);
+            return Ok(response);
+        }
         
         [HttpPut("orders/{orderId}/status")]
         public async Task<IActionResult> UpdateOrderStatus(string orderId,OrderStatus status)
@@ -174,11 +173,6 @@ namespace TechpertsSolutions.Controllers
             var response = await _orderService.UpdateOrderStatusAsync(orderId, status);
             return Ok(response);
         }
-
-        
-        
-        
-        
         
         [HttpPut("orders/{orderId}/mark-in-progress")]
         public async Task<IActionResult> MarkOrderInProgress(string orderId)
@@ -202,11 +196,6 @@ namespace TechpertsSolutions.Controllers
             var response = await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.InProgress);
             return Ok(response);
         }
-
-        
-        
-        
-        
         
         [HttpPut("orders/{orderId}/mark-delivered")]
         public async Task<IActionResult> MarkOrderDelivered(string orderId)
@@ -230,11 +219,6 @@ namespace TechpertsSolutions.Controllers
             var response = await _orderService.UpdateOrderStatusAsync(orderId, OrderStatus.Delivered);
             return Ok(response);
         }
-
-        
-        
-        
-        
         
         [HttpPut("orders/{orderId}/mark-pending")]
         public async Task<IActionResult> MarkOrderPending(string orderId)

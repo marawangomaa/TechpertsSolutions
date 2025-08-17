@@ -26,6 +26,7 @@ namespace Service.Utilities
                 OrderDate = order.OrderDate,
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
+                //DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName?? "UnKnown Delivery",
                 OrderItems = order.OrderItems != null 
                     ? order.OrderItems.Select(ToItemReadDTO).ToList() 
                     : new List<OrderItemReadDTO>()
@@ -46,7 +47,7 @@ namespace Service.Utilities
                 ProductName = item.Product?.Name ?? "Unknown Product",
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
-                ImageUrl = item.Product?.ImageUrl ?? string.Empty,
+                ImageUrl = item.Product?.ImageUrl ?? "assets/products/default-product.png",
                 ItemTotal = item.ItemTotal
             };
         }
@@ -57,18 +58,18 @@ namespace Service.Utilities
             {
                 Id = Guid.NewGuid().ToString(),
                 CustomerId = dto.CustomerId,
-                OrderDate = DateTime.UtcNow,
+                OrderDate = DateTime.Now,
                 Status = OrderStatus.Ordered,
                 ServiceUsageId = dto.ServiceUsageId,
-                OrderHistoryId = null, 
-                OrderItems = dto.OrderItems.Select(item => new OrderItem
+                OrderHistoryId = null,
+                OrderItems = dto.OrderItems?.Select(item => new OrderItem
                 {
                     Id = Guid.NewGuid().ToString(),
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     ItemTotal = (int)(item.Quantity * item.UnitPrice)
-                }).ToList()
+                }).ToList() ?? new List<OrderItem>()
             };
         }
     }

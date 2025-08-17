@@ -23,167 +23,94 @@ namespace TechpertsSolutions.Controllers
         public async Task<IActionResult> GetAll()
         {
             var response = await _service.GetAllAsync();
-            if (!response.Success)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
-                });
-            }
+            if (!IsValidGuid(id))
+                return BadRequest(InvalidIdResponse(id));
 
             var response = await _service.GetByIdAsync(id);
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
-        }
-
-        [HttpGet("details/{id}")]
-        public async Task<IActionResult> GetDetails(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
-                });
-            }
-
-            var response = await _service.GetDetailsByIdAsync(id);
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
+            return response.Success ? Ok(response) : NotFound(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] DeliveryCreateDTO dto, [FromQuery] DeliveryStatus deliveryStatus = DeliveryStatus.Pending)
+        public async Task<IActionResult> Create([FromBody] DeliveryCreateDTO dto)
         {
-            // Create a new DTO with the deliveryStatus from query parameter
-            var dtoWithStatus = new DeliveryCreateDTO
-            {
-                TrackingNumber = dto.TrackingNumber,
-                DeliveryAddress = dto.DeliveryAddress,
-                CustomerPhone = dto.CustomerPhone,
-                CustomerName = dto.CustomerName,
-                EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
-                Notes = dto.Notes,
-                DeliveryFee = dto.DeliveryFee,
-                DeliveryPersonId = dto.DeliveryPersonId,
-                CustomerId = dto.CustomerId
-            };
-
-            var response = await _service.AddAsync(dtoWithStatus);
-            if (!response.Success)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            var response = await _service.CreateAsync(dto);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] DeliveryUpdateDTO dto, [FromQuery] DeliveryStatus? deliveryStatus = null)
+        [HttpPost("assign-driver")]
+        public async Task<IActionResult> AssignDriverToCluster([FromQuery] string clusterId, [FromQuery] string driverId)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
-                });
-            }
+            var response = await _service.AssignDriverToClusterAsync(clusterId, driverId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-            // Create a new DTO with the deliveryStatus from query parameter if provided
-            var dtoWithStatus = new DeliveryUpdateDTO
-            {
-                TrackingNumber = dto.TrackingNumber,
-                DeliveryAddress = dto.DeliveryAddress,
-                CustomerPhone = dto.CustomerPhone,
-                CustomerName = dto.CustomerName,
-                EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
-                ActualDeliveryDate = dto.ActualDeliveryDate,
-                DeliveryStatus = deliveryStatus?.ToString() ?? dto.DeliveryStatus,
-                Notes = dto.Notes,
-                DeliveryFee = dto.DeliveryFee,
-                DeliveryPersonId = dto.DeliveryPersonId
-            };
+        [HttpPost("accept")]
+        public async Task<IActionResult> AcceptDelivery([FromQuery] string clusterId, [FromQuery] string driverId)
+        {
+            var response = await _service.AcceptDeliveryAsync(clusterId, driverId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
 
-            var response = await _service.UpdateAsync(id, dtoWithStatus);
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
+        [HttpPost("decline")]
+        public async Task<IActionResult> DeclineDelivery([FromQuery] string clusterId, [FromQuery] string driverId)
+        {
+            var response = await _service.DeclineDeliveryAsync(clusterId, driverId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPost("cancel/{deliveryId}")]
+        public async Task<IActionResult> CancelDelivery(string deliveryId)
+        {
+            var response = await _service.CancelDeliveryAsync(deliveryId);
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+        [HttpPost("complete")]
+        public async Task<IActionResult> CompleteDelivery([FromQuery] string deliveryId, [FromQuery] string driverId)
+        {
+            var response = await _service.CompleteDeliveryAsync(deliveryId, driverId);
+            return response.Success ? Ok(response) : BadRequest(response);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing ID",
-                    Data = id
-                });
-            }
+            if (!IsValidGuid(id))
+                return BadRequest(InvalidIdResponse(id));
 
             var response = await _service.DeleteAsync(id);
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
+            return response.Success ? Ok(response) : NotFound(response);
         }
 
-        [HttpGet("deliveryperson/{deliveryPersonId}")]
-        public async Task<IActionResult> GetByDeliveryPersonId(string deliveryPersonId)
+        [HttpGet("tracking/{deliveryId}")]
+        public async Task<IActionResult> GetDeliveryTracking(string deliveryId)
         {
-            if (string.IsNullOrWhiteSpace(deliveryPersonId) || !Guid.TryParse(deliveryPersonId, out _))
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Invalid or missing delivery person ID",
-                    Data = deliveryPersonId
-                });
-            }
-
-            var response = await _service.GetByDeliveryPersonIdAsync(deliveryPersonId);
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
+            var response = await _service.GetDeliveryTrackingAsync(deliveryId);
+            return response.Success ? Ok(response) : NotFound(response);
         }
 
-        [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetByStatus([FromRoute] DeliveryStatus status)
+        [HttpGet("expired-offers")]
+        public async Task<IActionResult> GetDeliveriesWithExpiredOffers()
         {
-            var response = await _service.GetByStatusAsync(status.ToString());
-            if (!response.Success)
-            {
-                return NotFound(response);
-            }
-            return Ok(response);
+            var deliveries = await _service.GetDeliveriesWithExpiredOffersAsync();
+            return Ok(deliveries);
         }
+
+        private bool IsValidGuid(string id) =>
+            !string.IsNullOrWhiteSpace(id) && Guid.TryParse(id, out _);
+
+        private GeneralResponse<string> InvalidIdResponse(string id) =>
+            new GeneralResponse<string>
+            {
+                Success = false,
+                Message = "Invalid or missing ID",
+                Data = id
+            };
     }
 }

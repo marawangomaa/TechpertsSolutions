@@ -7,4 +7,4 @@ namespace Core.Interfaces.Services
         Task<bool> SendPasswordResetEmailAsync(string email, string resetToken, string resetLink);
         Task<bool> SendEmailAsync(string to, string subject, string body);
     }
-} 
+}

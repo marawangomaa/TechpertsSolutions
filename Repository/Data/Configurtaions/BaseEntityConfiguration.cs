@@ -9,7 +9,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
     {
         public virtual void Configure(EntityTypeBuilder<T> builder)
         {
-            // No default value configuration needed here.
+            // No default value configuration here.
         }
     }
 } 

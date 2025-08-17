@@ -14,7 +14,8 @@ namespace Core.DTOs.DeliveryPersonDTOs
         
         [Required]
         public string RoleId { get; set; }
-        
+
+        public string Name { get; set; }
         public string? VehicleNumber { get; set; }
         public string? VehicleType { get; set; }
         public string? PhoneNumber { get; set; }

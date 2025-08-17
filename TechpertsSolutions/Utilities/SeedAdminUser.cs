@@ -26,8 +26,9 @@ namespace TechpertsSolutions.Utilities
                     Email = adminEmail,
                     FullName = "System Administrator",
                     Address = "System Address",
+                    ProfilePhotoUrl = "profiles/default-profile.jpg",
                     EmailConfirmed = true,
-                    PhoneNumberConfirmed = true
+                    PhoneNumberConfirmed = true,
                 };
 
                 var result = await userManager.CreateAsync(adminUser, "Admin123!");

@@ -190,7 +190,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = "Maintenance",
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = entity.Id
                 };
@@ -204,10 +204,11 @@ namespace Service
                 // Send notification to TechCompany about new maintenance request
                 await _notificationService.SendNotificationAsync(
                     entity.TechCompanyId,
-                    $"New maintenance request #{entity.Id} has been created by customer {entity.CustomerId}",
                     NotificationType.MaintenanceRequestCreated,
                     entity.Id,
-                    "Maintenance"
+                    "Maintenance",
+                    entity.Id,
+                    entity.CustomerId
                 );
 
                 // Get the created maintenance with all includes to return proper names
@@ -502,14 +503,14 @@ namespace Service
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
-                // Send notification to customer about maintenance request acceptance
                 await _notificationService.SendNotificationAsync(
-                    maintenance.CustomerId,
-                    $"Your maintenance request #{maintenance.Id} has been accepted by TechCompany",
-                    NotificationType.MaintenanceRequestAccepted,
-                    maintenance.Id,
-                    "Maintenance"
-                );
+                   maintenance.CustomerId,
+                   NotificationType.MaintenanceRequestAccepted,
+                   maintenance.Id,
+                   "Maintenance",
+                   maintenance.Id,
+                   maintenance.TechCompanyId
+               );
 
                 return new GeneralResponse<MaintenanceDTO>
                 {
@@ -572,17 +573,18 @@ namespace Service
 
                 maintenance.Status = MaintenanceStatus.Completed;
                 maintenance.Notes = notes;
-                maintenance.CompletedDate = DateTime.UtcNow;
+                maintenance.CompletedDate = DateTime.Now;
                 _maintenanceRepo.Update(maintenance);
                 await _maintenanceRepo.SaveChangesAsync();
 
                 // Send notification to customer about maintenance completion
                 await _notificationService.SendNotificationAsync(
-                    maintenance.CustomerId,
-                    $"Your maintenance request #{maintenance.Id} has been completed by TechCompany",
-                    NotificationType.MaintenanceRequestCompleted,
-                    maintenance.Id,
-                    "Maintenance"
+                maintenance.CustomerId,
+                NotificationType.MaintenanceRequestCompleted,
+                maintenance.Id,
+                "Maintenance",
+                maintenance.Id,
+                maintenance.TechCompanyId
                 );
 
                 return new GeneralResponse<MaintenanceDTO>
@@ -705,7 +707,7 @@ namespace Service
                 {
                     Id = Guid.NewGuid().ToString(),
                     ServiceType = "Maintenance",
-                    UsedOn = DateTime.UtcNow,
+                    UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = maintenance.Id
                 };

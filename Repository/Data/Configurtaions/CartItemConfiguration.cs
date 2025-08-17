@@ -15,32 +15,28 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<CartItem> builder)
         {
             base.Configure(builder);
-
             // Deleting a Product is restricted if it's in a cart.
             builder.HasOne(ci => ci.Product)
-                    .WithMany(p => p.CartItems)
-                    .HasForeignKey(ci => ci.ProductId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(p => p.CartItems)
+                   .HasForeignKey(ci => ci.ProductId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             // Deleting a Cart should cascade to delete its items.
             builder.HasOne(ci => ci.Cart)
-                    .WithMany(c => c.CartItems)
-                    .HasForeignKey(ci => ci.CartId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                   .WithMany(c => c.CartItems)
+                   .HasForeignKey(ci => ci.CartId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
-            // This makes the ProductId optional for cases where a PC assembly is being referenced instead.
             builder.Property(ci => ci.ProductId)
-                    .IsRequired(false);
+                    .IsRequired(false); //  Make it optional
 
-            // Configure the relationship for PCAssembly using the correct property name.
             builder.HasOne(ci => ci.PCAssembly)
-                    .WithMany() // Assuming PCAssembly doesn't have a navigation property back to CartItem
-                    .HasForeignKey(ci => ci.PCAssemblyId) // Use the correct property: PCAssemblyId
-                    .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany()
+                   .HasForeignKey(ci => ci.PcAssemblyId)
+                   .OnDelete(DeleteBehavior.Restrict); // Or ClientSetNull
 
-            // Make the PCAssemblyId optional as not all items are from a PC assembly.
-            builder.Property(ci => ci.PCAssemblyId)
-                    .IsRequired(false);
+            builder.Property(ci => ci.PcAssemblyId)
+                   .IsRequired(false); // Also optional
         }
     }
 }

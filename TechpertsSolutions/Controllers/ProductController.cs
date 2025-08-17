@@ -5,6 +5,7 @@ using Core.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using TechpertsSolutions.Core.DTOs;
 using Core.DTOs;
+using System.Text.Json;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -100,8 +101,20 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddProduct([FromBody] ProductCreateDTO dto, [FromQuery] ProductCategory category, [FromQuery] ProductPendingStatus status)
+        public async Task<IActionResult> AddProduct([FromBody] ProductCreateAllDTO MainDto,
+                                                    ProductCategory category = ProductCategory.UnCategorized,
+                                                    ProductPendingStatus status = ProductPendingStatus.Pending)
         {
+            if(MainDto == null)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid product data.",
+                    Data = "ProductCreateAllDTO is null"
+                });
+            }
+
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
@@ -114,7 +127,7 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                var response = await _productService.AddAsync(dto, category, status);
+                var response = await _productService.AddAsync(MainDto.product, MainDto.WarrantiesSpecs,category, status);
                 if (!response.Success)
                 {
                     return BadRequest(response);
@@ -133,10 +146,10 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(string id, [FromBody] ProductUpdateDTO dto, [FromQuery] ProductCategory? category = null, [FromQuery] ProductPendingStatus? status = null)
+        public async Task<IActionResult> UpdateProduct([FromQuery] string Id, ProductPendingStatus Status, ProductCategory Category, [FromBody]ProductUpdateAllDTO MainDto)
         {
             // Debug: Log the incoming request
-            if (dto == null)
+            if (MainDto == null)
             {
                 return BadRequest(new GeneralResponse<string>
                 {
@@ -162,21 +175,21 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (string.IsNullOrWhiteSpace(id) || !Guid.TryParse(id, out _))
+            if (string.IsNullOrWhiteSpace(Id) || !Guid.TryParse(Id, out _))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
                     Message = "Invalid product ID.",
-                    Data = id
+                    Data = Id
                 });
             }
 
             try
             {
-                var categorySelect = category ?? ProductCategory.Processor;
-                var statusSelect = status ?? ProductPendingStatus.Pending;
-                var response = await _productService.UpdateAsync(id, dto, categorySelect, statusSelect);
+                var categorySelect = Category;
+                var statusSelect = Status;
+                var response = await _productService.UpdateAsync(Id, MainDto.product, MainDto.WarrantiesSpecs,categorySelect, statusSelect);
                 if (!response.Success)
                 {
                     return NotFound(response);
@@ -193,6 +206,37 @@ namespace TechpertsSolutions.Controllers
                 });
             }
         }
+
+        [HttpGet("tech-company")]
+        public async Task<IActionResult> GetTechCompanyProducts(
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ProductPendingStatus? status = null,
+            [FromQuery] ProductCategory? categoryEnum = null,
+            [FromQuery] string? subCategoryName = null,
+            [FromQuery] string? nameSearch = null,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool sortDescending = false,
+            [FromQuery] string? techCompanyId = null)
+        {
+            var result = await _productService.GetAllTechCompanyProductAsync(
+                pageNumber,
+                pageSize,
+                status,
+                categoryEnum,
+                subCategoryName,
+                nameSearch,
+                sortBy,
+                sortDescending,
+                techCompanyId
+            );
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
 
         [HttpDelete("{id}")]
         
@@ -218,7 +262,7 @@ namespace TechpertsSolutions.Controllers
 
         [HttpPost("{productId}/upload-image")]
         
-        public async Task<IActionResult> UploadProductImage(string productId, IFormFile imageFile)
+        public async Task<IActionResult> UploadProductImage(string productId, ProductCreateImageUploadDTO imageUploadDto)
         {
             if (string.IsNullOrWhiteSpace(productId) || !Guid.TryParse(productId, out _))
             {
@@ -230,7 +274,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (imageFile == null || imageFile.Length == 0)
+            if (imageUploadDto.ImageUrl == null || imageUploadDto.ImageUrl.Length == 0)
             {
                 return BadRequest(new GeneralResponse<string>
                 {
@@ -240,7 +284,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var response = await _productService.UploadProductImageAsync(imageFile, productId);
+            var response = await _productService.UploadProductImageAsync(imageUploadDto, productId);
             if (!response.Success)
             {
                 return BadRequest(response);

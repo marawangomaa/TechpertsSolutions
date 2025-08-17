@@ -16,6 +16,7 @@ namespace Core.DTOs.ProductDTOs
         public decimal Price { get; set; }
         public decimal? DiscountPrice { get; set; }  
         public string? ImageUrl { get; set; }
+        public List<string>? ImageURLs { get; set; }
         public string? CategoryId { get; set; }
         public string? CategoryName { get; set; }
         public ProductCategory? CategoryEnum { get; set; }
@@ -24,5 +25,7 @@ namespace Core.DTOs.ProductDTOs
         public List<SpecificationDTO>? Specifications { get; set; }
         public List<WarrantyDTO>? Warranties { get; set; }
         public string Status { get; set; } = "Pending";
+        public string TechCompanyId { get; set; }
+        public string? TechCompanyName { get; set; }
     }
 }

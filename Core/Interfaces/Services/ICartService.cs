@@ -17,5 +17,8 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<OrderReadDTO>> PlaceOrderAsync(string customerId, string? deliveryId = null, string? serviceUsageId = null);
         Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(string customerId, List<string> productIds, string? promoCode = null);
         Task<GeneralResponse<CartReadDTO>> AddPCBuildToCartAsync(string assemblyId, decimal total, decimal assemblyFee);
+        Task<GeneralResponse<string>> IncreaseQuantity(string customerId, string productId);
+        Task<GeneralResponse<string>> DecreaseQuantity(string customerId, string productId);
+
     }
 }

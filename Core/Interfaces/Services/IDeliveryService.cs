@@ -1,27 +1,29 @@
 using Core.DTOs;
+using Core.DTOs.DeliveryDTOs;
+using Core.DTOs.DeliveryPersonDTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core.DTOs.DeliveryDTOs;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.Interfaces.Services
 {
     public interface IDeliveryService
     {
-        Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAllAsync();
-        Task<GeneralResponse<DeliveryDTO>> GetByIdAsync(string id);
-        Task<GeneralResponse<DeliveryDetailsDTO>> GetDetailsByIdAsync(string id); 
-        Task<GeneralResponse<DeliveryDTO>> AddAsync(DeliveryCreateDTO dto);                              
+        Task<GeneralResponse<DeliveryReadDTO>> CreateAsync(DeliveryCreateDTO dto);
+        Task AutoAssignDriverAsync(Delivery delivery, string clusterId, double? overrideLat = null, double? overrideLon = null);
+        Task<GeneralResponse<bool>> AssignDriverToClusterAsync(string clusterId, string driverId);
+        Task<GeneralResponse<bool>> AcceptDeliveryAsync(string clusterId, string driverId);
+        Task<GeneralResponse<bool>> DeclineDeliveryAsync(string clusterId, string driverId);
+        Task<GeneralResponse<bool>> CancelDeliveryAsync(string deliveryId);
+        Task<GeneralResponse<bool>> CompleteDeliveryAsync(string deliveryId, string driverId);
+        Task<GeneralResponse<DeliveryReadDTO>> GetByIdAsync(string id);
+        Task<GeneralResponse<IEnumerable<DeliveryReadDTO>>> GetAllAsync();
         Task<GeneralResponse<bool>> DeleteAsync(string id);
-        Task<GeneralResponse<DeliveryDTO>> UpdateAsync(string id, DeliveryUpdateDTO dto);
-        Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByDeliveryPersonIdAsync(string deliveryPersonId);
-        Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetByStatusAsync(string status);
-        Task<GeneralResponse<DeliveryDTO>> AssignDeliveryToPersonAsync(string deliveryId, string deliveryPersonId);
-        Task<GeneralResponse<DeliveryDTO>> UpdateDeliveryStatusAsync(string deliveryId, string newStatus);
-        Task<GeneralResponse<DeliveryDTO>> CompleteDeliveryAsync(string deliveryId, string deliveryPersonId);
-        Task<GeneralResponse<IEnumerable<DeliveryDTO>>> GetAvailableDeliveriesAsync();
-        Task<GeneralResponse<DeliveryDTO>> AcceptDeliveryAsync(string deliveryId, string deliveryPersonId);
+        Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAvailableDeliveryPersonsAsync();
+        Task<GeneralResponse<DeliveryTrackingDTO>> GetDeliveryTrackingAsync(string deliveryId);
+        Task<IEnumerable<Delivery>> GetDeliveriesWithExpiredOffersAsync();
     }
 }

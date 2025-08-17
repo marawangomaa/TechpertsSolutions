@@ -14,6 +14,7 @@ namespace Core.DTOs
         public string Message { get; set; }
         public string ImagePath { get; set; }
         public string ImageUrl { get; set; }
+        public List<string> ImagePaths { get; set; }
     }
 
     public class UserProfilePhotoUploadDTO

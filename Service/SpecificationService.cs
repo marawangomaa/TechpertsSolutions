@@ -274,7 +274,7 @@ namespace Service
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                ImageUrl = p.Image1Url
+                ImageUrl = p.ImageUrl
             }).ToList();
 
             return new GeneralResponse<IEnumerable<ProductListItemDTO>>
@@ -317,7 +317,7 @@ namespace Service
                 Id = p.Id,
                 Name = p.Name,
                 Price = p.Price,
-                ImageUrl = p.Image1Url
+                ImageUrl = p.ImageUrl
             }).ToList();
 
             return new GeneralResponse<IEnumerable<ProductListItemDTO>>

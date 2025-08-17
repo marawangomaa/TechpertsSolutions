@@ -3,8 +3,6 @@ using Core.Interfaces.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Repository;
 using Service;
-using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Services;
 
 namespace TechpertsSolutions.Extensions
 {
@@ -18,6 +16,7 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IDeliveryService, DeliveryService>();
             services.AddScoped<IDeliveryPersonService, DeliveryPersonService>();
+            services.AddScoped<IDeliveryClusterService, DeliveryClusterService>();
             services.AddScoped<IMaintenanceService, MaintenanceService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ISubCategoryService, SubCategoryService>();
@@ -33,16 +32,14 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IAdminUserManagementService, AdminUserManagementService>();
             services.AddScoped<IPCAssemblyCompatibilityService, PCAssemblyCompatibilityService>();
             services.AddScoped<INotificationService, NotificationService>();
-            services.AddScoped<INotificationHub, NotificationHubService>();
-            services.AddScoped<ICommissionService, CommissionService>();
             services.AddScoped<ILocationService, LocationService>();
 
-            // Scoped services that need factories due to complex dependencies
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IPCAssemblyService, PCAssemblyService>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             return services;
         }

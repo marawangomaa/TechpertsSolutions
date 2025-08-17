@@ -47,6 +47,7 @@ namespace Core.Interfaces
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);
+        Task UpdateRangeAsync(IEnumerable<T> entities);
         void RemoveRange(IEnumerable<T> entities);
         Task SaveChangesAsync();
         Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null);

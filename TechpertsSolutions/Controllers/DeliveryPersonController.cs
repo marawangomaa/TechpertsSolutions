@@ -1,13 +1,12 @@
 using Core.DTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
-using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
+    [Authorize(Roles = "Admin,DeliveryPerson")]
     [Route("api/[controller]")]
     [ApiController]
     public class DeliveryPersonController : ControllerBase
@@ -18,6 +17,8 @@ namespace TechpertsSolutions.Controllers
         {
             _deliveryPersonService = deliveryPersonService;
         }
+
+        // --- CRUD / Info ---
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
@@ -36,7 +37,6 @@ namespace TechpertsSolutions.Controllers
             return Ok(result);
         }
 
-        
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailable()
         {
@@ -44,7 +44,6 @@ namespace TechpertsSolutions.Controllers
             return Ok(result);
         }
 
-       
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] DeliveryPersonUpdateDTO dto)
         {
@@ -65,6 +64,59 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
+        // --- Offers Management ---
+
+        [HttpGet("{driverId}/offers/all")]
+        public async Task<IActionResult> GetAllOffers(string driverId)
+        {
+            if (IsInvalidGuid(driverId, out var errorResponse))
+                return BadRequest(errorResponse);
+
+            var result = await _deliveryPersonService.GetAllOffersAsync(driverId);
+            return Ok(result);
+        }
+
+        [HttpGet("{driverId}/offers/pending")]
+        public async Task<IActionResult> GetPendingOffers(string driverId)
+        {
+            if (IsInvalidGuid(driverId, out var errorResponse))
+                return BadRequest(errorResponse);
+
+            var result = await _deliveryPersonService.GetPendingOffersAsync(driverId);
+            return Ok(result);
+        }
+
+        [HttpPost("{driverId}/offers/{offerId}/accept")]
+        public async Task<IActionResult> AcceptOffer(string driverId, string offerId)
+        {
+            if (IsInvalidGuid(driverId, out var errorResponse) || IsInvalidGuid(offerId, out errorResponse))
+                return BadRequest(errorResponse);
+
+            var result = await _deliveryPersonService.AcceptOfferAsync(offerId, driverId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{driverId}/offers/{offerId}/decline")]
+        public async Task<IActionResult> DeclineOffer(string driverId, string offerId)
+        {
+            if (IsInvalidGuid(driverId, out var errorResponse) || IsInvalidGuid(offerId, out errorResponse))
+                return BadRequest(errorResponse);
+
+            var result = await _deliveryPersonService.DeclineOfferAsync(offerId, driverId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        [HttpPost("{driverId}/offers/{offerId}/cancel")]
+        public async Task<IActionResult> CancelOffer(string driverId, string offerId)
+        {
+            if (IsInvalidGuid(driverId, out var errorResponse) || IsInvalidGuid(offerId, out errorResponse))
+                return BadRequest(errorResponse);
+
+            var result = await _deliveryPersonService.CancelOfferAsync(offerId, driverId);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        // --- Helpers ---
         private bool IsInvalidGuid(string id, out GeneralResponse<string> errorResponse)
         {
             errorResponse = null;

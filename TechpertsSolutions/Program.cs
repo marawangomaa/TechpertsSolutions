@@ -1,11 +1,15 @@
+using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,9 +21,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Extensions;
-using TechpertsSolutions.Hubs;
 using TechpertsSolutions.Repository.Data;
-using TechpertsSolutions.Services;
 using TechpertsSolutions.Utilities;
 
 namespace TechpertsSolutions
@@ -30,18 +32,20 @@ namespace TechpertsSolutions
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            
             builder.Services.AddControllers()
                 .AddJsonOptions(opt => {
                 opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
                 opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             builder.Services.AddEndpointsApiExplorer();
-            
-            // Add SignalR
-            builder.Services.AddSignalR();
 
-            
+            builder.Services.AddSignalR().AddHubOptions<ChatHub>(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+
+            builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
+
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
@@ -99,7 +103,11 @@ namespace TechpertsSolutions
                 options.User.RequireUniqueEmail = true;
             });
 
-            
+            builder.Services.Configure<DeliveryAssignmentSettings>(builder.Configuration.GetSection("DeliveryAssignmentSettings"));
+            builder.Services.Configure<StripeSettings>(
+            builder.Configuration.GetSection("Stripe"));
+
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
@@ -130,9 +138,8 @@ namespace TechpertsSolutions
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
                 };
             });
-
+            
             var app = builder.Build();
-
             
             using (var scope = app.Services.CreateScope())
             {
@@ -153,17 +160,32 @@ namespace TechpertsSolutions
             }
             app.UseDeveloperExceptionPage();
 
-            app.UseStaticFiles();
-     
-            app.UseCors("AllowAll");
             app.UseHttpsRedirection();
-            app.UseAuthentication();
+            app.UseCors("AllowAll");
 
+            app.UseAuthentication();
             app.UseAuthorization();
-            
-            // Add SignalR hubs
-            app.MapHub<NotificationHub>("/notificationHub");
-            app.MapHub<ChatHub>("/chatHub");
+
+            app.UseStaticFiles();
+
+            var assetsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "assets");
+
+            if (Directory.Exists(assetsPath))
+            {
+                var subFolders = Directory.GetDirectories(assetsPath);
+
+                foreach (var folder in subFolders)
+                {
+                    var folderName = Path.GetFileName(folder);
+                    app.UseStaticFiles(new StaticFileOptions
+                    {
+                        FileProvider = new PhysicalFileProvider(folder),
+                        RequestPath = "/" + folderName
+                    });
+                }
+            }
+            app.MapHub<NotificationsHub>("/notifications");
+            app.MapHub<ChatHub>("/chat");
 
             app.MapControllers();
 

@@ -30,7 +30,13 @@ namespace Service.Utilities
                 UserId = admin.UserId,
                 RoleId = admin.RoleId,
                 UserName = admin.User?.UserName,
-                RoleName = admin.Role?.Name
+                RoleName = admin.Role?.Name,
+                PostalCode = admin.User?.PostalCode,
+                City = admin.User?.City,
+                Country = admin.User?.Country,
+                Address = admin.User?.Address,
+                Latitude = admin.User?.Latitude,
+                Longitude = admin.User?.Longitude
             };
         }
     }

@@ -11,7 +11,7 @@ namespace Service.Utilities
         {
             if (category == null) return null;
 
-            var defaultImage = "/assets/categories/default-category.png";
+            var defaultImage = "assets/categories/default-category.png";
 
             return new CategoryDTO
             {
@@ -19,18 +19,7 @@ namespace Service.Utilities
                 Name = category.Name,
                 Image = !string.IsNullOrEmpty(category.Image) ? category.Image : defaultImage,
                 Description = category.Description,
-                Products = category.Products?
-                    .Select(p =>
-                    {
-                        var mappedProduct = ProductMapper.MapToProductCard(p);
-                        if (mappedProduct != null && string.IsNullOrEmpty(mappedProduct.ImageUrl))
-                        {
-                            mappedProduct.ImageUrl = defaultImage;
-                        }
-                        return mappedProduct;
-                    })
-                    .Where(p => p != null)
-                    .ToList() ?? new List<ProductCardDTO>(),
+                Products = category.Products?.Select(p => ProductMapper.MapToProductCard(p)).Where(p => p != null).ToList() ?? new List<ProductCardDTO>()
             };
         }
 

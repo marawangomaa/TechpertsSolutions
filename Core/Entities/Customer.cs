@@ -19,6 +19,7 @@ namespace TechpertsSolutions.Core.Entities
         public WishList? WishList { get; set; }
         public List<PCAssembly>? PCAssembly { get; set; } = new List<PCAssembly>();
         public List<Order>? Orders { get; set; } = new List<Order>();
+        public List<Delivery>? Deliveries { get; set; } = new List<Delivery>();
         public List<Maintenance>? Maintenances { get; set; } = new List<Maintenance>();
     }
 }

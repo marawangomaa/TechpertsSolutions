@@ -178,10 +178,10 @@ namespace Service
 
                         var savedCustomer = await customerRepo.GetFirstOrDefaultAsync(c => c.UserId == userId);
 
-                        var newCart = new Cart { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
+                        var newCart = new Cart { CustomerId = savedCustomer.Id, CreatedAt = DateTime.Now };
                         await cartRepo.AddAsync(newCart);
 
-                        var newWishList = new WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.UtcNow };
+                        var newWishList = new WishList { CustomerId = savedCustomer.Id, CreatedAt = DateTime.Now };
                         await wishListRepo.AddAsync(newWishList);
                         await wishListRepo.SaveChangesAsync();
                     }

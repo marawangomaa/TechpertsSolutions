@@ -48,7 +48,7 @@ namespace Service.Utilities
                 Name = dto.Name,
                 CustomerId = dto.CustomerId,
                 ServiceUsageId = dto.ServiceUsageId,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 PCAssemblyItems = dto.Items?.Select(item => new PCAssemblyItem
                 {
                     Id = Guid.NewGuid().ToString(),

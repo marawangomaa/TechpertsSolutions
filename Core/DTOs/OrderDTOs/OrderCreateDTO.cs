@@ -9,8 +9,11 @@ namespace Core.DTOs.OrderDTOs
     public class OrderCreateDTO
     {
         public string CustomerId { get; set; }
-        public List<OrderItemCreateDTO> OrderItems { get; set; }
-        public string DeliveryId { get; set; }
+
+        public double? DeliveryLatitude { get; set; }
+        public double? DeliveryLongitude { get; set; }
+
         public string ServiceUsageId { get; set; }
+        public List<OrderItemCreateDTO> OrderItems { get; set; }
     }
 }

@@ -22,19 +22,391 @@ namespace Repository.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Core.Entities.DeliveryAssignmentSettings", b =>
+                {
+                    b.Property<bool>("AllowMultipleDriversPerCluster")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AssignNearestDriverFirst")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan>("CheckInterval")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("EnableReassignment")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("MaxDriverDistanceKm")
+                        .HasColumnType("float");
+
+                    b.Property<int>("MaxOffersPerDriver")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("OfferExpiryTime")
+                        .HasColumnType("time");
+
+                    b.Property<double>("PricePerKm")
+                        .HasColumnType("float");
+
+                    b.Property<TimeSpan>("RetryDelay")
+                        .HasColumnType("time");
+
+                    b.ToTable("DeliveryAssignmentSettings");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryCluster", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssignedDriverId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AssignedDriverName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AssignmentTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<double>("DistanceKm")
+                        .HasColumnType("float");
+
+                    b.Property<decimal?>("DropoffLatitude")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<decimal?>("DropoffLongitude")
+                        .HasColumnType("decimal(9,6)");
+
+                    b.Property<double>("EstimatedDistance")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("PickupConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PickupConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("SequenceOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TechCompanyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TechCompanyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrackingId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedDriverId");
+
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TechCompanyId");
+
+                    b.HasIndex("TrackingId");
+
+                    b.ToTable("DeliveryCluster");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryClusterDriverOffer", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryClusterId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DriverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("OfferTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("OfferedPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ResponseTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DriverId");
+
+                    b.HasIndex("OfferTime");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("DeliveryClusterId", "DriverId")
+                        .IsUnique();
+
+                    b.ToTable("DeliveryClusterDriverOffer");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryClusterTracking", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Driver")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastRetryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("clusterId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryClusterTracking");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryOffer", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ClusterId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DeliveryPersonId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("ExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("OfferedPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("RespondedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClusterId");
+
+                    b.HasIndex("DeliveryId");
+
+                    b.HasIndex("DeliveryPersonId");
+
+                    b.HasIndex("ExpiryTime");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("DeliveryOffer");
+                });
+
+            modelBuilder.Entity("Core.Entities.PrivateMessage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MessageText")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ReceiverRole")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderRole")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SentAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceiverUserId");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.ToTable("PrivateMessages");
+                });
+
+            modelBuilder.Entity("Core.Entities.StripeSettings", b =>
+                {
+                    b.Property<string>("PublishableKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SecretKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("StripeSettings");
+                });
+
             modelBuilder.Entity("DeliveryTechCompany", b =>
                 {
-                    b.Property<string>("DeliveriesId")
+                    b.Property<string>("DeliveryId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("TechCompaniesId")
+                    b.Property<string>("TechCompanyId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("DeliveriesId", "TechCompaniesId");
+                    b.HasKey("DeliveryId", "TechCompanyId");
 
-                    b.HasIndex("TechCompaniesId");
+                    b.HasIndex("TechCompanyId");
 
-                    b.ToTable("DeliveryTechCompany");
+                    b.ToTable("DeliveryTechCompanies", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -151,7 +523,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -160,7 +538,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -228,7 +606,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -288,7 +666,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
@@ -315,16 +693,22 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -339,6 +723,9 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<decimal?>("AssemblyFee")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("CartId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -346,13 +733,25 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<string>("PCAssemblyId")
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCustomBuild")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PcAssemblyId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("ProductTotal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -363,13 +762,13 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CartId");
 
-                    b.HasIndex("PCAssemblyId");
+                    b.HasIndex("PcAssemblyId");
 
                     b.HasIndex("ProductId");
 
@@ -384,13 +783,19 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -399,7 +804,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -420,7 +825,7 @@ namespace Repository.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(max)");
@@ -432,283 +837,6 @@ namespace Repository.Migrations
                     b.ToTable("CategorySubCategories");
                 });
 
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatMessage", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ChatRoomId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("FileUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReplyToMessageId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatRoomId");
-
-                    b.HasIndex("ReplyToMessageId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("ChatMessages");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatParticipant", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ChatRoomId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsTyping")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastSeen")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChatRoomId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ChatParticipants");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatRoom", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("DeliveryId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MaintenanceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OrderId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PCAssemblyId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeliveryId");
-
-                    b.HasIndex("MaintenanceId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PCAssemblyId");
-
-                    b.ToTable("ChatRooms");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionPlan", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<decimal>("DeliveryCommission")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDefault")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("MaintenanceCommission")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("MonthlySubscriptionFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("PCAssemblyCommission")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("ProductSaleCommission")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CommissionPlans");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionTransaction", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("CommissionAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("DeliveryId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("DeliveryPersonId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("MaintenanceId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PCAssemblyId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("PayoutDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PayoutReference")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("PlatformFee")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("ServiceAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ServiceType")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TechCompanyId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<decimal>("VendorPayout")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeliveryId");
-
-                    b.HasIndex("DeliveryPersonId");
-
-                    b.HasIndex("MaintenanceId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("PCAssemblyId");
-
-                    b.HasIndex("TechCompanyId");
-
-                    b.ToTable("CommissionTransactions");
-                });
-
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
                 {
                     b.Property<string>("Id")
@@ -717,7 +845,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -726,7 +860,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -753,29 +887,46 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CustomerName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("CustomerPhone")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("DeliveryFee")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<decimal>("DeliveryFee")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<string>("DeliveryPersonId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<double?>("DropoffLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("DropoffLongitude")
+                        .HasColumnType("float");
 
                     b.Property<DateTime?>("EstimatedDeliveryDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFinalLeg")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -784,33 +935,77 @@ namespace Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("ParentDeliveryId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("PickupAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("PickupConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PickupConfirmedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("PickupDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<double?>("PickupLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("PickupLongitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("RetryCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("RouteOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("SequenceNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TrackingId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TrackingNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
 
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("DeliveryPersonId");
 
-                    b.HasIndex("OrderId")
-                        .IsUnique();
+                    b.HasIndex("OrderId");
 
-                    b.ToTable("Deliveries");
+                    b.HasIndex("ParentDeliveryId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TrackingId");
+
+                    b.ToTable("Deliveries", (string)null);
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
@@ -818,13 +1013,34 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("AccountStatus")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<double?>("CurrentLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("CurrentLongitude")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastOnline")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("License")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -833,11 +1049,14 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("VehicleImage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VehicleNumber")
                         .HasColumnType("nvarchar(max)");
@@ -866,17 +1085,23 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("DeviceImages")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceType")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Issue")
                         .HasColumnType("nvarchar(max)");
@@ -900,7 +1125,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("WarrantyId")
                         .HasColumnType("nvarchar(450)");
@@ -924,21 +1149,25 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReceiverId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("ReceiverUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RelatedEntityId")
                         .HasColumnType("nvarchar(max)");
@@ -952,11 +1181,11 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("ReceiverUserId");
 
                     b.ToTable("Notifications");
                 });
@@ -969,11 +1198,17 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
@@ -995,7 +1230,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1016,12 +1251,18 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1036,7 +1277,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("ItemTotal")
                         .HasColumnType("decimal(18,2)");
@@ -1058,7 +1305,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1086,14 +1333,20 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -1111,7 +1364,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1132,9 +1385,15 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsAssembled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("PCAssemblyId")
@@ -1160,7 +1419,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1183,7 +1442,10 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -1191,20 +1453,15 @@ namespace Repository.Migrations
                     b.Property<decimal?>("DiscountPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Image1Url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image2Url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image3Url")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Image4Url")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagesURLS")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1226,7 +1483,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("status")
                         .HasColumnType("int");
@@ -1253,7 +1510,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("MaintenanceId")
                         .HasColumnType("nvarchar(450)");
@@ -1265,7 +1528,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("UsedOn")
                         .HasColumnType("datetime2");
@@ -1285,7 +1548,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Key")
                         .IsRequired()
@@ -1298,7 +1567,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -1319,10 +1588,16 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1331,7 +1606,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1343,43 +1618,19 @@ namespace Repository.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Address")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CommissionPlanId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsActive")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<double?>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<string>("MapLocation")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
@@ -1388,7 +1639,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -1398,8 +1649,6 @@ namespace Repository.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CommissionPlanId");
 
                     b.HasIndex("RoleId");
 
@@ -1417,7 +1666,10 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1429,6 +1681,9 @@ namespace Repository.Migrations
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
@@ -1444,7 +1699,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1461,16 +1716,22 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
@@ -1488,7 +1749,13 @@ namespace Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
@@ -1497,7 +1764,7 @@ namespace Repository.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("WishListId")
                         .IsRequired()
@@ -1512,17 +1779,113 @@ namespace Repository.Migrations
                     b.ToTable("WishListItems");
                 });
 
+            modelBuilder.Entity("Core.Entities.DeliveryCluster", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "AssignedDriver")
+                        .WithMany()
+                        .HasForeignKey("AssignedDriverId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
+                        .WithMany("Clusters")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
+                        .WithMany()
+                        .HasForeignKey("TechCompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Core.Entities.DeliveryClusterTracking", "Tracking")
+                        .WithMany()
+                        .HasForeignKey("TrackingId");
+
+                    b.Navigation("AssignedDriver");
+
+                    b.Navigation("Delivery");
+
+                    b.Navigation("TechCompany");
+
+                    b.Navigation("Tracking");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryClusterDriverOffer", b =>
+                {
+                    b.HasOne("Core.Entities.DeliveryCluster", "DeliveryCluster")
+                        .WithMany("DriverOffers")
+                        .HasForeignKey("DeliveryClusterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DeliveryCluster");
+
+                    b.Navigation("Driver");
+                });
+
+            modelBuilder.Entity("Core.Entities.DeliveryOffer", b =>
+                {
+                    b.HasOne("Core.Entities.DeliveryCluster", "Cluster")
+                        .WithMany()
+                        .HasForeignKey("ClusterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
+                        .WithMany("Offers")
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
+                        .WithMany("Offers")
+                        .HasForeignKey("DeliveryPersonId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cluster");
+
+                    b.Navigation("Delivery");
+
+                    b.Navigation("DeliveryPerson");
+                });
+
+            modelBuilder.Entity("Core.Entities.PrivateMessage", b =>
+                {
+                    b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "ReceiverUser")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "SenderUser")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ReceiverUser");
+
+                    b.Navigation("SenderUser");
+                });
+
             modelBuilder.Entity("DeliveryTechCompany", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.Delivery", null)
                         .WithMany()
-                        .HasForeignKey("DeliveriesId")
+                        .HasForeignKey("DeliveryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", null)
                         .WithMany()
-                        .HasForeignKey("TechCompaniesId")
+                        .HasForeignKey("TechCompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1618,7 +1981,7 @@ namespace Repository.Migrations
 
                     b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
                         .WithMany()
-                        .HasForeignKey("PCAssemblyId")
+                        .HasForeignKey("PcAssemblyId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Product", "Product")
@@ -1652,118 +2015,6 @@ namespace Repository.Migrations
                     b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatMessage", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.ChatRoom", "ChatRoom")
-                        .WithMany("Messages")
-                        .HasForeignKey("ChatRoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.ChatMessage", "ReplyToMessage")
-                        .WithMany()
-                        .HasForeignKey("ReplyToMessageId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ChatRoom");
-
-                    b.Navigation("ReplyToMessage");
-
-                    b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatParticipant", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.ChatRoom", "ChatRoom")
-                        .WithMany("Participants")
-                        .HasForeignKey("ChatRoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ChatRoom");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatRoom", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
-                        .WithMany()
-                        .HasForeignKey("DeliveryId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.Maintenance", "Maintenance")
-                        .WithMany()
-                        .HasForeignKey("MaintenanceId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
-                        .WithMany()
-                        .HasForeignKey("PCAssemblyId");
-
-                    b.Navigation("Delivery");
-
-                    b.Navigation("Maintenance");
-
-                    b.Navigation("Order");
-
-                    b.Navigation("PCAssembly");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionTransaction", b =>
-                {
-                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "Delivery")
-                        .WithMany()
-                        .HasForeignKey("DeliveryId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
-                        .WithMany()
-                        .HasForeignKey("DeliveryPersonId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.Maintenance", "Maintenance")
-                        .WithMany()
-                        .HasForeignKey("MaintenanceId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.PCAssembly", "PCAssembly")
-                        .WithMany()
-                        .HasForeignKey("PCAssemblyId");
-
-                    b.HasOne("TechpertsSolutions.Core.Entities.TechCompany", "TechCompany")
-                        .WithMany()
-                        .HasForeignKey("TechCompanyId");
-
-                    b.Navigation("Delivery");
-
-                    b.Navigation("DeliveryPerson");
-
-                    b.Navigation("Maintenance");
-
-                    b.Navigation("Order");
-
-                    b.Navigation("PCAssembly");
-
-                    b.Navigation("TechCompany");
-                });
-
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.AppRole", "Role")
@@ -1786,27 +2037,39 @@ namespace Repository.Migrations
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Delivery", b =>
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.Customer", "Customer")
-                        .WithMany()
+                        .WithMany("Deliveries")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.DeliveryPerson", "DeliveryPerson")
                         .WithMany("Deliveries")
                         .HasForeignKey("DeliveryPersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TechpertsSolutions.Core.Entities.Order", "Order")
-                        .WithOne("Delivery")
-                        .HasForeignKey("TechpertsSolutions.Core.Entities.Delivery", "OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .WithMany("Deliveries")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("TechpertsSolutions.Core.Entities.Delivery", "ParentDelivery")
+                        .WithMany("SubDeliveries")
+                        .HasForeignKey("ParentDeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Core.Entities.DeliveryClusterTracking", "Tracking")
+                        .WithMany()
+                        .HasForeignKey("TrackingId");
 
                     b.Navigation("Customer");
 
                     b.Navigation("DeliveryPerson");
 
                     b.Navigation("Order");
+
+                    b.Navigation("ParentDelivery");
+
+                    b.Navigation("Tracking");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
@@ -1858,7 +2121,9 @@ namespace Repository.Migrations
                 {
                     b.HasOne("TechpertsSolutions.Core.Entities.AppUser", "Receiver")
                         .WithMany()
-                        .HasForeignKey("ReceiverId");
+                        .HasForeignKey("ReceiverUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Receiver");
                 });
@@ -2000,10 +2265,6 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.TechCompany", b =>
                 {
-                    b.HasOne("TechpertsSolutions.Core.Entities.CommissionPlan", "CommissionPlan")
-                        .WithMany("TechCompanies")
-                        .HasForeignKey("CommissionPlanId");
-
                     b.HasOne("TechpertsSolutions.Core.Entities.AppRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
@@ -2015,8 +2276,6 @@ namespace Repository.Migrations
                         .HasForeignKey("TechpertsSolutions.Core.Entities.TechCompany", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CommissionPlan");
 
                     b.Navigation("Role");
 
@@ -2064,6 +2323,11 @@ namespace Repository.Migrations
                     b.Navigation("WishList");
                 });
 
+            modelBuilder.Entity("Core.Entities.DeliveryCluster", b =>
+                {
+                    b.Navigation("DriverOffers");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.AppUser", b =>
                 {
                     b.Navigation("Admin");
@@ -2071,6 +2335,10 @@ namespace Repository.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("DeliveryPerson");
+
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("SentMessages");
 
                     b.Navigation("TechCompany");
                 });
@@ -2087,21 +2355,11 @@ namespace Repository.Migrations
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.ChatRoom", b =>
-                {
-                    b.Navigation("Messages");
-
-                    b.Navigation("Participants");
-                });
-
-            modelBuilder.Entity("TechpertsSolutions.Core.Entities.CommissionPlan", b =>
-                {
-                    b.Navigation("TechCompanies");
-                });
-
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Customer", b =>
                 {
                     b.Navigation("Cart");
+
+                    b.Navigation("Deliveries");
 
                     b.Navigation("Maintenances");
 
@@ -2112,9 +2370,20 @@ namespace Repository.Migrations
                     b.Navigation("WishList");
                 });
 
+            modelBuilder.Entity("TechpertsSolutions.Core.Entities.Delivery", b =>
+                {
+                    b.Navigation("Clusters");
+
+                    b.Navigation("Offers");
+
+                    b.Navigation("SubDeliveries");
+                });
+
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.DeliveryPerson", b =>
                 {
                     b.Navigation("Deliveries");
+
+                    b.Navigation("Offers");
                 });
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Maintenance", b =>
@@ -2124,7 +2393,7 @@ namespace Repository.Migrations
 
             modelBuilder.Entity("TechpertsSolutions.Core.Entities.Order", b =>
                 {
-                    b.Navigation("Delivery");
+                    b.Navigation("Deliveries");
 
                     b.Navigation("OrderItems");
                 });

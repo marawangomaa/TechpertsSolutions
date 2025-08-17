@@ -31,17 +31,17 @@ namespace Service.Utilities
                 Id = customer.Id,
                 City = customer.User.City,
                 Country = customer.User.Country,
-
-                
                 Email = user?.Email,
                 UserName = user?.UserName,
                 PhoneNumber = user?.PhoneNumber,
                 FullName = user?.FullName,
                 Address = user?.Address,
-
-                
+                PostalCode = user?.PostalCode,
+                Latitude = user?.Latitude,
+                Longitude = user?.Longitude,
                 CartId = customer.Cart?.Id,
                 WishListId = customer.WishList?.Id,
+                DeliveryIds = customer.Deliveries?.Select(d => d.Id).ToList(),
                 PCAssemblyIds = customer.PCAssembly?.Select(p => p.Id).ToList(),
                 OrderIds = customer.Orders?.Select(o => o.Id).ToList(),
                 MaintenanceIds = customer.Maintenances?.Select(m => m.Id).ToList()

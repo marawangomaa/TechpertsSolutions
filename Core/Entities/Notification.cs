@@ -8,10 +8,9 @@ namespace TechpertsSolutions.Core.Entities
         public string Message { get; set; }
         public NotificationType Type { get; set; }
         public bool IsRead { get; set; } = false;
-        public string? RelatedEntityId { get; set; } // ID of the related entity (Order, Product, etc.)
-        public string? RelatedEntityType { get; set; } // Type of the related entity
+        public string? RelatedEntityId { get; set; }
+        public string? RelatedEntityType { get; set; }
         
-        // Navigation properties
         public AppUser? Receiver { get; set; }
     }
 } 

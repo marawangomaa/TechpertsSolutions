@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.ProductDTOs;
+using Microsoft.AspNetCore.Http;
 
 namespace Core.DTOs.ProductDTOs
 {
@@ -46,13 +47,10 @@ namespace Core.DTOs.ProductDTOs
         [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", 
             ErrorMessage = "TechCompany ID must be a valid GUID format")]
         public string TechCompanyId { get; set; } = null!;
+        //public IFormFile? ImageUrl { get; set; }
+        //public List<IFormFile>? ImageUrls { get; set; }
 
-        public string? Image1Url { get; set; }
-        public string? Image2Url { get; set; }
-        public string? Image3Url { get; set; }
-        public string? Image4Url { get; set; }
-
-        public List<SpecificationCreateDTO>? Specifications { get; set; }
-        public List<WarrantyCreateDTO>? Warranties { get; set; }
+        //public List<SpecificationCreateDTO>? Specifications { get; set; }
+        //public List<WarrantyCreateDTO>? Warranties { get; set; }
     }
 }

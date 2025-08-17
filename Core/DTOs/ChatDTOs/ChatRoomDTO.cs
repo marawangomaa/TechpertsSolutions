@@ -15,7 +15,7 @@ namespace Core.DTOs.ChatDTOs
         public string? MaintenanceId { get; set; }
         public string? PCAssemblyId { get; set; }
         public string? DeliveryId { get; set; }
-        public ChatRoomType Type { get; set; }
+        //public ChatRoomType Type { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastMessageAt { get; set; }
@@ -30,7 +30,7 @@ namespace Core.DTOs.ChatDTOs
         public string? MaintenanceId { get; set; }
         public string? PCAssemblyId { get; set; }
         public string? DeliveryId { get; set; }
-        public ChatRoomType Type { get; set; }
+        //public ChatRoomType Type { get; set; }
         public List<string> ParticipantIds { get; set; } = new List<string>();
     }
 

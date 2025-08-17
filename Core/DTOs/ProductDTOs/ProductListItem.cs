@@ -11,10 +11,7 @@ namespace Core.DTOs.ProductDTOs
         public string Id { get; set; }
         public string Name { get; set; }
         public string? ImageUrl { get; set; }
-        public string? Image1Url { get; set; }
-        public string? Image2Url { get; set; }
-        public string? Image3Url { get; set; }
-        public string? Image4Url { get; set; }
+        public List<string> ImagesUrls { get; set; }
         public decimal Price { get; set; }
     }
 }

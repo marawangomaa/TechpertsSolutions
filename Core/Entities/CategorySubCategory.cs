@@ -17,6 +17,6 @@ namespace TechpertsSolutions.Core.Entities
         public SubCategory? SubCategory { get; set; }
         
         // Composite primary key for many-to-many relationship
-        public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+        public DateTime AssignedAt { get; set; } = DateTime.Now;
     }
 }

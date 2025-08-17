@@ -25,7 +25,7 @@ namespace TechpertsSolutions.Utilities
                         Id = Guid.NewGuid().ToString(),
                         ServiceType = name,
                         CallCount = 0,
-                        UsedOn = DateTime.UtcNow,
+                        UsedOn = DateTime.Now,
                         MaintenanceId = null,
                         Maintenance = null,
                         Orders = new List<Order>(),

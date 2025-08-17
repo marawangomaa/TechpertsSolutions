@@ -7,6 +7,8 @@ using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Core.DTOs.CustomerDTOs;
+using Core.DTOs.ProfileDTOs;
+using System.Security.Claims;
 
 namespace Service
 {
@@ -32,7 +34,7 @@ namespace Service
             _maintenanceRepository = maintenanceRepository;
         }
 
-        public async Task<GeneralResponse<string>> UpdateProfileAsync(string userId, UserProfileUpdateDTO dto)
+        public async Task<GeneralResponse<string>> UpdateProfileAsync(string userId,UserProfileUpdateDTO dto)
         {
             try
             {
@@ -55,7 +57,7 @@ namespace Service
                     user.PhoneNumber = dto.PhoneNumber;
                 if (!string.IsNullOrWhiteSpace(dto.Address))
                     user.Address = dto.Address;
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
@@ -114,6 +116,9 @@ namespace Service
                     ProfilePhotoUrl = user.ProfilePhotoUrl,
                     IsActive = user.IsActive,
                     Role = roles.FirstOrDefault() ?? "No Role",
+                    PostalCode = user.PostalCode,
+                    Latitude = user.Latitude,
+                    Longitude = user.Longitude,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt
                 };
@@ -164,12 +169,12 @@ namespace Service
                 if (!string.IsNullOrWhiteSpace(dto.Country))
                     user.Country = dto.Country;
 
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
 
                 // Handle profile photo upload if provided
                 if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
                 {
-                    var photoUrl = await _fileService.UploadImageAsync(dto.ProfilePhoto, "profile-photos");
+                    var photoUrl = await _fileService.UploadImageAsync(dto.ProfilePhoto, "profiles");
                     if (!string.IsNullOrEmpty(photoUrl))
                     {
                         user.ProfilePhotoUrl = photoUrl;
@@ -220,7 +225,7 @@ namespace Service
                 }
 
                 // Upload the photo
-                var photoUrl = await _fileService.UploadImageAsync(photoFile, "profile-photos");
+                var photoUrl = await _fileService.UploadImageAsync(photoFile, "profiles");
                 if (string.IsNullOrEmpty(photoUrl))
                 {
                     return new GeneralResponse<string>
@@ -329,6 +334,118 @@ namespace Service
                     Success = false,
                     Message = "An error occurred while retrieving service usage.",
                     Data = null
+                };
+            }
+        }
+        public async Task<GeneralResponse<string>> ChangePasswordAsync(ClaimsPrincipal principal, ChangePasswordDTO dto) 
+        {
+            var user = await _userManager.GetUserAsync(principal);
+
+            if (user == null)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "User not found.",
+                    Data = null
+                };
+            }
+            if (dto.NewPassword != dto.ConfirmNewPassword)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "New password and confirmation do not match.",
+                    Data = null
+                };
+            }
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Password change failed.",
+                    Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                };
+            }
+
+            return new GeneralResponse<string>
+            {
+                Success = true,
+                Message = "Password changed successfully.",
+                Data = user.Id
+            };
+        }
+        public async Task<GeneralResponse<string>> UpdateUserLocationAsync(string userId, UserLocationUpdateDTO dto)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "User not found."
+                    };
+                }
+
+                bool updated = false;
+
+                if (!string.IsNullOrWhiteSpace(dto.PostalCode))
+                {
+                    user.PostalCode = dto.PostalCode;
+                    updated = true;
+                }
+                if (dto.Latitude.HasValue)
+                {
+                    user.Latitude = dto.Latitude.Value;
+                    updated = true;
+                }
+                if (dto.Longitude.HasValue)
+                {
+                    user.Longitude = dto.Longitude.Value;
+                    updated = true;
+                }
+
+                if (!updated)
+                {
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "No location fields provided to update."
+                    };
+                }
+
+                user.UpdatedAt = DateTime.Now;
+
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return new GeneralResponse<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update location.",
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                    };
+                }
+
+                return new GeneralResponse<string>
+                {
+                    Success = true,
+                    Message = "Location updated successfully.",
+                    Data = user.Id
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating location.",
+                    Data = ex.Message
                 };
             }
         }

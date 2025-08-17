@@ -18,7 +18,7 @@ namespace Service.Utilities
             // Determine image: SubCategory's image or fallback to Category's (which has a default via getter)
             var finalImage = !string.IsNullOrEmpty(subCategory.Image)
                 ? subCategory.Image
-                : categoryInfo?.Image ?? "/assets/subcategories/default-subcategory.png";
+                : categoryInfo?.Image ?? "assets/subcategories/default-subcategory.png";
 
             return new SubCategoryDTO
             {

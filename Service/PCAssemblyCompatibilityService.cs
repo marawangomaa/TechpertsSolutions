@@ -73,7 +73,7 @@ namespace Service
                     Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
-                    ImageUrl = p.Image1Url ?? p.ImageUrl, // Use first image or fallback
+                    ImageUrl = p.ImageUrl,
                     CategoryName = p.Category?.Name ?? "Unknown",
                     SubCategoryName = p.SubCategory?.Name ?? "Unknown",
                     TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",
@@ -169,7 +169,7 @@ namespace Service
                     Id = p.Id,
                     Name = p.Name,
                     Price = p.Price,
-                    ImageUrl = p.Image1Url ?? p.ImageUrl,
+                    ImageUrl = p.ImageUrl,
                     CategoryName = p.Category?.Name ?? "Unknown",
                     SubCategoryName = p.SubCategory?.Name ?? "Unknown",
                     TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",

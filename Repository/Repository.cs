@@ -169,7 +169,6 @@ namespace Repository
             await _context.SaveChangesAsync();
         }
 
-        // Helpers for Includes
         private IQueryable<T> ApplyStringIncludes(IQueryable<T> query, string? includeProperties)
         {
             if (!string.IsNullOrWhiteSpace(includeProperties))
@@ -185,34 +184,40 @@ namespace Repository
 
         private IQueryable<T> ApplyExpressionIncludes(IQueryable<T> query, params Expression<Func<T, object>>[] includes)
         {
-            foreach (var include in includes)
+            if (includes != null)
             {
-                query = query.Include(include);
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
             }
             return query;
         }
-
-
-
-        
 
         public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbSet.FirstOrDefaultAsync(predicate);
         }
 
-        // Find with string includes
         public async Task<IEnumerable<T>> FindWithStringIncludesAsync(Expression<Func<T, bool>> predicate, string? includeProperties)
         {
             var query = ApplyStringIncludes(_dbSet.Where(predicate), includeProperties);
             return await query.ToListAsync();
         }
 
-        // Find with expression includes
         public async Task<IEnumerable<T>> FindWithIncludesAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
         {
             var query = ApplyExpressionIncludes(_dbSet.Where(predicate), includes);
             return await query.ToListAsync();
+        }
+
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            if (entities == null || !entities.Any())
+                throw new ArgumentException("No entities provided for update.", nameof(entities));
+
+            _dbSet.UpdateRange(entities);
+            await _context.SaveChangesAsync();
         }
     }
 }

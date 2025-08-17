@@ -114,7 +114,7 @@ namespace TechpertsSolutions.Controllers
                         var newCart = new Cart
                         {
                             CustomerId = newCustomer.Id,
-                            CreatedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.Now,
                             CartItems = new List<CartItem>() 
                         };
 
@@ -123,7 +123,7 @@ namespace TechpertsSolutions.Controllers
                         var newWishlist = new WishList 
                         {
                             CustomerId = newCustomer.Id,
-                            CreatedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.Now,
                             WishListItems = new List<WishListItem>()
                         };
                         await wishListRepo.AddAsync(newWishlist);

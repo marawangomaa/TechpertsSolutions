@@ -177,7 +177,7 @@ namespace Service
                 var newWishList = new WishList
                 {
                     CustomerId = customerId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     WishListItems = new List<WishListItem>()
                 };
 
@@ -340,7 +340,7 @@ namespace Service
                     WishListId = i.WishListId,
                     ProductName = i.Product?.Name ?? "Unknown Product",
                     ProductPrice = i.Product?.Price ?? 0,
-                    ProductImageUrl = i.Product?.ImageUrl
+                    ProductImageUrl = i.Product?.ImageUrl ?? "assets/products/default-product.png"
                 }).ToList() ?? new List<WishListItemReadDTO>()
             };
         }

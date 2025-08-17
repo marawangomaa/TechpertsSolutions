@@ -12,7 +12,11 @@ namespace Service.Utilities
             return new TechCompanyReadDTO
             {
                 Id = entity.Id,
-                MapLocation = entity.MapLocation,
+                Website = entity.Website,
+                Description = entity.Description,
+                Longitude = entity.User?.Longitude,
+                Latitude = entity.User?.Latitude,
+                PostalCode = entity.User?.PostalCode,
                 City = entity.User?.City ?? "Unknown",
                 Country = entity.User?.Country ?? "Unknown",
                 UserId = entity.UserId,
@@ -35,7 +39,6 @@ namespace Service.Utilities
             return new TechCompany
             {
                 Id = Guid.NewGuid().ToString(),
-                MapLocation = dto.MapLocation,
                 UserId = dto.UserId,
                 RoleId = dto.RoleId
             };
@@ -45,14 +48,10 @@ namespace Service.Utilities
         {
             if (entity == null || dto == null) return;
 
-            if (!string.IsNullOrWhiteSpace(dto.MapLocation))
-                entity.MapLocation = dto.MapLocation;
-
-            if (!string.IsNullOrWhiteSpace(dto.UserId))
-                entity.UserId = dto.UserId;
-
-            if (!string.IsNullOrWhiteSpace(dto.RoleId))
-                entity.RoleId = dto.RoleId;
+            if (!string.IsNullOrWhiteSpace(dto.Website))
+                entity.Website = dto.Website;
+            if (!string.IsNullOrWhiteSpace(dto.Description))
+                entity.Description = dto.Description;
         }
     }
 }

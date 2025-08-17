@@ -1,21 +1,20 @@
+using Core.DTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
-using Microsoft.AspNetCore.Authorization;       
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using TechpertsSolutions.Core.DTOs;
+using System.Web;
 using TechpertsSolutions.Core.DTOs.LoginDTOs;
 using TechpertsSolutions.Core.DTOs.RegisterDTOs;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Repository.Data;
-using TechpertsSolutions.Utilities;
-using Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -24,30 +23,29 @@ namespace TechpertsSolutions.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
+        private readonly UserManager<AppUser> userManager;
+        private readonly IWebHostEnvironment _env;
 
-        public AuthenticationController(IAuthService authService)
+        public AuthenticationController(
+            IAuthService authService,
+            IEmailService emailService,
+            IConfiguration configuration,
+            UserManager<AppUser> _userManager,
+            IWebHostEnvironment env)
         {
             _authService = authService;
+            _emailService = emailService;
+            _configuration = configuration;
+            userManager = _userManager;
+            _env = env;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromForm] RegisterDTO dto, [FromForm] RoleType role)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Validation failed",
-                    Data = string.Join("; ", errors)
-                });
-            }
+            if (!ModelState.IsValid) return ValidationError();
 
             var response = await _authService.RegisterAsync(dto, role);
             return StatusCode(response.Success ? 200 : 400, response);
@@ -56,21 +54,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromForm] LoginDTO dto)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Validation failed",
-                    Data = string.Join("; ", errors)
-                });
-            }
+            if (!ModelState.IsValid) return ValidationError();
 
             var response = await _authService.LoginAsync(dto);
             return StatusCode(response.Success ? 200 : 400, response);
@@ -79,63 +63,15 @@ namespace TechpertsSolutions.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDTO dto)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Validation failed",
-                    Data = string.Join("; ", errors)
-                });
-            }
-
+            if (!ModelState.IsValid) return ValidationError();
             var response = await _authService.ForgotPasswordAsync(dto);
-            
-            
-            if (response.Success && response.Data != null)
-            {
-                
-                var smtpServer = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Email:SmtpServer"];
-                if (string.IsNullOrEmpty(smtpServer))
-                {
-                    
-                    return Ok(new GeneralResponse<string>
-                    {
-                        Success = true,
-                        Message = "Password reset token generated successfully. (Development mode - email not configured)",
-                        Data = response.Data 
-                    });
-                }
-            }
-            
             return StatusCode(response.Success ? 200 : 400, response);
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromForm] ResetPasswordDTO dto)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Validation failed",
-                    Data = string.Join("; ", errors)
-                });
-            }
-
+            if (!ModelState.IsValid) return ValidationError();
             var response = await _authService.ResetPasswordAsync(dto);
             return StatusCode(response.Success ? 200 : 400, response);
         }
@@ -144,27 +80,12 @@ namespace TechpertsSolutions.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteAccount([FromForm] DeleteAccountDTO dto)
         {
-            
-            if (!ModelState.IsValid)
-            {
-                var errors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
+            if (!ModelState.IsValid) return ValidationError();
 
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Validation failed",
-                    Data = string.Join("; ", errors)
-                });
-            }
-
-            
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            
-            if (string.IsNullOrEmpty(userId))
+
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(userEmail))
             {
                 return Unauthorized(new GeneralResponse<string>
                 {
@@ -174,25 +95,51 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                return Unauthorized(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "User email not found in token.",
-                    Data = null
-                });
-            }
-
-            
-            
-            Console.WriteLine($"Delete Account Request:");
-            Console.WriteLine($"User ID from token: {userId}");
-            Console.WriteLine($"User Email from token: {userEmail}");
-            Console.WriteLine($"Password provided: {!string.IsNullOrEmpty(dto.Password)}");
-
             var response = await _authService.DeleteAccountAsync(dto, userId);
             return StatusCode(response.Success ? 200 : 400, response);
+        }
+
+        [HttpPost("test-email")]
+        public async Task<IActionResult> TestEmail([FromQuery] string to)
+        {
+            try
+            {
+                var body = "<h1>Hello from Techperts Solutions!</h1><p>This is a test email.</p>";
+                var success = await _emailService.SendEmailAsync(to, "Test Email", body);
+
+                if (success)
+                    return Ok(new { Success = true, Message = "Email sent successfully!" });
+
+                return StatusCode(500, new { Success = false, Message = "Failed to send email." });
+            }
+            catch (Exception ex)
+            {
+                // Return the exact SMTP/Gmail error
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "Email sending failed",
+                    Error = ex.Message,
+                    StackTrace = ex.StackTrace
+                });
+            }
+        }
+
+
+
+        private IActionResult ValidationError()
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+            return BadRequest(new GeneralResponse<string>
+            {
+                Success = false,
+                Message = "Validation failed",
+                Data = string.Join("; ", errors)
+            });
         }
     }
 }

@@ -57,7 +57,9 @@ namespace Service
                                 p => p.Specifications, 
                                 p => p.Warranties, 
                                 p => p.Category, 
-                                p => p.SubCategory);
+                                p => p.SubCategory,
+                                p => p.TechCompany, // Add this line
+                                p => p.TechCompany.User);
                             
                             // Update the product with loaded data
                             if (productWithIncludes != null)
@@ -66,6 +68,7 @@ namespace Service
                                 product.Warranties = productWithIncludes.Warranties;
                                 product.Category = productWithIncludes.Category;
                                 product.SubCategory = productWithIncludes.SubCategory;
+                                product.TechCompany = productWithIncludes.TechCompany;
                             }
                         }
                     }
@@ -93,7 +96,7 @@ namespace Service
                             {
                                 CategoryId = processorCategory.Id,
                                 SubCategoryId = subCategory.Id,
-                                AssignedAt = DateTime.UtcNow
+                                AssignedAt = DateTime.Now
                             };
                             await _categorySubCategoryRepository.AddAsync(categorySubCategory);
                             await _categorySubCategoryRepository.SaveChangesAsync();
@@ -178,8 +181,10 @@ namespace Service
                             p => p.Specifications, 
                             p => p.Warranties, 
                             p => p.Category, 
-                            p => p.SubCategory);
-                        
+                            p => p.SubCategory,
+                            p => p.TechCompany,
+                            p => p.TechCompany.User);
+
                         // Update the product with loaded data
                         if (productWithIncludes != null)
                         {
@@ -187,6 +192,7 @@ namespace Service
                             product.Warranties = productWithIncludes.Warranties;
                             product.Category = productWithIncludes.Category;
                             product.SubCategory = productWithIncludes.SubCategory;
+                            product.TechCompany = productWithIncludes.TechCompany;
                         }
                     }
                 }
@@ -258,7 +264,9 @@ namespace Service
                         p => p.Specifications, 
                         p => p.Warranties, 
                         p => p.Category, 
-                        p => p.SubCategory);
+                        p => p.SubCategory,
+                        p => p.TechCompany, // Add this line
+                        p => p.TechCompany.User);
                     
                     // Update the product with loaded data
                     if (productWithIncludes != null)
@@ -267,6 +275,7 @@ namespace Service
                         product.Warranties = productWithIncludes.Warranties;
                         product.Category = productWithIncludes.Category;
                         product.SubCategory = productWithIncludes.SubCategory;
+                        product.TechCompany = productWithIncludes.TechCompany;
                     }
                 }
             }
@@ -795,7 +804,7 @@ namespace Service
                 {
                     CategoryId = categoryId,
                     SubCategoryId = subCategoryId,
-                    AssignedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.Now
                 };
 
                 await _categorySubCategoryRepository.AddAsync(categorySubCategory);
@@ -896,7 +905,7 @@ namespace Service
                 {
                     CategoryId = categoryId,
                     SubCategoryId = assignDto.SubCategoryId,
-                    AssignedAt = DateTime.UtcNow
+                    AssignedAt = DateTime.Now
                 }).ToList();
 
                 // Add all relationships

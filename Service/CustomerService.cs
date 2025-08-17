@@ -34,10 +34,14 @@ namespace Service
             {
                 // Optimized includes for customer listing with essential related data
                 var customers = await _customerRepository.GetAllWithIncludesAsync(
-                    c => c.User, 
+                     c => c.User,
                     c => c.Role,
                     c => c.Cart,
-                    c => c.WishList);
+                    c => c.WishList,
+                    c => c.Orders,
+                    c => c.Maintenances,
+                    c => c.PCAssembly,
+                    c => c.Deliveries);
 
                 var customerDtos = customers.Select(CustomerMapper.MapToCustomerDTO).ToList();
 
@@ -114,7 +118,7 @@ namespace Service
 
             try
             {
-                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, c => ((Customer)c).User);
+                var customer = await _customerRepository.GetByIdWithIncludesAsync(id,c => c.User);
                 if (customer == null)
                 {
                     return new GeneralResponse<CustomerEditDTO>
@@ -325,7 +329,8 @@ namespace Service
                     c => c.WishList,
                     c => c.Orders,
                     c => c.Maintenances,
-                    c => c.PCAssembly);
+                    c => c.PCAssembly,
+                    c => c.Deliveries);
 
                 if (customer == null)
                 {

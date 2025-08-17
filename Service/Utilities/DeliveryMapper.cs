@@ -1,133 +1,99 @@
 using Core.DTOs.DeliveryDTOs;
+using Core.DTOs.DeliveryPersonDTOs;
 using Core.Enums;
+using Core.Interfaces;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
 {
     public static class DeliveryMapper
     {
-        public static DeliveryDTO MapToDeliveryDTO(Delivery delivery)
-        {
-            if (delivery == null) return null;
-
-            return new DeliveryDTO
-            {
-                Id = delivery.Id,
-                TrackingNumber = delivery.TrackingNumber,
-                DeliveryAddress = delivery.DeliveryAddress,
-                CustomerPhone = delivery.CustomerPhone,
-                CustomerName = delivery.CustomerName,
-                EstimatedDeliveryDate = delivery.EstimatedDeliveryDate,
-                ActualDeliveryDate = delivery.ActualDeliveryDate,
-                DeliveryStatus = delivery.Status.ToString(),
-                Notes = delivery.Notes,
-                DeliveryFee = delivery.DeliveryFee,
-                DeliveryPersonId = delivery.DeliveryPersonId,
-                CustomerId = delivery.CustomerId
-            };
-        }
-
-        public static Delivery MapToDelivery(DeliveryCreateDTO dto)
+        public static Delivery ToEntity(DeliveryCreateDTO dto)
         {
             if (dto == null) return null;
 
             return new Delivery
             {
                 Id = Guid.NewGuid().ToString(),
-                TrackingNumber = dto.TrackingNumber,
-                DeliveryAddress = dto.DeliveryAddress,
-                CustomerPhone = dto.CustomerPhone,
-                CustomerName = dto.CustomerName,
-                EstimatedDeliveryDate = dto.EstimatedDeliveryDate,
-                Status = DeliveryStatus.Assigned,
-                Notes = dto.Notes,
-                DeliveryFee = dto.DeliveryFee,
-                DeliveryPersonId = dto.DeliveryPersonId,
-                CustomerId = dto.CustomerId
+                OrderId = dto.OrderId,
+                CustomerId = dto.customerId,
+                Status = DeliveryStatus.Pending,
+                CreatedAt = DateTime.Now,
+                DropoffLatitude = dto.CustomerLatitude,
+                DropoffLongitude = dto.CustomerLongitude,
             };
         }
 
-        public static void UpdateDelivery(Delivery delivery, DeliveryUpdateDTO dto)
+        public static DeliveryReadDTO ToReadDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
         {
-            if (delivery == null || dto == null) return;
+            if (entity == null) return null;
 
-            if (!string.IsNullOrWhiteSpace(dto.TrackingNumber))
-                delivery.TrackingNumber = dto.TrackingNumber;
-
-            if (!string.IsNullOrWhiteSpace(dto.DeliveryAddress))
-                delivery.DeliveryAddress = dto.DeliveryAddress;
-
-            if (!string.IsNullOrWhiteSpace(dto.CustomerPhone))
-                delivery.CustomerPhone = dto.CustomerPhone;
-
-            if (!string.IsNullOrWhiteSpace(dto.CustomerName))
-                delivery.CustomerName = dto.CustomerName;
-
-            if (dto.EstimatedDeliveryDate.HasValue)
-                delivery.EstimatedDeliveryDate = dto.EstimatedDeliveryDate;
-
-            if (dto.ActualDeliveryDate.HasValue)
-                delivery.ActualDeliveryDate = dto.ActualDeliveryDate;
-
-            if (!string.IsNullOrWhiteSpace(dto.DeliveryStatus))
+            return new DeliveryReadDTO
             {
-                if (Enum.TryParse<DeliveryStatus>(dto.DeliveryStatus, out var status))
-                {
-                    delivery.Status = status;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(dto.Notes))
-                delivery.Notes = dto.Notes;
-
-            if (dto.DeliveryFee.HasValue)
-                delivery.DeliveryFee = dto.DeliveryFee;
-
-            if (!string.IsNullOrWhiteSpace(dto.DeliveryPersonId))
-                delivery.DeliveryPersonId = dto.DeliveryPersonId;
+                Id = entity.Id,
+                Status = entity.Status,
+                DeliveryFee = entity.DeliveryFee,
+                CreatedAt = entity.CreatedAt,
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
+            };
         }
 
-        public static DeliveryDetailsDTO MapToDeliveryDetailsDTO(Delivery delivery)
+        public static DeliveryDTO ToDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
         {
-            if (delivery == null) return null;
+            if (entity == null) return null;
+
+            return new DeliveryDTO
+            {
+                Id = entity.Id,
+                Status = entity.Status,
+                DeliveryFee = entity.DeliveryFee,
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
+            };
+        }
+
+        public static DeliveryDetailsDTO ToDetailsDTO(Delivery entity, IEnumerable<DeliveryClusterDTO>? clusters = null)
+        {
+            if (entity == null) return null;
 
             return new DeliveryDetailsDTO
             {
-                Id = delivery.Id,
-                TrackingNumber = delivery.TrackingNumber,
-                DeliveryAddress = delivery.DeliveryAddress,
-                CustomerPhone = delivery.CustomerPhone,
-                CustomerName = delivery.CustomerName,
-                EstimatedDeliveryDate = delivery.EstimatedDeliveryDate,
-                ActualDeliveryDate = delivery.ActualDeliveryDate,
-                DeliveryStatus = delivery.Status.ToString(),
-                Notes = delivery.Notes,
-                DeliveryFee = delivery.DeliveryFee,
-                DeliveryPerson = delivery.DeliveryPerson != null ? new DeliveryPersonDTO
+                Id = entity.Id,
+                TrackingNumber = entity.TrackingNumber,
+                DeliveryAddress = null,
+                CustomerPhone = entity.CustomerPhone,
+                CustomerName = entity.CustomerName,
+                EstimatedDeliveryDate = entity.EstimatedDeliveryDate,
+                ActualDeliveryDate = entity.ActualDeliveryDate,
+                DeliveryStatus = entity.Status,
+                Notes = entity.Notes,
+                DeliveryFee = entity.DeliveryFee,
+                DeliveryPerson = entity.DeliveryPerson == null ? null : new DeliveryPersonDTO
                 {
-                    Id = delivery.DeliveryPerson.Id,
-                    UserFullName = delivery.DeliveryPerson.User?.FullName,
-                    VehicleNumber = delivery.DeliveryPerson.VehicleNumber,
-                    VehicleType = delivery.DeliveryPerson.VehicleType,
-                    PhoneNumber = delivery.DeliveryPerson.User.PhoneNumber,
-                    City = delivery.DeliveryPerson.User.City,
-                    Country = delivery.DeliveryPerson.User.Country,
-                    IsAvailable = delivery.DeliveryPerson.IsAvailable
-                } : null,
-                TechCompanies = delivery.TechCompanies?.Select(tc => new DeliveryTechCompanyDTO
-                {
-                    Id = tc.Id,
-                    City = tc.User.City,
-                    Country = tc.User.Country,
-                    UserFullName = tc.User?.FullName
-                }).ToList()
+                    Id = entity.DeliveryPerson.Id,
+                    UserFullName = entity?.DeliveryPerson?.User?.FullName,
+                    VehicleNumber = entity.DeliveryPerson.VehicleNumber,
+                    VehicleType = entity.DeliveryPerson.VehicleType,
+                    PhoneNumber = entity.DeliveryPerson.User?.PhoneNumber,
+                    City = entity.DeliveryPerson.User?.City,
+                    Country = entity.DeliveryPerson.User?.Country,
+                    IsAvailable = entity.DeliveryPerson.IsAvailable
+                },
+                Order = null,
+                TechCompanies = null,
+                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>()
             };
         }
 
-        public static IEnumerable<DeliveryDTO> MapToDeliveryDTOList(IEnumerable<Delivery> deliveries)
+        public static void UpdateEntity(Delivery entity, DeliveryUpdateDTO dto)
         {
-            if (deliveries == null) return new List<DeliveryDTO>();
-            return deliveries.Select(MapToDeliveryDTO).Where(dto => dto != null);
+            if (entity == null || dto == null) return;
+
+            entity.Status = dto.Status;
+
+            if (dto.DeliveryFee.HasValue)
+                entity.DeliveryFee = dto.DeliveryFee.Value;
+
+            entity.UpdatedAt = DateTime.Now;
         }
     }
-} 
+}

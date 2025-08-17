@@ -1,116 +1,185 @@
-using Core.DTOs.OrderDTOs;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
+using Core.DTOs.DeliveryDTOs;
+using Core.DTOs.OrderDTOs;
+using Core.Entities;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Service.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
+using TechpertsSolutions.Repository.Data;
 
 namespace Service
 {
     public class OrderService : IOrderService
     {
         private readonly IRepository<Order> _orderRepo;
+        private readonly IRepository<Delivery> _deliveryRepo;
+        private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
+        private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
+        private readonly TechpertsContext _dbContext;
+        private readonly IDeliveryService _deliveryService;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IRepository<Order> orderRepo, IRepository<OrderHistory> orderHistoryRepo, INotificationService notificationService)
+        public OrderService(
+            IRepository<Order> orderRepo,
+            IRepository<OrderHistory> orderHistoryRepo,
+            IRepository<Delivery> deliveryRepo,
+            IRepository<DeliveryPerson> deliveryPersonRepo,
+            IRepository<DeliveryOffer> deliveryOfferRepo,
+            INotificationService notificationService,
+            IDeliveryService deliveryService,
+            ILogger<OrderService> logger,
+            TechpertsContext dbContext
+            )
         {
             _orderRepo = orderRepo;
             _orderHistoryRepo = orderHistoryRepo;
+            _deliveryRepo = deliveryRepo;
+            _deliveryPersonRepo = deliveryPersonRepo;
+            _deliveryOfferRepo = deliveryOfferRepo;
+            _deliveryService = deliveryService;
             _notificationService = notificationService;
+            _dbContext = dbContext;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<GeneralResponse<OrderReadDTO>> CreateOrderAsync(OrderCreateDTO dto)
         {
-            
             if (dto == null)
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Order data cannot be null.",
                     Data = null
                 };
-            }
 
             if (string.IsNullOrWhiteSpace(dto.CustomerId))
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Customer ID is required.",
                     Data = null
                 };
-            }
 
             if (!Guid.TryParse(dto.CustomerId, out _))
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
                     Data = null
                 };
-            }
 
             if (dto.OrderItems == null || !dto.OrderItems.Any())
-            {
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
                     Message = "Order must contain at least one item.",
                     Data = null
                 };
-            }
 
             try
             {
                 var order = OrderMapper.ToEntity(dto);
-                
-                // Calculate total amount
                 order.TotalAmount = order.OrderItems.Sum(i => i.ItemTotal);
 
-                // Get or create order history for this customer
                 var orderHistory = await GetOrCreateOrderHistoryAsync(dto.CustomerId);
                 order.OrderHistoryId = orderHistory.Id;
 
                 await _orderRepo.AddAsync(order);
                 await _orderRepo.SaveChangesAsync();
 
-                // Send notification to admin about new order
-                await _notificationService.SendNotificationToRoleAsync(
-                    "Admin",
-                    $"New order #{order.Id} has been created by customer {order.CustomerId}",
-                    NotificationType.OrderCreated,
-                    order.Id,
-                    "Order"
-                );
+                DeliveryCreateDTO? deliveryDto = null;
+                GeneralResponse<DeliveryReadDTO>? deliveryResponse = null;
 
-                // Get the created order with all includes to return proper data
+                if (dto.DeliveryLatitude.HasValue && dto.DeliveryLongitude.HasValue)
+                {
+                    deliveryDto = new DeliveryCreateDTO
+                    {
+                        OrderId = order.Id,
+                        CustomerLatitude = dto.DeliveryLatitude.Value,
+                        CustomerLongitude = dto.DeliveryLongitude.Value
+                    };
+
+                    deliveryResponse = await _deliveryService.CreateAsync(deliveryDto);
+
+                    if (!deliveryResponse.Success)
+                        _logger.LogWarning("CreateOrderAsync: Delivery creation failed for order {OrderId}: {Message}", order.Id, deliveryResponse.Message);
+                    else
+                        _logger.LogInformation("CreateOrderAsync: Delivery created successfully for order {OrderId}.", order.Id);
+                }
+
                 var createdOrder = await _orderRepo.GetFirstOrDefaultAsync(
                     o => o.Id == order.Id,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    query => query
+                        .Include(o => o.OrderItems)
+                            .ThenInclude(oi => oi.Product)
+                                .ThenInclude(p => p.TechCompany)
+                        .Include(o => o.Customer)
+                            .ThenInclude(c => c.User)
+                        .Include(o => o.OrderHistory)
+                        .Include(o => o.Deliveries)
+                            .ThenInclude(d => d.DeliveryPerson)
+                                .ThenInclude(dp => dp.User)
+                );
+
+                // --- Notifications ---
+                // 1. Notify Admins
+                await _notificationService.SendNotificationToRoleAsync(
+                    "Admin",
+                    NotificationType.OrderCreated,
+                    order.Id,
+                    "Order",
+                    order.Id
+                );
+
+                // 2. Notify Customer
+                await _notificationService.SendNotificationAsync(
+                    dto.CustomerId,
+                    NotificationType.OrderCreated,
+                    order.Id,
+                    "Order",
+                    order.Id
+                );
+
+                // 3. Notify TechCompanies
+                var techCompanyIds = createdOrder.OrderItems
+                    .Select(oi => oi.Product.TechCompany.UserId)
+                    .Distinct()
+                    .ToList();
+
+                await _notificationService.SendNotificationsToMultipleUsers(
+                    techCompanyIds,
+                    NotificationType.OrderCreated,
+                    order.Id,
+                    "Order",
+                    order.Id
+                );
 
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = true,
-                    Message = "Order created successfully.",
+                    Message = "Order created successfully, notifications sent, and delivery offers sent to nearby drivers.",
                     Data = OrderMapper.ToReadDTO(createdOrder)
                 };
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "CreateOrderAsync: Failed to create order.");
                 return new GeneralResponse<OrderReadDTO>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while creating the order.",
+                    Message = $"An unexpected error occurred while creating the order. {ex.Message}",
                     Data = null
                 };
             }
@@ -146,7 +215,7 @@ namespace Service
                     o => o.OrderItems,
                     o => o.Customer,
                     o => o.OrderHistory,
-                    o => o.Delivery,
+                    o => o.Deliveries,
                     o => o.ServiceUsage);
 
                 if (order == null)
@@ -274,7 +343,6 @@ namespace Service
 
         private async Task<OrderHistory> GetOrCreateOrderHistoryAsync(string customerId)
         {
-            // First, try to find an existing OrderHistory that has orders for this customer
             var existingHistory = await _orderHistoryRepo.GetFirstOrDefaultAsync(
                 oh => oh.Orders.Any(o => o.CustomerId == customerId),
                 includeProperties: "Orders");
@@ -284,7 +352,6 @@ namespace Service
                 return existingHistory;
             }
 
-            // If no existing history found, create a new one
             var newHistory = new OrderHistory
             {
                 Id = Guid.NewGuid().ToString(),
@@ -389,13 +456,13 @@ namespace Service
                 _orderRepo.Update(order);
                 await _orderRepo.SaveChangesAsync();
 
-                // Send notification to customer about order status change
                 await _notificationService.SendNotificationAsync(
-                    order.CustomerId,
-                    $"Your order #{order.Id} status has been updated to '{newStatus.GetStringValue()}'",
-                    NotificationType.OrderStatusChanged,
-                    order.Id,
-                    "Order"
+                order.CustomerId,
+                NotificationType.OrderStatusChanged,
+                order.Id,
+                "Order",
+                order.Id,
+                newStatus.GetStringValue()
                 );
 
                 return new GeneralResponse<bool>
@@ -410,7 +477,7 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = false,
-                    Message = "An unexpected error occurred while updating order status.",
+                    Message = $"An unexpected error occurred while updating order status. {ex}",
                     Data = false
                 };
             }

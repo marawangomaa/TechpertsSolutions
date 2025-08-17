@@ -1,12 +1,13 @@
+using Core.DTOs;
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
-using Core.DTOs;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 using Core.Interfaces.Services;
-using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using Service;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace TechpertsSolutions.Controllers 
 {
@@ -220,6 +221,27 @@ namespace TechpertsSolutions.Controllers
                     Data = ex.Message
                 });
             }
+        }
+        [HttpPut("increase")]
+        public async Task<IActionResult> IncreaseQuantity([FromQuery] string customerId, [FromQuery] string productId)
+        {
+            var result = await cartService.IncreaseQuantity(customerId, productId);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPut("decrease")]
+        public async Task<IActionResult> DecreaseQuantity([FromQuery] string customerId, [FromQuery] string productId)
+        {
+            var result = await cartService.DecreaseQuantity(customerId, productId);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
         }
 
         [HttpDelete("{customerId}/items/{productId}")]

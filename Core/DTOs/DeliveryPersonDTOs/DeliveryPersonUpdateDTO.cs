@@ -1,3 +1,4 @@
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,11 @@ namespace Core.DTOs.DeliveryPersonDTOs
     {
         public string? VehicleNumber { get; set; }
         public string? VehicleType { get; set; }
+        public string? VehicleImage { get; set; }
         public string? PhoneNumber { get; set; }
         public string? City { get; set; }
         public string? Country { get; set; }
         public bool? IsAvailable { get; set; }
+        public DeliveryPersonStatus AccountStatus { get; set; }
     }
 } 

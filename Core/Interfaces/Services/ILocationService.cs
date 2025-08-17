@@ -1,17 +1,18 @@
-using Core.DTOs.LocationDTOs;
-using Core.DTOs;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Core.Interfaces.Services
 {
     public interface ILocationService
     {
-        Task<GeneralResponse<IEnumerable<NearestTechCompanyDTO>>> GetNearestTechCompaniesAsync(LocationSearchDTO searchDto);
-        Task<GeneralResponse<NearestTechCompanyDTO>> GetNearestTechCompanyAsync(double latitude, double longitude, string? serviceType = null);
-        Task<GeneralResponse<double>> CalculateDistanceAsync(double lat1, double lon1, double lat2, double lon2);
-        Task<GeneralResponse<LocationDTO>> GetLocationFromAddressAsync(string address);
-        Task<GeneralResponse<LocationDTO>> GetAddressFromCoordinatesAsync(double latitude, double longitude);
-        Task<GeneralResponse<bool>> UpdateUserLocationAsync(string userId, double latitude, double longitude);
-        Task<GeneralResponse<bool>> UpdateTechCompanyLocationAsync(string techCompanyId, double latitude, double longitude, string address);
-        Task<GeneralResponse<IEnumerable<NearestTechCompanyDTO>>> GetTechCompaniesInRadiusAsync(double latitude, double longitude, double radiusInKm);
+        double CalculateDistance(double lat1, double lon1, double lat2, double lon2);
+        (double Lat, double Lon) GetMidpoint(double lat1, double lon1, double lat2, double lon2);
+        double CompanyToCustomer(double companyLat, double companyLon, double customerLat, double customerLon);
+        double CompanyToDriver(double companyLat, double companyLon, double driverLat, double driverLon);
+        double DriverToCustomer(double driverLat, double driverLon, double customerLat, double customerLon);
+        double DriverToCompany(double driverLat, double driverLon, double companyLat, double companyLon);
     }
-} 
+}

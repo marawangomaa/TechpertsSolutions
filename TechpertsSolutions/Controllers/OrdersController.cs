@@ -18,12 +18,6 @@ namespace TechpertsSolutions.Controllers
         {
             _service = service;
         }
-
-        
-        
-        
-        
-        
         
         [HttpPost]
         public ActionResult<GeneralResponse<string>> CreateOrder(OrderCreateDTO dto)

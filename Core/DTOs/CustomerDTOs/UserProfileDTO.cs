@@ -13,6 +13,9 @@ namespace Core.DTOs.CustomerDTOs
         public string? ProfilePhotoUrl { get; set; }
         public bool IsActive { get; set; }
         public string Role { get; set; }
+        public string PostalCode { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

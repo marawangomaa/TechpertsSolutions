@@ -41,8 +41,8 @@ namespace Service
                 Duration = dto.Duration,
                 Description = dto.Description,
                 ProductId = dto.ProductId,
-                StartDate = DateTime.UtcNow,
-                EndDate = DateTime.UtcNow.AddMonths(int.Parse(dto.Duration))
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddMonths(int.Parse(dto.Duration))
             };
 
             await _warrantyRepo.AddAsync(warranty);

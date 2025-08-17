@@ -31,7 +31,7 @@ namespace TechpertsSolutions.Repository.Data.Configurtaions
             // Default value for AssignedAt.
             builder.Property(cs => cs.AssignedAt)
                 .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("GETDATE()");
         }
     }
 } 
