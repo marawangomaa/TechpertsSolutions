@@ -11,7 +11,7 @@ namespace TechpertsSolutions.Controllers
 {
     [ApiController]
     [Route("api/admin/users")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     public class AdminUserManagementController : ControllerBase
     {
         private readonly IAdminUserManagementService _adminUserManagementService;
