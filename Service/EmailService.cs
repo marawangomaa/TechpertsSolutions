@@ -1,9 +1,7 @@
 using Core.Interfaces.Services;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Service
@@ -17,23 +15,35 @@ namespace Service
             _configuration = configuration;
         }
 
-        public async Task<bool> SendPasswordResetEmailAsync(string email, string resetToken, string resetLink)
+        public async Task<bool> SendPasswordResetEmailAsync(
+            string email,
+            string resetToken,
+            string resetLink
+        )
         {
             var body = GeneratePasswordResetEmailBody(resetToken, resetLink);
-            return await SendEmailAsync(email, "Password Reset Request - Techperts Solutions", body);
+            return await SendEmailAsync(
+                email,
+                "Password Reset Request - Techperts Solutions",
+                body
+            );
         }
 
         public async Task<bool> SendEmailAsync(string to, string subject, string body)
         {
             var smtpServer = _configuration["Email:SmtpServer"] ?? "smtp.gmail.com";
-            var smtpPort = int.TryParse(_configuration["Email:SmtpPort"], out int port) ? port : 587;
+            var smtpPort = int.TryParse(_configuration["Email:SmtpPort"], out int port)
+                ? port
+                : 587;
             var smtpUsername = _configuration["Email:Username"];
             var smtpPassword = _configuration["Email:Password"];
             var fromEmail = _configuration["Email:FromEmail"] ?? smtpUsername;
             var fromName = _configuration["Email:FromName"] ?? "Techperts Solutions";
 
             if (string.IsNullOrWhiteSpace(smtpUsername) || string.IsNullOrWhiteSpace(smtpPassword))
-                throw new InvalidOperationException("Email credentials are missing in appsettings.json");
+                throw new InvalidOperationException(
+                    "Email credentials are missing in appsettings.json"
+                );
 
             try
             {
@@ -47,7 +57,7 @@ namespace Service
                         From = new MailAddress(fromEmail, fromName),
                         Subject = subject,
                         Body = body,
-                        IsBodyHtml = true
+                        IsBodyHtml = true,
                     };
                     message.To.Add(to);
 

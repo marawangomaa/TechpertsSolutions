@@ -4,11 +4,8 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
-using System.Linq;
-using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -23,15 +20,17 @@ namespace Service
         private readonly IRepository<TechCompany> _techCompanyRepo;
         private readonly INotificationService _notificationService;
         private readonly IFileService _fileService;
-        
-        public ProductService(IRepository<Product> productRepo,
+
+        public ProductService(
+            IRepository<Product> productRepo,
             IRepository<Specification> specRepo,
             IRepository<Warranty> warrantyRepo,
             IRepository<Category> categoryRepo,
             IRepository<SubCategory> subCategoryRepo,
             IRepository<TechCompany> techCompanyRepo,
             INotificationService notificationService,
-            IFileService fileService)
+            IFileService fileService
+        )
         {
             _productRepo = productRepo;
             _specRepo = specRepo;
@@ -51,16 +50,16 @@ namespace Service
             string? subCategoryName = null,
             string? nameSearch = null,
             string? sortBy = null,
-            bool sortDescending = false)
+            bool sortDescending = false
+        )
         {
-            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = false,
                     Message = "Page number must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -70,47 +69,64 @@ namespace Service
                 {
                     Success = false,
                     Message = "Page size must be between 1 and 100.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Optimized includes for product listing - include all needed for ProductCardDTO
-                var allProducts = (await _productRepo.GetAllWithIncludesAsync(
-                    p => p.Category, 
-                    p => p.SubCategory, 
-                    p => p.TechCompany,
-                    p => p.TechCompany.User,
-                    p => p.Specifications,
-                    p => p.Warranties)).AsQueryable();
+                var allProducts = (
+                    await _productRepo.GetAllWithIncludesAsync(
+                        p => p.Category,
+                        p => p.SubCategory,
+                        p => p.TechCompany,
+                        p => p.TechCompany.User,
+                        p => p.Specifications,
+                        p => p.Warranties
+                    )
+                ).AsQueryable();
 
-                
                 if (status.HasValue)
                     allProducts = allProducts.Where(p => p.status == status.Value);
 
                 if (categoryEnum.HasValue)
                 {
                     var categoryName = categoryEnum.Value.GetStringValue();
-                    allProducts = allProducts.Where(p => p.Category != null && p.Category.Name == categoryName);
+                    allProducts = allProducts.Where(p =>
+                        p.Category != null && p.Category.Name == categoryName
+                    );
                 }
 
                 if (!string.IsNullOrWhiteSpace(subCategoryName))
                 {
-                    allProducts = allProducts.Where(p => p.SubCategory != null && p.SubCategory.Name == subCategoryName);
+                    allProducts = allProducts.Where(p =>
+                        p.SubCategory != null && p.SubCategory.Name == subCategoryName
+                    );
                 }
 
                 if (!string.IsNullOrWhiteSpace(nameSearch))
-                    allProducts = allProducts.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
+                    allProducts = allProducts.Where(p =>
+                        p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase)
+                    );
 
-                
                 allProducts = sortBy?.ToLower() switch
                 {
-                    "price" => sortDescending ? allProducts.OrderByDescending(p => p.Price) : allProducts.OrderBy(p => p.Price),
-                    "name" => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name),
-                    "stock" => sortDescending ? allProducts.OrderByDescending(p => p.Stock) : allProducts.OrderBy(p => p.Stock),
-                    "createdat" => sortDescending ? allProducts.OrderByDescending(p => p.CreatedAt) : allProducts.OrderBy(p => p.CreatedAt),
-                    _ => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name)
+                    "price" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Price)
+                        : allProducts.OrderBy(p => p.Price),
+                    "name" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Name)
+                        : allProducts.OrderBy(p => p.Name),
+                    "stock" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Stock)
+                        : allProducts.OrderBy(p => p.Stock),
+                    "createdat" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.CreatedAt)
+                        : allProducts.OrderBy(p => p.CreatedAt),
+                    _ => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Name)
+                        : allProducts.OrderBy(p => p.Name),
                 };
 
                 var totalCount = allProducts.Count();
@@ -128,14 +144,14 @@ namespace Service
                     Items = productDtos,
                     TotalItems = totalCount,
                     PageNumber = pageNumber,
-                    PageSize = pageSize
+                    PageSize = pageSize,
                 };
 
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = true,
                     Message = "Products retrieved successfully.",
-                    Data = paginatedResult
+                    Data = paginatedResult,
                 };
             }
             catch (Exception)
@@ -144,20 +160,24 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving products.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
-        public async Task<GeneralResponse<PaginatedDTO<ProductCardDTO>>> GetAllTechCompanyProductAsync(
-                                                                   int pageNumber = 1,
-                                                                   int pageSize = 10,
-                                                   ProductPendingStatus? status = null,
-                                                   ProductCategory? categoryEnum = null,
-                                                           string? subCategoryName = null,
-                                                                string? nameSearch = null,
-                                                                   string? sortBy = null,
-                                                              bool sortDescending = false,
-                                                             string? techCompanyId = null)
+
+        public async Task<
+            GeneralResponse<PaginatedDTO<ProductCardDTO>>
+        > GetAllTechCompanyProductAsync(
+            int pageNumber = 1,
+            int pageSize = 10,
+            ProductPendingStatus? status = null,
+            ProductCategory? categoryEnum = null,
+            string? subCategoryName = null,
+            string? nameSearch = null,
+            string? sortBy = null,
+            bool sortDescending = false,
+            string? techCompanyId = null
+        )
         {
             if (pageNumber < 1)
             {
@@ -165,7 +185,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Page number must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -175,19 +195,22 @@ namespace Service
                 {
                     Success = false,
                     Message = "Page size must be between 1 and 100.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
-                var allProducts = (await _productRepo.GetAllWithIncludesAsync(
-                    p => p.Category,
-                    p => p.SubCategory,
-                    p => p.TechCompany,
-                    p => p.TechCompany.User,
-                    p => p.Specifications,
-                    p => p.Warranties)).AsQueryable();
+                var allProducts = (
+                    await _productRepo.GetAllWithIncludesAsync(
+                        p => p.Category,
+                        p => p.SubCategory,
+                        p => p.TechCompany,
+                        p => p.TechCompany.User,
+                        p => p.Specifications,
+                        p => p.Warranties
+                    )
+                ).AsQueryable();
 
                 if (status.HasValue)
                     allProducts = allProducts.Where(p => p.status == status.Value);
@@ -195,25 +218,41 @@ namespace Service
                 if (categoryEnum.HasValue)
                 {
                     var categoryName = categoryEnum.Value.GetStringValue();
-                    allProducts = allProducts.Where(p => p.Category != null && p.Category.Name == categoryName);
+                    allProducts = allProducts.Where(p =>
+                        p.Category != null && p.Category.Name == categoryName
+                    );
                 }
 
                 if (!string.IsNullOrWhiteSpace(subCategoryName))
-                    allProducts = allProducts.Where(p => p.SubCategory != null && p.SubCategory.Name == subCategoryName);
+                    allProducts = allProducts.Where(p =>
+                        p.SubCategory != null && p.SubCategory.Name == subCategoryName
+                    );
 
                 if (!string.IsNullOrWhiteSpace(nameSearch))
-                    allProducts = allProducts.Where(p => p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase));
+                    allProducts = allProducts.Where(p =>
+                        p.Name.Contains(nameSearch, StringComparison.OrdinalIgnoreCase)
+                    );
 
                 if (!string.IsNullOrWhiteSpace(techCompanyId)) // <-- New filter logic
                     allProducts = allProducts.Where(p => p.TechCompanyId == techCompanyId);
 
                 allProducts = sortBy?.ToLower() switch
                 {
-                    "price" => sortDescending ? allProducts.OrderByDescending(p => p.Price) : allProducts.OrderBy(p => p.Price),
-                    "name" => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name),
-                    "stock" => sortDescending ? allProducts.OrderByDescending(p => p.Stock) : allProducts.OrderBy(p => p.Stock),
-                    "createdat" => sortDescending ? allProducts.OrderByDescending(p => p.CreatedAt) : allProducts.OrderBy(p => p.CreatedAt),
-                    _ => sortDescending ? allProducts.OrderByDescending(p => p.Name) : allProducts.OrderBy(p => p.Name)
+                    "price" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Price)
+                        : allProducts.OrderBy(p => p.Price),
+                    "name" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Name)
+                        : allProducts.OrderBy(p => p.Name),
+                    "stock" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Stock)
+                        : allProducts.OrderBy(p => p.Stock),
+                    "createdat" => sortDescending
+                        ? allProducts.OrderByDescending(p => p.CreatedAt)
+                        : allProducts.OrderBy(p => p.CreatedAt),
+                    _ => sortDescending
+                        ? allProducts.OrderByDescending(p => p.Name)
+                        : allProducts.OrderBy(p => p.Name),
                 };
 
                 var totalCount = allProducts.Count();
@@ -231,14 +270,14 @@ namespace Service
                     Items = productDtos,
                     TotalItems = totalCount,
                     PageNumber = pageNumber,
-                    PageSize = pageSize
+                    PageSize = pageSize,
                 };
 
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = true,
                     Message = "Products retrieved successfully.",
-                    Data = paginatedResult
+                    Data = paginatedResult,
                 };
             }
             catch (Exception)
@@ -247,22 +286,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving products.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-
         public async Task<GeneralResponse<ProductDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -272,20 +309,22 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed product view
-                var product = await _productRepo.GetByIdWithIncludesAsync(id,
+                var product = await _productRepo.GetByIdWithIncludesAsync(
+                    id,
                     p => p.Category,
                     p => p.SubCategory,
                     p => p.TechCompany,
                     p => p.TechCompany.User,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
                 if (product == null)
                 {
@@ -293,7 +332,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Product with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -301,7 +340,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Product retrieved successfully.",
-                    Data = ProductMapper.MapToProductDTO(product)
+                    Data = ProductMapper.MapToProductDTO(product),
                 };
             }
             catch (Exception ex)
@@ -310,24 +349,25 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the product.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<ProductDTO>> AddAsync(ProductCreateDTO dto,
-                                                                 ProductCreateWarSpecDTO WarSpecDto,
-                                                                 ProductCategory category, 
-                                                                 ProductPendingStatus status)
+        public async Task<GeneralResponse<ProductDTO>> AddAsync(
+            ProductCreateDTO dto,
+            ProductCreateWarSpecDTO WarSpecDto,
+            ProductCategory category,
+            ProductPendingStatus status
+        )
         {
-            
             if (dto == null)
             {
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product data cannot be null.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -337,7 +377,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product name is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -347,7 +387,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product price must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -357,7 +397,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product stock cannot be negative.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -367,7 +407,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Tech Company ID is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -378,22 +418,24 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Tech Company ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Validate TechCompany exists and is active
-                var techCompany = await _techCompanyRepo.GetFirstOrDefaultAsync(tc => tc.Id == dto.TechCompanyId,
-                                                                            query => query.Include(tc => tc.User));
+                var techCompany = await _techCompanyRepo.GetFirstOrDefaultAsync(
+                    tc => tc.Id == dto.TechCompanyId,
+                    query => query.Include(tc => tc.User)
+                );
                 if (techCompany == null)
                 {
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
                         Message = $"Tech Company with ID '{dto.TechCompanyId}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -402,8 +444,9 @@ namespace Service
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
-                        Message = $"Tech Company '{techCompany.User?.UserName ?? dto.TechCompanyId}' is not active and cannot create products.",
-                        Data = null
+                        Message =
+                            $"Tech Company '{techCompany.User?.UserName ?? dto.TechCompanyId}' is not active and cannot create products.",
+                        Data = null,
                     };
                 }
 
@@ -414,20 +457,22 @@ namespace Service
                     {
                         Success = false,
                         Message = "Discount price must be less than the regular price.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
                 // Find the category by enum value
                 var categoryName = category.GetStringValue();
-                var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
+                var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c =>
+                    c.Name == categoryName
+                );
                 if (categoryEntity == null)
                 {
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
                         Message = $"Category '{categoryName}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -435,14 +480,16 @@ namespace Service
                 SubCategory? subCategoryEntity = null;
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
-                    subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName);
+                    subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc =>
+                        sc.Name == dto.SubCategoryName
+                    );
                     if (subCategoryEntity == null)
                     {
                         return new GeneralResponse<ProductDTO>
                         {
                             Success = false,
                             Message = $"SubCategory '{dto.SubCategoryName}' not found.",
-                            Data = null
+                            Data = null,
                         };
                     }
                 }
@@ -454,7 +501,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Tech Company with ID '{dto.TechCompanyId}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -469,7 +516,7 @@ namespace Service
                     CategoryId = categoryEntity.Id,
                     SubCategoryId = subCategoryEntity?.Id,
                     TechCompanyId = dto.TechCompanyId,
-                    status = status
+                    status = status,
                 };
 
                 await _productRepo.AddAsync(product);
@@ -480,22 +527,27 @@ namespace Service
                 {
                     foreach (var specDto in WarSpecDto.Specifications)
                     {
-                        if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
+                        if (
+                            string.IsNullOrWhiteSpace(specDto.Key)
+                            || string.IsNullOrWhiteSpace(specDto.Value)
+                        )
                         {
                             return new GeneralResponse<ProductDTO>
                             {
                                 Success = false,
                                 Message = "Specification key and value cannot be null or empty.",
-                                Data = null
+                                Data = null,
                             };
                         }
 
-                        await _specRepo.AddAsync(new Specification
-                        {
-                            Key = specDto.Key.Trim(),
-                            Value = specDto.Value.Trim(),
-                            ProductId = product.Id
-                        });  
+                        await _specRepo.AddAsync(
+                            new Specification
+                            {
+                                Key = specDto.Key.Trim(),
+                                Value = specDto.Value.Trim(),
+                                ProductId = product.Id,
+                            }
+                        );
                     }
                 }
 
@@ -504,13 +556,16 @@ namespace Service
                 {
                     foreach (var warrantyDto in WarSpecDto.Warranties)
                     {
-                        if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
+                        if (
+                            string.IsNullOrWhiteSpace(warrantyDto.Type)
+                            || string.IsNullOrWhiteSpace(warrantyDto.Duration)
+                        )
                         {
                             return new GeneralResponse<ProductDTO>
                             {
                                 Success = false,
                                 Message = "Warranty type and duration are required.",
-                                Data = null
+                                Data = null,
                             };
                         }
 
@@ -520,20 +575,21 @@ namespace Service
                             {
                                 Success = false,
                                 Message = "Warranty start date must be before end date.",
-                                Data = null
+                                Data = null,
                             };
                         }
 
-                        
-                        await _warrantyRepo.AddAsync(new Warranty
-                        {
-                            Type = warrantyDto.Type.Trim(),
-                            Duration = warrantyDto.Duration,
-                            Description = warrantyDto.Description?.Trim(),
-                            StartDate = warrantyDto.StartDate,
-                            EndDate = warrantyDto.EndDate,
-                            ProductId = product.Id
-                        });
+                        await _warrantyRepo.AddAsync(
+                            new Warranty
+                            {
+                                Type = warrantyDto.Type.Trim(),
+                                Duration = warrantyDto.Duration,
+                                Description = warrantyDto.Description?.Trim(),
+                                StartDate = warrantyDto.StartDate,
+                                EndDate = warrantyDto.EndDate,
+                                ProductId = product.Id,
+                            }
+                        );
                     }
                 }
 
@@ -547,7 +603,8 @@ namespace Service
                     p => p.TechCompany,
                     p => p.TechCompany.User,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",
@@ -562,7 +619,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Product created successfully.",
-                    Data = ProductMapper.MapToProductDTO(finalProduct)
+                    Data = ProductMapper.MapToProductDTO(finalProduct),
                 };
             }
             catch (Exception ex)
@@ -571,25 +628,26 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An unexpected error occurred while creating the product {ex}.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<ProductDTO>> UpdateAsync(string id, 
-                                                                   ProductUpdateDTO dto,
-                                                                   ProductUpdateWarSpecDTO warSpecDto,
-                                                                   ProductCategory category, 
-                                                                   ProductPendingStatus status)
+        public async Task<GeneralResponse<ProductDTO>> UpdateAsync(
+            string id,
+            ProductUpdateDTO dto,
+            ProductUpdateWarSpecDTO warSpecDto,
+            ProductCategory category,
+            ProductPendingStatus status
+        )
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -599,7 +657,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -609,7 +667,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product update data cannot be null.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -620,7 +678,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product name is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -630,7 +688,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product price must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -640,7 +698,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product stock cannot be negative.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -653,7 +711,8 @@ namespace Service
                     p => p.TechCompany,
                     p => p.TechCompany.User,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
                 if (product == null)
                 {
@@ -661,7 +720,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Product with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -671,8 +730,9 @@ namespace Service
                     return new GeneralResponse<ProductDTO>
                     {
                         Success = false,
-                        Message = $"Cannot update product. Tech Company '{product.TechCompany.User?.UserName ?? product.TechCompanyId}' is not active.",
-                        Data = null
+                        Message =
+                            $"Cannot update product. Tech Company '{product.TechCompany.User?.UserName ?? product.TechCompanyId}' is not active.",
+                        Data = null,
                     };
                 }
 
@@ -683,7 +743,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Discount price must be less than the regular price.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -699,7 +759,9 @@ namespace Service
                 if (category != ProductCategory.UnCategorized)
                 {
                     var categoryName = category.GetStringValue();
-                    var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c => c.Name == categoryName);
+                    var categoryEntity = await _categoryRepo.GetFirstOrDefaultAsync(c =>
+                        c.Name == categoryName
+                    );
                     if (categoryEntity != null)
                     {
                         product.CategoryId = categoryEntity.Id;
@@ -709,7 +771,9 @@ namespace Service
                 // Update subcategory if provided
                 if (!string.IsNullOrWhiteSpace(dto.SubCategoryName))
                 {
-                    var subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc => sc.Name == dto.SubCategoryName);
+                    var subCategoryEntity = await _subCategoryRepo.GetFirstOrDefaultAsync(sc =>
+                        sc.Name == dto.SubCategoryName
+                    );
                     if (subCategoryEntity != null)
                     {
                         product.SubCategoryId = subCategoryEntity.Id;
@@ -722,13 +786,16 @@ namespace Service
                     // Validate specifications
                     foreach (var specDto in warSpecDto.Specifications)
                     {
-                        if (string.IsNullOrWhiteSpace(specDto.Key) || string.IsNullOrWhiteSpace(specDto.Value))
+                        if (
+                            string.IsNullOrWhiteSpace(specDto.Key)
+                            || string.IsNullOrWhiteSpace(specDto.Value)
+                        )
                         {
                             return new GeneralResponse<ProductDTO>
                             {
                                 Success = false,
                                 Message = "Specification key and value cannot be null or empty.",
-                                Data = null
+                                Data = null,
                             };
                         }
                     }
@@ -747,7 +814,7 @@ namespace Service
                         {
                             Key = specDto.Key.Trim(),
                             Value = specDto.Value.Trim(),
-                            ProductId = id
+                            ProductId = id,
                         };
                         await _specRepo.AddAsync(specification);
                     }
@@ -759,13 +826,16 @@ namespace Service
                     // Validate warranties
                     foreach (var warrantyDto in warSpecDto.Warranties)
                     {
-                        if (string.IsNullOrWhiteSpace(warrantyDto.Type) || string.IsNullOrWhiteSpace(warrantyDto.Duration))
+                        if (
+                            string.IsNullOrWhiteSpace(warrantyDto.Type)
+                            || string.IsNullOrWhiteSpace(warrantyDto.Duration)
+                        )
                         {
                             return new GeneralResponse<ProductDTO>
                             {
                                 Success = false,
                                 Message = "Warranty type and duration are required.",
-                                Data = null
+                                Data = null,
                             };
                         }
 
@@ -775,7 +845,7 @@ namespace Service
                             {
                                 Success = false,
                                 Message = "Warranty start date must be before end date.",
-                                Data = null
+                                Data = null,
                             };
                         }
                     }
@@ -797,7 +867,7 @@ namespace Service
                             Description = warrantyDto.Description?.Trim(),
                             StartDate = warrantyDto.StartDate,
                             EndDate = warrantyDto.EndDate,
-                            ProductId = id
+                            ProductId = id,
                         };
                         await _warrantyRepo.AddAsync(warranty);
                     }
@@ -814,13 +884,14 @@ namespace Service
                     p => p.TechCompany,
                     p => p.TechCompany.User,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
                 return new GeneralResponse<ProductDTO>
                 {
                     Success = true,
                     Message = "Product updated successfully.",
-                    Data = ProductMapper.MapToProductDTO(updatedProduct)
+                    Data = ProductMapper.MapToProductDTO(updatedProduct),
                 };
             }
             catch (Exception ex)
@@ -829,21 +900,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while updating the product.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> DeleteAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -853,7 +923,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -866,7 +936,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
                 await DeleteProductImageAsync(id);
@@ -878,7 +948,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Product deleted successfully.",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -887,21 +957,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while deleting the product.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> ApproveProductAsync(string productId)
         {
-            
             if (string.IsNullOrWhiteSpace(productId))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -911,20 +980,23 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
             try
             {
-                var product = await _productRepo.GetByIdWithIncludesAsync(productId, p => p.TechCompany);
+                var product = await _productRepo.GetByIdWithIncludesAsync(
+                    productId,
+                    p => p.TechCompany
+                );
                 if (product == null)
                 {
                     return new GeneralResponse<bool>
                     {
                         Success = false,
                         Message = "Product not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -934,7 +1006,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product is already approved.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -944,18 +1016,18 @@ namespace Service
 
                 // Send notification to TechCompany about product approval
                 await _notificationService.SendNotificationAsync(
-                product.TechCompany.UserId,
-                NotificationType.ProductApproved,
-                product.Id,
-                "Product",
-                product.Name
+                    product.TechCompany.UserId,
+                    NotificationType.ProductApproved,
+                    product.Id,
+                    "Product",
+                    product.Name
                 );
 
                 return new GeneralResponse<bool>
                 {
                     Success = true,
                     Message = "Product approved successfully.",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -964,21 +1036,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while approving the product.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> RejectProductAsync(string productId, string reason)
         {
-            
             if (string.IsNullOrWhiteSpace(productId))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "Product ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -988,7 +1059,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Product ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -998,7 +1069,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Rejection reason cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -1011,7 +1082,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -1021,7 +1092,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product is already rejected.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -1043,7 +1114,7 @@ namespace Service
                 {
                     Success = true,
                     Message = $"Product rejected successfully. Reason: {reason}",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -1052,7 +1123,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while rejecting the product.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
@@ -1061,16 +1132,16 @@ namespace Service
             int pageNumber = 1,
             int pageSize = 10,
             string? sortBy = null,
-            bool sortDescending = false)
+            bool sortDescending = false
+        )
         {
-            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductDTO>>
                 {
                     Success = false,
                     Message = "Page number must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -1080,7 +1151,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Page size must be between 1 and 100.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -1093,15 +1164,21 @@ namespace Service
                     p => p.TechCompany,
                     p => p.TechCompany.User,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
-                
                 var sortedProducts = sortBy?.ToLower() switch
                 {
-                    "price" => sortDescending ? pendingProducts.OrderByDescending(p => p.Price) : pendingProducts.OrderBy(p => p.Price),
-                    "name" => sortDescending ? pendingProducts.OrderByDescending(p => p.Name) : pendingProducts.OrderBy(p => p.Name),
-                    "stock" => sortDescending ? pendingProducts.OrderByDescending(p => p.Stock) : pendingProducts.OrderBy(p => p.Stock),
-                    _ => pendingProducts.OrderBy(p => p.Name) 
+                    "price" => sortDescending
+                        ? pendingProducts.OrderByDescending(p => p.Price)
+                        : pendingProducts.OrderBy(p => p.Price),
+                    "name" => sortDescending
+                        ? pendingProducts.OrderByDescending(p => p.Name)
+                        : pendingProducts.OrderBy(p => p.Name),
+                    "stock" => sortDescending
+                        ? pendingProducts.OrderByDescending(p => p.Stock)
+                        : pendingProducts.OrderBy(p => p.Stock),
+                    _ => pendingProducts.OrderBy(p => p.Name),
                 };
 
                 int totalItems = sortedProducts.Count();
@@ -1118,14 +1195,14 @@ namespace Service
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalItems = totalItems,
-                    Items = items
+                    Items = items,
                 };
 
                 return new GeneralResponse<PaginatedDTO<ProductDTO>>
                 {
                     Success = true,
                     Message = "Pending products retrieved successfully.",
-                    Data = result
+                    Data = result,
                 };
             }
             catch (Exception ex)
@@ -1134,7 +1211,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving pending products.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -1144,16 +1221,16 @@ namespace Service
             int pageNumber = 1,
             int pageSize = 10,
             string? sortBy = null,
-            bool sortDescending = false)
+            bool sortDescending = false
+        )
         {
-            
             if (pageNumber < 1)
             {
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = false,
                     Message = "Page number must be greater than 0.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -1163,7 +1240,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Page size must be between 1 and 100.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -1171,19 +1248,28 @@ namespace Service
             {
                 var categoryName = categoryEnum.GetStringValue();
                 var products = await _productRepo.FindWithIncludesAsync(
-                    p => p.Category != null && EF.Functions.Like(p.Category.Name, categoryName) && p.status == ProductPendingStatus.Approved,
+                    p =>
+                        p.Category != null
+                        && EF.Functions.Like(p.Category.Name, categoryName)
+                        && p.status == ProductPendingStatus.Approved,
                     p => p.Category,
                     p => p.SubCategory,
                     p => p.Specifications,
-                    p => p.Warranties);
+                    p => p.Warranties
+                );
 
-                
                 var sortedProducts = sortBy?.ToLower() switch
                 {
-                    "price" => sortDescending ? products.OrderByDescending(p => p.Price) : products.OrderBy(p => p.Price),
-                    "name" => sortDescending ? products.OrderByDescending(p => p.Name) : products.OrderBy(p => p.Name),
-                    "stock" => sortDescending ? products.OrderByDescending(p => p.Stock) : products.OrderBy(p => p.Stock),
-                    _ => products.OrderBy(p => p.Name) 
+                    "price" => sortDescending
+                        ? products.OrderByDescending(p => p.Price)
+                        : products.OrderBy(p => p.Price),
+                    "name" => sortDescending
+                        ? products.OrderByDescending(p => p.Name)
+                        : products.OrderBy(p => p.Name),
+                    "stock" => sortDescending
+                        ? products.OrderByDescending(p => p.Stock)
+                        : products.OrderBy(p => p.Stock),
+                    _ => products.OrderBy(p => p.Name),
                 };
 
                 int totalItems = sortedProducts.Count();
@@ -1199,14 +1285,14 @@ namespace Service
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TotalItems = totalItems,
-                    Items = items
+                    Items = items,
                 };
 
                 return new GeneralResponse<PaginatedDTO<ProductCardDTO>>
                 {
                     Success = true,
                     Message = "Products retrieved successfully.",
-                    Data = result
+                    Data = result,
                 };
             }
             catch (Exception ex)
@@ -1215,29 +1301,40 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving products by category.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(ProductCreateImageUploadDTO imageUploadDto, string productId)
+        public async Task<GeneralResponse<ImageUploadResponseDTO>> UploadProductImageAsync(
+            ProductCreateImageUploadDTO imageUploadDto,
+            string productId
+        )
         {
             try
             {
-                if (imageUploadDto == null || imageUploadDto.ImageUrl == null || imageUploadDto.ImageUrl.Length == 0|| imageUploadDto.ImageUrls == null)
+                if (
+                    imageUploadDto == null
+                    || imageUploadDto.ImageUrl == null
+                    || imageUploadDto.ImageUrl.Length == 0
+                    || imageUploadDto.ImageUrls == null
+                )
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
                         Success = false,
                         Message = "No image file provided",
-                        Data = null
+                        Data = null,
                     };
                 }
                 // Upload main image
                 string? mainImagePath = null;
                 if (imageUploadDto.ImageUrl != null)
                 {
-                    mainImagePath = await _fileService.UploadImageAsync(imageUploadDto.ImageUrl, "products");
+                    mainImagePath = await _fileService.UploadImageAsync(
+                        imageUploadDto.ImageUrl,
+                        "products"
+                    );
                 }
 
                 // Upload additional images
@@ -1251,14 +1348,14 @@ namespace Service
                     }
                 }
 
-
                 if (!_fileService.IsValidImageFile(imageUploadDto.ImageUrl))
                 {
                     return new GeneralResponse<ImageUploadResponseDTO>
                     {
                         Success = false,
-                        Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
-                        Data = null
+                        Message =
+                            "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                        Data = null,
                     };
                 }
 
@@ -1271,8 +1368,9 @@ namespace Service
                             return new GeneralResponse<ImageUploadResponseDTO>
                             {
                                 Success = false,
-                                Message = "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
-                                Data = null
+                                Message =
+                                    "Invalid image file. Please upload a valid image (jpg, jpeg, png, gif, bmp, webp) with size less than 5MB",
+                                Data = null,
                             };
                         }
                     }
@@ -1285,7 +1383,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product not found",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -1304,8 +1402,8 @@ namespace Service
                         Message = "Image uploaded successfully",
                         ImagePath = mainImagePath,
                         ImageUrl = mainImagePath,
-                        ImagePaths = imagePaths
-                    }
+                        ImagePaths = imagePaths,
+                    },
                 };
             }
             catch (Exception ex)
@@ -1314,7 +1412,7 @@ namespace Service
                 {
                     Success = false,
                     Message = $"Error uploading product image: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -1330,7 +1428,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Product not found",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -1366,7 +1464,7 @@ namespace Service
                     {
                         Success = true,
                         Message = "Product images deleted successfully",
-                        Data = true
+                        Data = true,
                     };
                 }
 
@@ -1374,7 +1472,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "No images found to delete",
-                    Data = false
+                    Data = false,
                 };
             }
             catch (Exception ex)
@@ -1383,7 +1481,7 @@ namespace Service
                 {
                     Success = false,
                     Message = $"Error deleting product image(s): {ex.Message}",
-                    Data = false
+                    Data = false,
                 };
             }
         }

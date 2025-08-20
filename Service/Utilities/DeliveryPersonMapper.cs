@@ -1,7 +1,7 @@
-using System;
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Entities;
+using Core.Enums;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -10,7 +10,8 @@ namespace Service.Utilities
     {
         public static DeliveryPersonReadDTO ToReadDTO(DeliveryPerson entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             var user = entity.User;
             var role = entity.Role;
@@ -35,8 +36,8 @@ namespace Service.Utilities
                 Country = user?.Country ?? "Unknown",
                 UserName = user?.UserName ?? "Unknown",
                 UserFullName = user?.FullName ?? "Unknown",
-
-                RoleName = role?.Name ?? "Unknown"
+                UserImage = user?.ProfilePhotoUrl ?? "Unknown",
+                RoleName = role?.Name ?? "Unknown",
             };
         }
 
@@ -45,9 +46,34 @@ namespace Service.Utilities
             return ToReadDTO(entity);
         }
 
+        public static DeliveryOfferDTO ToOfferDTO(DeliveryOffer offer)
+        {
+            if (offer == null) return null;
+
+            return new DeliveryOfferDTO
+            {
+                Id = offer.Id,
+                DeliveryId = offer.DeliveryId,
+                ClusterId = offer.ClusterId,
+                DeliveryPersonId = offer.DeliveryPersonId,
+                Status = offer.Status,
+                CreatedAt = offer.CreatedAt,
+                ExpiryTime = offer.ExpiryTime,
+                IsActive = offer.IsActive,
+
+                TechCompanies = offer.Delivery?.TechCompanies?.ToList() ?? new List<TechCompany>(),
+
+                DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
+                CustomerName = offer.Delivery?.CustomerName,
+                DeliveryLatitude = offer.Delivery?.DropoffLatitude,
+                DeliveryLongitude = offer.Delivery?.DropoffLongitude
+            };
+        }
+
         public static DeliveryPerson ToEntity(DeliveryPersonCreateDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new DeliveryPerson
             {
@@ -56,13 +82,14 @@ namespace Service.Utilities
                 RoleId = dto.RoleId,
                 VehicleNumber = dto.VehicleNumber,
                 VehicleType = dto.VehicleType,
-                IsAvailable = true
+                IsAvailable = true,
             };
         }
 
-        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonUpdateDTO dto)
+        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonStatus AccountStatus, DeliveryPersonUpdateDTO dto)
         {
-            if (entity == null || dto == null) return;
+            if (entity == null || dto == null)
+                return;
 
             if (!string.IsNullOrWhiteSpace(dto.VehicleNumber))
                 entity.VehicleNumber = dto.VehicleNumber;
@@ -85,12 +112,13 @@ namespace Service.Utilities
             if (dto.IsAvailable.HasValue)
                 entity.IsAvailable = dto.IsAvailable.Value;
 
-            entity.AccountStatus = dto.AccountStatus;
+            entity.AccountStatus = AccountStatus;
         }
 
         public static DeliveryOfferDTO ToDTO(DeliveryOffer offer)
         {
-            if (offer == null) return null;
+            if (offer == null)
+                return null;
 
             return new DeliveryOfferDTO
             {
@@ -111,7 +139,8 @@ namespace Service.Utilities
 
         public static DeliveryOffer ToEntity(DeliveryOfferDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new DeliveryOffer
             {
@@ -122,7 +151,7 @@ namespace Service.Utilities
                 Status = dto.Status,
                 CreatedAt = dto.CreatedAt,
                 ExpiryTime = dto.ExpiryTime,
-                IsActive = dto.IsActive
+                IsActive = dto.IsActive,
             };
         }
     }

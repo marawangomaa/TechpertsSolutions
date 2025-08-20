@@ -2,11 +2,6 @@
 using Core.Interfaces.Services;
 using Microsoft.Extensions.Options;
 using Stripe;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service
 {
@@ -17,31 +12,34 @@ namespace Service
             StripeConfiguration.ApiKey = options.Value.SecretKey;
         }
 
-        public async Task<string> CreatePaymentIntentAsync(long amount, string currency)
+        public async Task<(string PaymentIntentId, string ClientSecret)> CreatePaymentIntentAsync(decimal amount, string currency)
+        {
+            var options = new PaymentIntentCreateOptions
+            {
+                Amount = (long)(amount * 100), // Stripe expects smallest currency unit (cents)
+                Currency = currency,
+                PaymentMethodTypes = new List<string> { "card" }
+            };
+
+            var service = new PaymentIntentService();
+            var intent = await service.CreateAsync(options);
+
+            return (intent.Id, intent.ClientSecret);
+        }
+        public async Task<bool> VerifyPaymentAsync(string paymentIntentId)
         {
             try
             {
-                var options = new PaymentIntentCreateOptions
-                {
-                    Amount = amount * 100,
-                    Currency = currency,
-                    AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
-                    {
-                        Enabled = true
-                    },
-                };
-
                 var service = new PaymentIntentService();
-                var paymentIntent =await service.CreateAsync(options);
+                var paymentIntent = await service.GetAsync(paymentIntentId);
 
-                return paymentIntent.ClientSecret;
+                // Status values: requires_payment_method, requires_confirmation, succeeded, etc.
+                return paymentIntent.Status == "succeeded";
             }
             catch (StripeException ex)
             {
                 throw new ApplicationException($"Stripe error: {ex.Message}", ex);
             }
         }
-
     }
 }
-

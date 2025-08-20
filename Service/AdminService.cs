@@ -1,14 +1,8 @@
-using Core.DTOs.AdminDTOs;
 using Core.DTOs;
+using Core.DTOs.AdminDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -28,8 +22,9 @@ namespace Service
             {
                 // Optimized includes for admin listing with user and role information
                 var admins = await adminRepository.GetAllWithIncludesAsync(
-                    a => a.User, 
-                    a => a.Role);
+                    a => a.User,
+                    a => a.Role
+                );
 
                 var adminDtos = admins.Select(AdminMapper.MapToAdminReadDTO).ToList();
 
@@ -37,7 +32,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Admins retrieved successfully.",
-                    Data = adminDtos
+                    Data = adminDtos,
                 };
             }
             catch (Exception ex)
@@ -46,21 +41,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving admins.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<AdminReadDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<AdminReadDTO>
                 {
                     Success = false,
                     Message = "Admin ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -70,16 +64,18 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Admin ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed admin view with user and role information
-                var admin = await adminRepository.GetByIdWithIncludesAsync(id, 
-                    a => a.User, 
-                    a => a.Role);
+                var admin = await adminRepository.GetByIdWithIncludesAsync(
+                    id,
+                    a => a.User,
+                    a => a.Role
+                );
 
                 if (admin == null)
                 {
@@ -87,7 +83,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Admin with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -95,7 +91,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Admin retrieved successfully.",
-                    Data = AdminMapper.MapToAdminReadDTO(admin)
+                    Data = AdminMapper.MapToAdminReadDTO(admin),
                 };
             }
             catch (Exception ex)
@@ -104,7 +100,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the admin.",
-                    Data = null
+                    Data = null,
                 };
             }
         }

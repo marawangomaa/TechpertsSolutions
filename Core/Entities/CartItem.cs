@@ -9,7 +9,7 @@ namespace TechpertsSolutions.Core.Entities
     public class CartItem : BaseEntity
     {
         public string? ProductId { get; set; }
-        public string? PcAssemblyId { get; set; }  // Add this
+        public string? PcAssemblyId { get; set; }
         public bool IsCustomBuild { get; set; }
         public decimal UnitPrice { get; set; }
         public Product Product { get; set; }

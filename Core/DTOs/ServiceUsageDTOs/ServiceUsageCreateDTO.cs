@@ -1,3 +1,4 @@
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Core.DTOs.ServiceUsageDTOs
 {
     public class ServiceUsageCreateDTO
     {
-        public string ServiceType { get; set; }
+        public ServiceType ServiceType { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
     }

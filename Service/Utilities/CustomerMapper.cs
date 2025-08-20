@@ -7,8 +7,9 @@ namespace Service.Utilities
     {
         public static CustomerEditDTO? MapToCustomerEditDTO(Customer? customer)
         {
-            if (customer == null) return null;
-            
+            if (customer == null)
+                return null;
+
             var user = customer.User;
             var role = customer.Role;
 
@@ -21,8 +22,9 @@ namespace Service.Utilities
 
         public static CustomerDTO? MapToCustomerDTO(Customer? customer)
         {
-            if (customer == null) return null;
-            
+            if (customer == null)
+                return null;
+
             var user = customer.User;
             var role = customer.Role;
 
@@ -44,7 +46,7 @@ namespace Service.Utilities
                 DeliveryIds = customer.Deliveries?.Select(d => d.Id).ToList(),
                 PCAssemblyIds = customer.PCAssembly?.Select(p => p.Id).ToList(),
                 OrderIds = customer.Orders?.Select(o => o.Id).ToList(),
-                MaintenanceIds = customer.Maintenances?.Select(m => m.Id).ToList()
+                MaintenanceIds = customer.Maintenances?.Select(m => m.Id).ToList(),
             };
         }
     }

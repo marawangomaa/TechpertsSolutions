@@ -60,7 +60,7 @@ namespace TechpertsSolutions.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Create([FromBody] MaintenanceCreateDTO dto, [FromQuery] MaintenanceStatus status = MaintenanceStatus.Requested)
+        public async Task<IActionResult> Create([FromBody] MaintenanceCreateDTO dto, [FromForm] MaintenanceStatus status = MaintenanceStatus.Requested)
         {
             if (!ModelState.IsValid)
             {
@@ -72,17 +72,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Create a new DTO with the status from query parameter
-            var dtoWithStatus = new MaintenanceCreateDTO
-            {
-                CustomerId = dto.CustomerId,
-                TechCompanyId = dto.TechCompanyId,
-                WarrantyId = dto.WarrantyId,
-                Status = status,
-                Notes = dto.Notes
-            };
-
-            var response = await _service.AddAsync(dtoWithStatus);
+            var response = await _service.AddAsync(dto);
             if (!response.Success)
             {
                 return BadRequest(response);
@@ -94,7 +84,7 @@ namespace TechpertsSolutions.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Update(string id, [FromBody] MaintenanceUpdateDTO dto, [FromQuery] MaintenanceStatus? status = null)
+        public async Task<IActionResult> Update(string id, [FromBody] MaintenanceUpdateDTO dto)
         {
             if (!ModelState.IsValid)
             {
@@ -106,18 +96,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // Create a new DTO with the status from query parameter if provided
-            var dtoWithStatus = new MaintenanceUpdateDTO
-            {
-                CustomerId = dto.CustomerId,
-                TechCompanyId = dto.TechCompanyId,
-                WarrantyId = dto.WarrantyId,
-                Status = status ?? dto.Status,
-                Notes = dto.Notes,
-                CompletedDate = dto.CompletedDate
-            };
-
-            var response = await _service.UpdateAsync(id, dtoWithStatus);
+            var response = await _service.UpdateAsync(id, dto);
             if (!response.Success)
             {
                 return NotFound(response);
@@ -242,7 +221,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{maintenanceId}/status")]
-        public async Task<IActionResult> UpdateMaintenanceStatus(string maintenanceId, [FromQuery] MaintenanceStatus status, [FromQuery] string? notes = null)
+        public async Task<IActionResult> UpdateMaintenanceStatus(string maintenanceId, [FromForm] MaintenanceStatus status)
         {
             if (string.IsNullOrWhiteSpace(maintenanceId))
             {

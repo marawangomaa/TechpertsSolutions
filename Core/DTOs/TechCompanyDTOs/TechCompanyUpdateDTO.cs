@@ -8,7 +8,6 @@ namespace Core.DTOs.TechCompanyDTOs
 {
     public class TechCompanyUpdateDTO
     {
-        public string? Website { get; set; }
         public string? Description { get; set; }
     }
 }

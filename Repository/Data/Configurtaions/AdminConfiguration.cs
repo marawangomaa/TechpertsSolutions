@@ -13,7 +13,7 @@ namespace TechpertsSolutions.Repository.Data.Configurations
             // Deleting a User should also delete the associated Admin record.
             builder.HasOne(a => a.User)
                    .WithOne(u => u.Admin)
-                   .HasForeignKey<Admin>(a => a.Id)
+                   .HasForeignKey<Admin>(a => a.UserId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             // Deleting a Role is restricted if it's assigned to any Admin.

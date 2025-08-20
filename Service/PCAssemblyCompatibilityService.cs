@@ -1,10 +1,10 @@
-using Core.DTOs.PCAssemblyDTOs;
-using Core.Interfaces.Services;
-using Core.Interfaces;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
-using Microsoft.EntityFrameworkCore;
+using Core.DTOs.PCAssemblyDTOs;
 using Core.DTOs.ProductDTOs;
+using Core.Interfaces;
+using Core.Interfaces.Services;
+using Microsoft.EntityFrameworkCore;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -19,7 +19,8 @@ namespace Service
             IRepository<Product> productRepository,
             IRepository<Category> categoryRepository,
             IRepository<SubCategory> subCategoryRepository,
-            IRepository<Specification> specificationRepository)
+            IRepository<Specification> specificationRepository
+        )
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
@@ -27,8 +28,9 @@ namespace Service
             _specificationRepository = specificationRepository;
         }
 
-        public async Task<GeneralResponse<PaginatedDTO<CompatibleProductDTO>>> GetCompatiblePartsAsync(
-            CompatibilityFilterDTO filter, int pageNumber, int pageSize)
+        public async Task<
+            GeneralResponse<PaginatedDTO<CompatibleProductDTO>>
+        > GetCompatiblePartsAsync(CompatibilityFilterDTO filter, int pageNumber, int pageSize)
         {
             try
             {
@@ -68,37 +70,41 @@ namespace Service
                     .Take(pageSize)
                     .ToListAsync();
 
-                var compatibleProducts = products.Select(p => new CompatibleProductDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    ImageUrl = p.ImageUrl,
-                    CategoryName = p.Category?.Name ?? "Unknown",
-                    SubCategoryName = p.SubCategory?.Name ?? "Unknown",
-                    TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",
-                    Specifications = p.Specifications?.Select(s => new Core.DTOs.ProductDTOs.SpecificationDTO
+                var compatibleProducts = products
+                    .Select(p => new CompatibleProductDTO
                     {
-                        Key = s.Key,
-                        Value = s.Value
-                    }).ToList() ?? new List<Core.DTOs.ProductDTOs.SpecificationDTO>(),
-                    IsCompatible = true, // Basic compatibility check - can be enhanced
-                    CompatibilityNotes = "Compatible component"
-                }).ToList();
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        ImageUrl = p.ImageUrl,
+                        CategoryName = p.Category?.Name ?? "Unknown",
+                        SubCategoryName = p.SubCategory?.Name ?? "Unknown",
+                        TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",
+                        Specifications =
+                            p.Specifications?.Select(s => new Core.DTOs.ProductDTOs.SpecificationDTO
+                                {
+                                    Key = s.Key,
+                                    Value = s.Value,
+                                })
+                                .ToList() ?? new List<Core.DTOs.ProductDTOs.SpecificationDTO>(),
+                        IsCompatible = true, // Basic compatibility check - can be enhanced
+                        CompatibilityNotes = "Compatible component",
+                    })
+                    .ToList();
 
                 var paginatedResult = new PaginatedDTO<CompatibleProductDTO>
                 {
                     Items = compatibleProducts,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    TotalItems = totalCount
+                    TotalItems = totalCount,
                 };
 
                 return new GeneralResponse<PaginatedDTO<CompatibleProductDTO>>
                 {
                     Success = true,
                     Message = "Compatible parts retrieved successfully.",
-                    Data = paginatedResult
+                    Data = paginatedResult,
                 };
             }
             catch (Exception ex)
@@ -107,13 +113,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving compatible parts.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<PaginatedDTO<CompatibleProductDTO>>> GetComponentsByFilterAsync(
-            CompatibilityFilterDTO filter, int pageNumber, int pageSize)
+        public async Task<
+            GeneralResponse<PaginatedDTO<CompatibleProductDTO>>
+        > GetComponentsByFilterAsync(CompatibilityFilterDTO filter, int pageNumber, int pageSize)
         {
             try
             {
@@ -164,37 +171,41 @@ namespace Service
                     .Take(pageSize)
                     .ToListAsync();
 
-                var compatibleProducts = products.Select(p => new CompatibleProductDTO
-                {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Price = p.Price,
-                    ImageUrl = p.ImageUrl,
-                    CategoryName = p.Category?.Name ?? "Unknown",
-                    SubCategoryName = p.SubCategory?.Name ?? "Unknown",
-                    TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",
-                    Specifications = p.Specifications?.Select(s => new Core.DTOs.ProductDTOs.SpecificationDTO
+                var compatibleProducts = products
+                    .Select(p => new CompatibleProductDTO
                     {
-                        Key = s.Key,
-                        Value = s.Value
-                    }).ToList() ?? new List<Core.DTOs.ProductDTOs.SpecificationDTO>(),
-                    IsCompatible = true,
-                    CompatibilityNotes = "Compatible with selected component"
-                }).ToList();
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        ImageUrl = p.ImageUrl,
+                        CategoryName = p.Category?.Name ?? "Unknown",
+                        SubCategoryName = p.SubCategory?.Name ?? "Unknown",
+                        TechCompanyName = p.TechCompany?.User?.FullName ?? "Unknown",
+                        Specifications =
+                            p.Specifications?.Select(s => new Core.DTOs.ProductDTOs.SpecificationDTO
+                                {
+                                    Key = s.Key,
+                                    Value = s.Value,
+                                })
+                                .ToList() ?? new List<Core.DTOs.ProductDTOs.SpecificationDTO>(),
+                        IsCompatible = true,
+                        CompatibilityNotes = "Compatible with selected component",
+                    })
+                    .ToList();
 
                 var paginatedResult = new PaginatedDTO<CompatibleProductDTO>
                 {
                     Items = compatibleProducts,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    TotalItems = totalCount
+                    TotalItems = totalCount,
                 };
 
                 return new GeneralResponse<PaginatedDTO<CompatibleProductDTO>>
                 {
                     Success = true,
                     Message = "Components retrieved successfully.",
-                    Data = paginatedResult
+                    Data = paginatedResult,
                 };
             }
             catch (Exception ex)
@@ -203,13 +214,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving components.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<PaginatedDTO<CompatibleProductDTO>>> GetCompatiblePartsByCategoryAsync(
-            string categoryId, int pageNumber, int pageSize)
+        public async Task<
+            GeneralResponse<PaginatedDTO<CompatibleProductDTO>>
+        > GetCompatiblePartsByCategoryAsync(string categoryId, int pageNumber, int pageSize)
         {
             try
             {
@@ -222,12 +234,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving compatible parts by category.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<bool>> CheckCompatibilityAsync(string productId1, string productId2)
+        public async Task<GeneralResponse<bool>> CheckCompatibilityAsync(
+            string productId1,
+            string productId2
+        )
         {
             try
             {
@@ -239,7 +254,7 @@ namespace Service
                     return new GeneralResponse<bool>
                     {
                         Success = false,
-                        Message = "One or both products not found."
+                        Message = "One or both products not found.",
                     };
                 }
 
@@ -249,8 +264,10 @@ namespace Service
                 return new GeneralResponse<bool>
                 {
                     Success = true,
-                    Message = isCompatible ? "Products are compatible." : "Products are not compatible.",
-                    Data = isCompatible
+                    Message = isCompatible
+                        ? "Products are compatible."
+                        : "Products are not compatible.",
+                    Data = isCompatible,
                 };
             }
             catch (Exception ex)
@@ -259,26 +276,41 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while checking compatibility.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
-        private IQueryable<Product> ApplyCompatibilityFilters(IQueryable<Product> query, Product component)
+        private IQueryable<Product> ApplyCompatibilityFilters(
+            IQueryable<Product> query,
+            Product component
+        )
         {
             // This is a basic implementation - can be enhanced with more sophisticated compatibility logic
             // For now, we'll just filter by different categories to avoid conflicts
-            
+
             // Example: If component is a CPU, exclude other CPUs
-            if (component.SubCategory?.Name?.Contains("CPU", StringComparison.OrdinalIgnoreCase) == true)
+            if (
+                component.SubCategory?.Name?.Contains("CPU", StringComparison.OrdinalIgnoreCase)
+                == true
+            )
             {
-                query = query.Where(p => !p.SubCategory.Name.Contains("CPU", StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p =>
+                    !p.SubCategory.Name.Contains("CPU", StringComparison.OrdinalIgnoreCase)
+                );
             }
-            
+
             // Example: If component is a motherboard, exclude other motherboards
-            if (component.SubCategory?.Name?.Contains("Motherboard", StringComparison.OrdinalIgnoreCase) == true)
+            if (
+                component.SubCategory?.Name?.Contains(
+                    "Motherboard",
+                    StringComparison.OrdinalIgnoreCase
+                ) == true
+            )
             {
-                query = query.Where(p => !p.SubCategory.Name.Contains("Motherboard", StringComparison.OrdinalIgnoreCase));
+                query = query.Where(p =>
+                    !p.SubCategory.Name.Contains("Motherboard", StringComparison.OrdinalIgnoreCase)
+                );
             }
 
             return query;
@@ -288,9 +320,11 @@ namespace Service
         {
             // Basic compatibility check - can be enhanced with more sophisticated logic
             // For now, we'll just check if they're in different categories to avoid conflicts
-            
-            if (product1.CategoryId == product2.CategoryId && 
-                product1.SubCategoryId == product2.SubCategoryId)
+
+            if (
+                product1.CategoryId == product2.CategoryId
+                && product1.SubCategoryId == product2.SubCategoryId
+            )
             {
                 // Same category and subcategory - likely not compatible (e.g., two CPUs)
                 return false;
@@ -298,8 +332,8 @@ namespace Service
 
             // Additional compatibility checks can be added here based on specifications
             // For example, checking socket compatibility for CPU and motherboard
-            
+
             return true;
         }
     }
-} 
+}

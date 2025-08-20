@@ -8,6 +8,7 @@ namespace Core.Interfaces.Services
 {
     public interface IPaymentService
     {
-        Task<string> CreatePaymentIntentAsync(long amount, string currency);
+        Task<(string PaymentIntentId, string ClientSecret)> CreatePaymentIntentAsync(decimal amount, string currency);
+        Task<bool> VerifyPaymentAsync(string paymentIntentId);
     }
 }

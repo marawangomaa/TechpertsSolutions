@@ -1,4 +1,3 @@
-using Azure.Core;
 using Core.DTOs;
 using Core.DTOs.NotificationDTOs;
 using Core.Enums;
@@ -21,7 +20,8 @@ namespace Service
         public NotificationService(
             IRepository<Notification> notificationRepo,
             UserManager<AppUser> userManager,
-            IHubContext<NotificationsHub> hubContext)
+            IHubContext<NotificationsHub> hubContext
+        )
         {
             _notificationRepo = notificationRepo;
             _userManager = userManager;
@@ -31,7 +31,10 @@ namespace Service
         // ------------------ READ METHODS ------------------
 
         public async Task<GeneralResponse<IEnumerable<NotificationDTO>>> GetUserNotificationsAsync(
-            string userId, int pageNumber = 1, int pageSize = 20)
+            string userId,
+            int pageNumber = 1,
+            int pageSize = 20
+        )
         {
             try
             {
@@ -40,12 +43,13 @@ namespace Service
                     {
                         Success = false,
                         Message = "User ID cannot be null or empty.",
-                        Data = null
+                        Data = null,
                     };
 
                 var notifications = await _notificationRepo.FindWithIncludesAsync(
                     n => n.ReceiverUserId == userId,
-                    n => n.Receiver);
+                    n => n.Receiver
+                );
 
                 var sortedNotifications = notifications
                     .OrderByDescending(n => n.CreatedAt)
@@ -58,7 +62,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Notifications retrieved successfully.",
-                    Data = sortedNotifications
+                    Data = sortedNotifications,
                 };
             }
             catch (Exception ex)
@@ -67,12 +71,14 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred while retrieving notifications: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<NotificationDTO>> GetNotificationByIdAsync(string notificationId)
+        public async Task<GeneralResponse<NotificationDTO>> GetNotificationByIdAsync(
+            string notificationId
+        )
         {
             try
             {
@@ -81,24 +87,27 @@ namespace Service
                     {
                         Success = false,
                         Message = "Notification ID cannot be null or empty.",
-                        Data = null
+                        Data = null,
                     };
 
-                var notification = await _notificationRepo.GetByIdWithIncludesAsync(notificationId, n => n.Receiver);
+                var notification = await _notificationRepo.GetByIdWithIncludesAsync(
+                    notificationId,
+                    n => n.Receiver
+                );
 
                 if (notification == null)
                     return new GeneralResponse<NotificationDTO>
                     {
                         Success = false,
                         Message = "Notification not found.",
-                        Data = null
+                        Data = null,
                     };
 
                 return new GeneralResponse<NotificationDTO>
                 {
                     Success = true,
                     Message = "Notification retrieved successfully.",
-                    Data = MapToDTO(notification)
+                    Data = MapToDTO(notification),
                 };
             }
             catch (Exception ex)
@@ -107,12 +116,14 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred while retrieving notification: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<NotificationCountDTO>> GetNotificationCountAsync(string userId)
+        public async Task<GeneralResponse<NotificationCountDTO>> GetNotificationCountAsync(
+            string userId
+        )
         {
             try
             {
@@ -121,7 +132,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "User ID cannot be null or empty.",
-                        Data = null
+                        Data = null,
                     };
 
                 var all = await _notificationRepo.FindAsync(n => n.ReceiverUserId == userId);
@@ -134,8 +145,8 @@ namespace Service
                     Data = new NotificationCountDTO
                     {
                         TotalCount = all.Count(),
-                        UnreadCount = unread.Count()
-                    }
+                        UnreadCount = unread.Count(),
+                    },
                 };
             }
             catch (Exception ex)
@@ -143,8 +154,9 @@ namespace Service
                 return new GeneralResponse<NotificationCountDTO>
                 {
                     Success = false,
-                    Message = $"An error occurred while retrieving notification count: {ex.Message}",
-                    Data = null
+                    Message =
+                        $"An error occurred while retrieving notification count: {ex.Message}",
+                    Data = null,
                 };
             }
         }
@@ -156,21 +168,41 @@ namespace Service
             try
             {
                 if (string.IsNullOrWhiteSpace(notificationId))
-                    return new GeneralResponse<bool> { Success = false, Message = "Notification ID cannot be null or empty.", Data = false };
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Notification ID cannot be null or empty.",
+                        Data = false,
+                    };
 
                 var notification = await _notificationRepo.GetByIdAsync(notificationId);
                 if (notification == null)
-                    return new GeneralResponse<bool> { Success = false, Message = "Notification not found.", Data = false };
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Notification not found.",
+                        Data = false,
+                    };
 
                 notification.IsRead = true;
                 _notificationRepo.Update(notification);
                 await _notificationRepo.SaveChangesAsync();
 
-                return new GeneralResponse<bool> { Success = true, Message = "Notification marked as read successfully.", Data = true };
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Notification marked as read successfully.",
+                    Data = true,
+                };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool> { Success = false, Message = $"An error occurred while marking notification as read: {ex.Message}", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"An error occurred while marking notification as read: {ex.Message}",
+                    Data = false,
+                };
             }
         }
 
@@ -179,19 +211,37 @@ namespace Service
             try
             {
                 if (string.IsNullOrWhiteSpace(userId))
-                    return new GeneralResponse<bool> { Success = false, Message = "User ID cannot be null or empty.", Data = false };
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "User ID cannot be null or empty.",
+                        Data = false,
+                    };
 
-                var notifications = await _notificationRepo.FindAsync(n => n.ReceiverUserId == userId && !n.IsRead);
+                var notifications = await _notificationRepo.FindAsync(n =>
+                    n.ReceiverUserId == userId && !n.IsRead
+                );
                 foreach (var n in notifications)
                     n.IsRead = true;
 
                 await _notificationRepo.SaveChangesAsync();
 
-                return new GeneralResponse<bool> { Success = true, Message = "All notifications marked as read successfully.", Data = true };
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "All notifications marked as read successfully.",
+                    Data = true,
+                };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool> { Success = false, Message = $"An error occurred while marking all notifications as read: {ex.Message}", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message =
+                        $"An error occurred while marking all notifications as read: {ex.Message}",
+                    Data = false,
+                };
             }
         }
 
@@ -200,20 +250,40 @@ namespace Service
             try
             {
                 if (string.IsNullOrWhiteSpace(notificationId))
-                    return new GeneralResponse<bool> { Success = false, Message = "Notification ID cannot be null or empty.", Data = false };
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Notification ID cannot be null or empty.",
+                        Data = false,
+                    };
 
                 var notification = await _notificationRepo.GetByIdAsync(notificationId);
                 if (notification == null)
-                    return new GeneralResponse<bool> { Success = false, Message = "Notification not found.", Data = false };
+                    return new GeneralResponse<bool>
+                    {
+                        Success = false,
+                        Message = "Notification not found.",
+                        Data = false,
+                    };
 
                 _notificationRepo.Remove(notification);
                 await _notificationRepo.SaveChangesAsync();
 
-                return new GeneralResponse<bool> { Success = true, Message = "Notification deleted successfully.", Data = true };
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = "Notification deleted successfully.",
+                    Data = true,
+                };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool> { Success = false, Message = $"An error occurred while deleting notification: {ex.Message}", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"An error occurred while deleting notification: {ex.Message}",
+                    Data = false,
+                };
             }
         }
 
@@ -224,7 +294,8 @@ namespace Service
             NotificationType type,
             string? relatedEntityId = null,
             string? relatedEntityType = null,
-            params object[] args)
+            params object[] args
+        )
         {
             try
             {
@@ -237,11 +308,21 @@ namespace Service
                 );
                 var dto = await SaveAndPushAsync(notification);
 
-                return new GeneralResponse<NotificationDTO> { Success = true, Message = "Notification sent successfully.", Data = dto };
+                return new GeneralResponse<NotificationDTO>
+                {
+                    Success = true,
+                    Message = "Notification sent successfully.",
+                    Data = dto,
+                };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<NotificationDTO> { Success = false, Message = $"Failed to send notification: {ex.Message}", Data = null };
+                return new GeneralResponse<NotificationDTO>
+                {
+                    Success = false,
+                    Message = $"Failed to send notification: {ex.Message}",
+                    Data = null,
+                };
             }
         }
 
@@ -250,20 +331,37 @@ namespace Service
             NotificationType type,
             string? relatedEntityId = null,
             string? relatedEntityType = null,
-            params object[] args)
+            params object[] args
+        )
         {
             try
             {
-                var notifications = NotificationsFactory.CreateForUsers(userIds, type, relatedEntityId, relatedEntityType, args ?? Array.Empty<object>());
+                var notifications = NotificationsFactory.CreateForUsers(
+                    userIds,
+                    type,
+                    relatedEntityId,
+                    relatedEntityType,
+                    args ?? Array.Empty<object>()
+                );
 
                 foreach (var notification in notifications)
                     await SaveAndPushAsync(notification);
 
-                return new GeneralResponse<bool> { Success = true, Message = $"Notifications sent successfully to {notifications.Count} users.", Data = true };
+                return new GeneralResponse<bool>
+                {
+                    Success = true,
+                    Message = $"Notifications sent successfully to {notifications.Count} users.",
+                    Data = true,
+                };
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool> { Success = false, Message = $"Failed to send notifications: {ex.Message}", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Failed to send notifications: {ex.Message}",
+                    Data = false,
+                };
             }
         }
 
@@ -272,18 +370,30 @@ namespace Service
             NotificationType type,
             string? relatedEntityId = null,
             string? relatedEntityType = null,
-            params object[] args)
+            params object[] args
+        )
         {
             try
             {
                 var users = await _userManager.GetUsersInRoleAsync(roleName);
                 var userIds = users.Select(u => u.Id);
 
-                return await SendNotificationsToMultipleUsers(userIds, type, relatedEntityId, relatedEntityType, args);
+                return await SendNotificationsToMultipleUsers(
+                    userIds,
+                    type,
+                    relatedEntityId,
+                    relatedEntityType,
+                    args
+                );
             }
             catch (Exception ex)
             {
-                return new GeneralResponse<bool> { Success = false, Message = $"Failed to send notifications to role: {ex.Message}", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = $"Failed to send notifications to role: {ex.Message}",
+                    Data = false,
+                };
             }
         }
 
@@ -303,7 +413,8 @@ namespace Service
         {
             try
             {
-                await _hubContext.Clients.Group($"User_{userId}")
+                await _hubContext
+                    .Clients.Group($"User_{userId}")
                     .SendAsync("ReceiveNotification", NotificationsFactory.ToDTO(notification));
             }
             catch (Exception ex)

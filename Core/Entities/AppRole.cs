@@ -9,6 +9,6 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class AppRole : IdentityRole
     {
-      public string? Notes { get; set; }
+
     }
 }

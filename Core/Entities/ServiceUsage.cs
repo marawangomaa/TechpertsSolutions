@@ -1,3 +1,4 @@
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class ServiceUsage : BaseEntity
     {
-        public string ServiceType { get; set; }
+        public ServiceType ServiceType { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
         public string? MaintenanceId { get; set; }

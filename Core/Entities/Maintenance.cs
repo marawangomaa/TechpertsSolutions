@@ -14,7 +14,7 @@ namespace TechpertsSolutions.Core.Entities
         public Warranty? Warranty { get; set; }
         public string? TechCompanyId { get; set; }
         public TechCompany? TechCompany { get; set; }
-        public string CustomerId { get; set; }
+        public string? CustomerId { get; set; }
         public Customer? Customer{ get; set; }
         public MaintenanceStatus Status { get; set; } = MaintenanceStatus.Requested;
         public string? Notes { get; set; }

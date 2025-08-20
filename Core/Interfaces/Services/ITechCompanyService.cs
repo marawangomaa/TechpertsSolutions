@@ -13,6 +13,8 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<TechCompanyReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<TechCompanyReadDTO>>> GetAllAsync();
         Task<GeneralResponse<TechCompanyReadDTO>> UpdateAsync(string id, TechCompanyUpdateDTO dto);
+        Task<GeneralResponse<TechCompanyReadDTO>> UpdateRatingAsync(string id, decimal rating);
+        Task<GeneralResponse<TechCompanyReadDTO>> GetByUserId(string id);
         Task CleanupTechCompanyDataAsync(string userId);
     }
 }

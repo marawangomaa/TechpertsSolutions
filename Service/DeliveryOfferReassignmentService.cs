@@ -17,7 +17,8 @@ public class DeliveryReassignmentService : BackgroundService
     public DeliveryReassignmentService(
         IServiceScopeFactory scopeFactory,
         ILogger<DeliveryReassignmentService> logger,
-        IOptions<DeliveryAssignmentSettings> settings)
+        IOptions<DeliveryAssignmentSettings> settings
+    )
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -39,17 +40,25 @@ public class DeliveryReassignmentService : BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
 
-                var clusterService = scope.ServiceProvider.GetRequiredService<IDeliveryClusterService>();
-                var deliveryRepo = scope.ServiceProvider.GetRequiredService<IRepository<Delivery>>();
+                var clusterService =
+                    scope.ServiceProvider.GetRequiredService<IDeliveryClusterService>();
+                var deliveryRepo = scope.ServiceProvider.GetRequiredService<
+                    IRepository<Delivery>
+                >();
                 var deliveryService = scope.ServiceProvider.GetRequiredService<IDeliveryService>();
-                var deliveryPersonService = scope.ServiceProvider.GetRequiredService<IDeliveryPersonService>();
-                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
+                var deliveryPersonService =
+                    scope.ServiceProvider.GetRequiredService<IDeliveryPersonService>();
+                var notificationService =
+                    scope.ServiceProvider.GetRequiredService<INotificationService>();
 
                 // Get unassigned clusters
                 var unassignedClustersResponse = await clusterService.GetUnassignedClustersAsync();
                 if (!unassignedClustersResponse.Success || unassignedClustersResponse.Data == null)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_settings.CheckIntervalSeconds), stoppingToken);
+                    await Task.Delay(
+                        TimeSpan.FromSeconds(_settings.CheckIntervalSeconds),
+                        stoppingToken
+                    );
                     continue;
                 }
 
@@ -68,11 +77,20 @@ public class DeliveryReassignmentService : BackgroundService
                         continue;
                     }
 
-                    if (clusterDto.LastRetryTime.HasValue && (DateTime.Now - clusterDto.LastRetryTime.Value).TotalSeconds < _settings.RetryDelaySeconds)
+                    if (
+                        clusterDto.LastRetryTime.HasValue
+                        && (DateTime.Now - clusterDto.LastRetryTime.Value).TotalSeconds
+                            < _settings.RetryDelaySeconds
+                    )
                         continue;
 
-                    var availableDriversResponse = await deliveryPersonService.GetAvailableDeliveryPersonsAsync();
-                    if (!availableDriversResponse.Success || availableDriversResponse.Data == null || !availableDriversResponse.Data.Any())
+                    var availableDriversResponse =
+                        await deliveryPersonService.GetAvailableDeliveryPersonsAsync();
+                    if (
+                        !availableDriversResponse.Success
+                        || availableDriversResponse.Data == null
+                        || !availableDriversResponse.Data.Any()
+                    )
                     {
                         await notificationService.SendNotificationToRoleAsync(
                             "Admin",
@@ -99,7 +117,11 @@ public class DeliveryReassignmentService : BackgroundService
 
                     if (deliveryEntity == null)
                     {
-                        _logger.LogWarning("Delivery {DeliveryId} not found for cluster {ClusterId}", clusterDto.DeliveryId, clusterDto.Id);
+                        _logger.LogWarning(
+                            "Delivery {DeliveryId} not found for cluster {ClusterId}",
+                            clusterDto.DeliveryId,
+                            clusterDto.Id
+                        );
                         continue;
                     }
 

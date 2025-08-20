@@ -1,4 +1,4 @@
-using Core.DTOs;
+﻿using Core.DTOs;
 using Core.DTOs.CartDTOs;
 using Core.DTOs.OrderDTOs;
 using Core.Interfaces.Services;
@@ -16,10 +16,11 @@ namespace TechpertsSolutions.Controllers
     public class CartController : ControllerBase
     {
         private readonly ICartService cartService;
-
-        public CartController(ICartService _cartService)
+        private readonly IPaymentService _paymentService;
+        public CartController(ICartService _cartService, IPaymentService paymentService)
         {
             cartService = _cartService;
+            _paymentService = paymentService;
         }
 
         [HttpGet("{customerId}")]
@@ -397,10 +398,59 @@ namespace TechpertsSolutions.Controllers
 
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
+        [HttpPost("{customerId}/checkout-payment")]
+        public async Task<IActionResult> Checkout(string customerId, [FromBody] ConfirmPaymentRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(customerId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Customer ID must not be null or empty.",
+                    Data = null
+                });
+            }
 
-        
-        
-        
+            if (!Guid.TryParse(customerId, out _))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid Customer ID format. Expected GUID format.",
+                    Data = null
+                });
+            }
+
+            if (string.IsNullOrWhiteSpace(request.PaymentIntentId))
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "PaymentIntentId is required.",
+                    Data = null
+                });
+            }
+
+            // ✅ Step 1: Verify payment with Stripe
+            var paymentSucceeded = await _paymentService.VerifyPaymentAsync(request.PaymentIntentId);
+            if (!paymentSucceeded)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Payment verification failed. Order not placed.",
+                    Data = null
+                });
+            }
+
+            // ✅ Step 2: Place the order if payment succeeded
+            var result = await cartService.PlaceOrderAsync(customerId);
+
+            return result.Success ? Ok(result) : GetErrorResponse(result);
+        }
+
+
+
         [HttpPost("checkout")]
         public async Task<IActionResult> CheckoutWithDetails([FromBody] CartCheckoutDTO checkoutDto)
         {
@@ -468,18 +518,15 @@ namespace TechpertsSolutions.Controllers
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
-        
-        
-        
-        [HttpPost("{customerId}/partial-checkout")]
-        public async Task<IActionResult> PartialCheckout(string customerId, [FromBody] PartialCheckoutDTO dto)
+        [HttpPost("{customerId}/initiate-payment")]
+        public async Task<IActionResult> InitiatePayment(string customerId)
         {
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return BadRequest(new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Customer ID is required.",
+                    Message = "Customer ID must not be null or empty.",
                     Data = null
                 });
             }
@@ -494,38 +541,26 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            if (dto == null || dto.ProductIds == null || !dto.ProductIds.Any())
+            try
             {
-                return BadRequest(new GeneralResponse<string>
+                var result = await cartService.InitiatePaymentAsync(customerId);
+
+                return result.Success ? Ok(result) : BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GeneralResponse<string>
                 {
                     Success = false,
-                    Message = "Product selection is required for partial checkout.",
-                    Data = null
+                    Message = "An error occurred while initiating the payment.",
+                    Data = ex.Message
                 });
             }
-
-            
-            foreach (var productId in dto.ProductIds)
-            {
-                if (!Guid.TryParse(productId, out _))
-                {
-                    return BadRequest(new GeneralResponse<string>
-                    {
-                        Success = false,
-                        Message = $"Invalid Product ID format: {productId}. Expected GUID format.",
-                        Data = null
-                    });
-                }
-            }
-
-            var result = await cartService.PartialCheckoutAsync(customerId, dto.ProductIds, dto.PromoCode);
-
-            return result.Success ? Ok(result) : GetErrorResponse(result);
         }
 
-        
-        
-        
+
+
+
         private IActionResult GetErrorResponse(GeneralResponse<OrderReadDTO> result)
         {
             if (result.Message?.Contains("not found") == true || result.Message?.Contains("empty") == true)

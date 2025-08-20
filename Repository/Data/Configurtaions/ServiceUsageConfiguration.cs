@@ -1,11 +1,12 @@
-using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Repository.Data.Configurtaions;
 
 namespace Repository.Data.Configurtaions
@@ -15,6 +16,10 @@ namespace Repository.Data.Configurtaions
         public override void Configure(EntityTypeBuilder<ServiceUsage> builder)
         {
             base.Configure(builder);
+            
+            builder.Property(su => su.ServiceType)
+            .HasConversion<string>();
+
             // Deleting a Maintenance record will cascade to delete its associated ServiceUsages.
             builder.HasOne(su => su.Maintenance)
                 .WithMany(m => m.ServiceUsages)

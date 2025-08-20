@@ -33,13 +33,13 @@ namespace TechpertsSolutions.Controllers
 
             try
             {
-                var clientSecret = await _paymentService.CreatePaymentIntentAsync(request.Amount, request.Currency);
+                var (paymentIntentId, clientSecret) = await _paymentService.CreatePaymentIntentAsync(request.Amount, request.Currency);
 
                 return Ok(new GeneralResponse<object>
                 {
                     Success = true,
                     Message = "Payment intent created successfully",
-                    Data = new { clientSecret }
+                    Data = new { paymentIntentId, clientSecret }
                 });
             }
             catch (Exception ex)

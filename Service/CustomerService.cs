@@ -1,11 +1,10 @@
 using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
-using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
+using TechpertsSolutions.Core.DTOs.CustomerDTOs;
 using TechpertsSolutions.Core.Entities;
-using TechpertsSolutions.Core.DTOs;
 using TechpertsSolutions.Repository.Data;
 
 namespace Service
@@ -17,10 +16,12 @@ namespace Service
         private readonly IRepository<WishList> _wishListRepo;
         private readonly TechpertsContext context;
 
-        public CustomerService(IRepository<Customer> customerRepository, 
-            IRepository<Cart> _cartRepo, 
+        public CustomerService(
+            IRepository<Customer> customerRepository,
+            IRepository<Cart> _cartRepo,
             IRepository<WishList> wishListRepo,
-            TechpertsContext _context)
+            TechpertsContext _context
+        )
         {
             _customerRepository = customerRepository;
             cartRepo = _cartRepo;
@@ -34,14 +35,15 @@ namespace Service
             {
                 // Optimized includes for customer listing with essential related data
                 var customers = await _customerRepository.GetAllWithIncludesAsync(
-                     c => c.User,
+                    c => c.User,
                     c => c.Role,
                     c => c.Cart,
                     c => c.WishList,
                     c => c.Orders,
                     c => c.Maintenances,
                     c => c.PCAssembly,
-                    c => c.Deliveries);
+                    c => c.Deliveries
+                );
 
                 var customerDtos = customers.Select(CustomerMapper.MapToCustomerDTO).ToList();
 
@@ -49,7 +51,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Customers retrieved successfully.",
-                    Data = customerDtos
+                    Data = customerDtos,
                 };
             }
             catch (Exception ex)
@@ -58,21 +60,23 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving customers.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<CustomerEditDTO>> UpdateCustomerAsync(string id, CustomerEditDTO dto)
+        public async Task<GeneralResponse<CustomerEditDTO>> UpdateCustomerAsync(
+            string id,
+            CustomerEditDTO dto
+        )
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CustomerEditDTO>
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -82,7 +86,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -92,7 +96,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Update data cannot be null.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -102,7 +106,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Full name is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -112,20 +116,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "Email is required.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
-                var customer = await _customerRepository.GetByIdWithIncludesAsync(id,c => c.User);
+                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, c => c.User);
                 if (customer == null)
                 {
                     return new GeneralResponse<CustomerEditDTO>
                     {
                         Success = false,
                         Message = $"Customer with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -152,14 +156,14 @@ namespace Service
                     Email = customer.User?.Email,
                     PhoneNumber = customer.User?.PhoneNumber,
                     UserName = customer.User?.UserName,
-                    Address = customer.User?.Address
+                    Address = customer.User?.Address,
                 };
 
                 return new GeneralResponse<CustomerEditDTO>
                 {
                     Success = true,
                     Message = "Customer updated successfully.",
-                    Data = updatedCustomer
+                    Data = updatedCustomer,
                 };
             }
             catch (Exception)
@@ -168,21 +172,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while updating the customer.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
         public async Task<GeneralResponse<bool>> CleanupCustomerDataAsync(string userId)
         {
-            
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return new GeneralResponse<bool>
                 {
                     Success = false,
                     Message = "User ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -192,28 +195,28 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid User ID format. Expected GUID format.",
-                    Data = false
+                    Data = false,
                 };
             }
 
             try
             {
-                var customer = (await _customerRepository.GetAllAsync()).FirstOrDefault(c => c.UserId == userId);
+                var customer = (await _customerRepository.GetAllAsync()).FirstOrDefault(c =>
+                    c.UserId == userId
+                );
                 if (customer == null)
                 {
                     return new GeneralResponse<bool>
                     {
                         Success = false,
                         Message = $"Customer with User ID '{userId}' not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
-                
                 await using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {
-                    
                     var carts = await cartRepo.GetAllAsync();
                     var customerCarts = carts.Where(ct => ct.CustomerId == customer.Id).ToList();
                     foreach (var cart in customerCarts)
@@ -221,66 +224,64 @@ namespace Service
                         cartRepo.Remove(cart);
                     }
 
-                    
                     if (_wishListRepo != null)
                     {
-                        var wishLists = await _wishListRepo.FindAsync(w => w.CustomerId == customer.Id);
+                        var wishLists = await _wishListRepo.FindAsync(w =>
+                            w.CustomerId == customer.Id
+                        );
                         foreach (var wishList in wishLists)
                         {
                             _wishListRepo.Remove(wishList);
                         }
                     }
 
-                    
-                    var orders = await context.Orders.Where(o => o.CustomerId == customer.Id).ToListAsync();
+                    var orders = await context
+                        .Orders.Where(o => o.CustomerId == customer.Id)
+                        .ToListAsync();
                     foreach (var order in orders)
                     {
-                        
                         context.Orders.Remove(order);
                     }
 
-                    
-                    var pcAssemblies = await context.PCAssemblies.Where(pca => pca.CustomerId == customer.Id).ToListAsync();
+                    var pcAssemblies = await context
+                        .PCAssemblies.Where(pca => pca.CustomerId == customer.Id)
+                        .ToListAsync();
                     foreach (var pcAssembly in pcAssemblies)
                     {
-                        
                         context.PCAssemblies.Remove(pcAssembly);
                     }
 
-                    
-                    var maintenances = await context.Maintenances.Where(m => m.CustomerId == customer.Id).ToListAsync();
+                    var maintenances = await context
+                        .Maintenances.Where(m => m.CustomerId == customer.Id)
+                        .ToListAsync();
                     foreach (var maintenance in maintenances)
                     {
-                        
                         context.Maintenances.Remove(maintenance);
                     }
 
-                    
-                    var deliveries = await context.Deliveries.Where(d => d.CustomerId == customer.Id).ToListAsync();
+                    var deliveries = await context
+                        .Deliveries.Where(d => d.CustomerId == customer.Id)
+                        .ToListAsync();
                     foreach (var delivery in deliveries)
                     {
                         context.Deliveries.Remove(delivery);
                     }
 
-                    
                     _customerRepository.Remove(customer);
 
-                    
                     await context.SaveChangesAsync();
-                    
-                    
+
                     await transaction.CommitAsync();
 
                     return new GeneralResponse<bool>
                     {
                         Success = true,
                         Message = "Customer data cleaned up successfully.",
-                        Data = true
+                        Data = true,
                     };
                 }
                 catch (Exception)
                 {
-                    
                     await transaction.RollbackAsync();
                     throw;
                 }
@@ -291,21 +292,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while cleaning up customer data.",
-                    Data = false
+                    Data = false,
                 };
             }
         }
 
         public async Task<GeneralResponse<CustomerDTO>> GetCustomerByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<CustomerDTO>
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -315,22 +315,24 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed customer view
-                var customer = await _customerRepository.GetByIdWithIncludesAsync(id, 
-                    c => c.User, 
+                var customer = await _customerRepository.GetByIdWithIncludesAsync(
+                    id,
+                    c => c.User,
                     c => c.Role,
                     c => c.Cart,
                     c => c.WishList,
                     c => c.Orders,
                     c => c.Maintenances,
                     c => c.PCAssembly,
-                    c => c.Deliveries);
+                    c => c.Deliveries
+                );
 
                 if (customer == null)
                 {
@@ -338,7 +340,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Customer with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -346,7 +348,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Customer retrieved successfully.",
-                    Data = CustomerMapper.MapToCustomerDTO(customer)
+                    Data = CustomerMapper.MapToCustomerDTO(customer),
                 };
             }
             catch (Exception ex)
@@ -355,7 +357,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the customer.",
-                    Data = null
+                    Data = null,
                 };
             }
         }

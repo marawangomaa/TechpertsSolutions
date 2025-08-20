@@ -29,7 +29,8 @@ namespace Core.DTOs.ProductDTOs
 
         public string? TechCompanyName { get; set; }
         public string TechCompanyAddress { get; set; } = null!;
-        
+        public string TechCompanyUserId { get; set; } = null!;
+        public string TechCompanyImage { get; set; } = null!;
         public List<SpecificationDTO>? Specifications { get; set; }
         public List<WarrantyDTO>? Warranties { get; set; }  
     }

@@ -1,12 +1,11 @@
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
-using System.IO;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using System.Text.RegularExpressions;
 using TechpertsSolutions.Core.Entities;
-using Core.Interfaces;
 
 namespace Service
 {
@@ -14,15 +13,29 @@ namespace Service
     {
         private readonly IHostEnvironment _environment;
         private readonly IConfiguration _configuration;
-        private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        private readonly string[] _allowedExtensions =
+        {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".bmp",
+            ".webp",
+        };
         private readonly long _maxFileSize = 5 * 1024 * 1024;
         private readonly UserManager<AppUser> userManager;
         private readonly IRepository<Product> productRepo;
         private readonly IRepository<Category> categoryRepo;
         private readonly IRepository<SubCategory> subCategoryRepo;
 
-        public FileService(IHostEnvironment environment, IConfiguration configuration, UserManager<AppUser> _userManager,
-            IRepository<Product> _productRepo, IRepository<Category> _categoryRepo, IRepository<SubCategory> _subCategoryRepo)
+        public FileService(
+            IHostEnvironment environment,
+            IConfiguration configuration,
+            UserManager<AppUser> _userManager,
+            IRepository<Product> _productRepo,
+            IRepository<Category> _categoryRepo,
+            IRepository<SubCategory> _subCategoryRepo
+        )
         {
             _environment = environment;
             _configuration = configuration;
@@ -40,27 +53,23 @@ namespace Service
             if (!IsValidImageFile(file))
                 throw new ArgumentException("Invalid image file");
 
-            
             var assetsPath = Path.Combine(_environment.ContentRootPath, "wwwroot", "assets");
             var controllerPath = Path.Combine(assetsPath, controllerName.ToLower());
-            
+
             if (!Directory.Exists(assetsPath))
                 Directory.CreateDirectory(assetsPath);
-            
+
             if (!Directory.Exists(controllerPath))
                 Directory.CreateDirectory(controllerPath);
 
-            
             var fileName = GenerateUniqueFileName(file.FileName);
             var filePath = Path.Combine(controllerPath, fileName);
 
-            
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
 
-            
             return Path.Combine("assets", controllerName.ToLower(), fileName).Replace("\\", "/");
         }
 
@@ -95,7 +104,9 @@ namespace Service
             }
 
             // SubCategories
-            var subCategoriesWithImage = await subCategoryRepo.FindAsync(sc => sc.Image == imagePath);
+            var subCategoriesWithImage = await subCategoryRepo.FindAsync(sc =>
+                sc.Image == imagePath
+            );
             foreach (var subCategory in subCategoriesWithImage)
             {
                 subCategory.Image = null;
@@ -103,8 +114,8 @@ namespace Service
             }
 
             // AppUsers
-            var usersWithImage = userManager.Users
-                .Where(u => u.ProfilePhotoUrl == imagePath)
+            var usersWithImage = userManager
+                .Users.Where(u => u.ProfilePhotoUrl == imagePath)
                 .ToList();
             foreach (var user in usersWithImage)
             {
@@ -120,15 +131,17 @@ namespace Service
             return true;
         }
 
-        public async Task<string> UpdateImageAsync(IFormFile newFile, string oldImagePath, string controllerName)
+        public async Task<string> UpdateImageAsync(
+            IFormFile newFile,
+            string oldImagePath,
+            string controllerName
+        )
         {
-            
             if (!string.IsNullOrEmpty(oldImagePath))
             {
                 await DeleteImageAsync(oldImagePath);
             }
 
-            
             return await UploadImageAsync(newFile, controllerName);
         }
 
@@ -137,16 +150,13 @@ namespace Service
             if (file == null || file.Length == 0)
                 return false;
 
-            
             if (file.Length > _maxFileSize)
                 return false;
 
-            
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (!_allowedExtensions.Contains(extension))
                 return false;
 
-            
             if (!file.ContentType.StartsWith("image/"))
                 return false;
 
@@ -166,15 +176,13 @@ namespace Service
         {
             var extension = Path.GetExtension(originalFileName);
             var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(originalFileName);
-            
-            
+
             fileNameWithoutExtension = Regex.Replace(fileNameWithoutExtension, @"[^a-zA-Z0-9]", "");
-            
-            
+
             var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
             var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-            
+
             return $"{fileNameWithoutExtension}_{timestamp}_{uniqueId}{extension}";
         }
     }
-} 
+}

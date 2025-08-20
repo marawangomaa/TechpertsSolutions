@@ -1,10 +1,10 @@
+using Core.DTOs;
 using Core.DTOs.AdminDTOs;
+using Core.DTOs.ProductDTOs;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
-using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
 using Microsoft.EntityFrameworkCore;
-using Core.DTOs.ProductDTOs;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -15,14 +15,22 @@ namespace Service
 
         public AdminUserManagementService(
             UserManager<AppUser> userManager,
-            RoleManager<AppRole> roleManager)
+            RoleManager<AppRole> roleManager
+        )
         {
             _userManager = userManager;
             _roleManager = roleManager;
         }
 
         public async Task<GeneralResponse<PaginatedDTO<UserListDTO>>> GetAllUsersAsync(
-            int pageNumber, int pageSize, string? search, string? role, bool? isActive, string? sortBy, bool sortDesc)
+            int pageNumber,
+            int pageSize,
+            string? search,
+            string? role,
+            bool? isActive,
+            string? sortBy,
+            bool sortDesc
+        )
         {
             try
             {
@@ -31,11 +39,12 @@ namespace Service
                 // Apply search filter
                 if (!string.IsNullOrWhiteSpace(search))
                 {
-                    query = query.Where(u => 
-                        u.FullName.Contains(search) || 
-                        u.Email.Contains(search) || 
-                        u.PhoneNumber.Contains(search) ||
-                        u.Address.Contains(search));
+                    query = query.Where(u =>
+                        u.FullName.Contains(search)
+                        || u.Email.Contains(search)
+                        || u.PhoneNumber.Contains(search)
+                        || u.Address.Contains(search)
+                    );
                 }
 
                 // Apply role filter
@@ -55,9 +64,13 @@ namespace Service
                 // Apply sorting
                 query = sortBy?.ToLower() switch
                 {
-                    "name" => sortDesc ? query.OrderByDescending(u => u.FullName) : query.OrderBy(u => u.FullName),
-                    "email" => sortDesc ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
-                    _ => sortDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
+                    "name" => sortDesc
+                        ? query.OrderByDescending(u => u.FullName)
+                        : query.OrderBy(u => u.FullName),
+                    "email" => sortDesc
+                        ? query.OrderByDescending(u => u.Email)
+                        : query.OrderBy(u => u.Email),
+                    _ => sortDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id),
                 };
 
                 var totalCount = await query.CountAsync();
@@ -82,7 +95,7 @@ namespace Service
                         ProfilePhotoUrl = user.ProfilePhotoUrl,
                         IsActive = user.IsActive,
                         Roles = roles.Any() ? roles.ToList() : new List<string> { "No Role" },
-                        CreatedAt = user.CreatedAt
+                        CreatedAt = user.CreatedAt,
                     };
                     userDtos.Add(userDto);
                 }
@@ -92,14 +105,14 @@ namespace Service
                     Items = userDtos,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    TotalItems = totalCount
+                    TotalItems = totalCount,
                 };
 
                 return new GeneralResponse<PaginatedDTO<UserListDTO>>
                 {
                     Success = true,
                     Message = "Users retrieved successfully.",
-                    Data = paginatedResult
+                    Data = paginatedResult,
                 };
             }
             catch (Exception ex)
@@ -108,7 +121,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving users.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -123,7 +136,7 @@ namespace Service
                     return new GeneralResponse<UserListDTO>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -140,14 +153,14 @@ namespace Service
                     ProfilePhotoUrl = user.ProfilePhotoUrl,
                     IsActive = user.IsActive,
                     Roles = roles.Any() ? roles.ToList() : new List<string> { "No Role" },
-                    CreatedAt = user.CreatedAt
+                    CreatedAt = user.CreatedAt,
                 };
 
                 return new GeneralResponse<UserListDTO>
                 {
                     Success = true,
                     Message = "User retrieved successfully.",
-                    Data = userDto
+                    Data = userDto,
                 };
             }
             catch (Exception ex)
@@ -156,7 +169,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving user.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -171,20 +184,20 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
                 user.IsActive = false;
                 var result = await _userManager.UpdateAsync(user);
-                
+
                 if (!result.Succeeded)
                 {
                     return new GeneralResponse<string>
                     {
                         Success = false,
                         Message = "Failed to deactivate user.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -192,7 +205,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "User deactivated successfully.",
-                    Data = userId
+                    Data = userId,
                 };
             }
             catch (Exception ex)
@@ -201,7 +214,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while deactivating user.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
@@ -216,20 +229,20 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
                 user.IsActive = true;
                 var result = await _userManager.UpdateAsync(user);
-                
+
                 if (!result.Succeeded)
                 {
                     return new GeneralResponse<string>
                     {
                         Success = false,
                         Message = "Failed to activate user.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -237,7 +250,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "User activated successfully.",
-                    Data = userId
+                    Data = userId,
                 };
             }
             catch (Exception ex)
@@ -246,12 +259,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while activating user.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
 
-        public async Task<GeneralResponse<List<string>>> ChangeUserRolesAsync(string userId, List<string> newRoles)
+        public async Task<GeneralResponse<List<string>>> ChangeUserRolesAsync(
+            string userId,
+            List<string> newRoles
+        )
         {
             try
             {
@@ -261,19 +277,21 @@ namespace Service
                     return new GeneralResponse<List<string>>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
                 // Validate roles
-                var invalidRoles = newRoles.Where(role => !_roleManager.RoleExistsAsync(role).Result).ToList();
+                var invalidRoles = newRoles
+                    .Where(role => !_roleManager.RoleExistsAsync(role).Result)
+                    .ToList();
                 if (invalidRoles.Any())
                 {
                     return new GeneralResponse<List<string>>
                     {
                         Success = false,
                         Message = "Some roles do not exist.",
-                        Data = invalidRoles
+                        Data = invalidRoles,
                     };
                 }
 
@@ -290,7 +308,7 @@ namespace Service
                         {
                             Success = false,
                             Message = "Failed to remove current roles.",
-                            Data = currentRoles.ToList()
+                            Data = currentRoles.ToList(),
                         };
                     }
                 }
@@ -303,7 +321,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to assign new roles.",
-                        Data = newRoles
+                        Data = newRoles,
                     };
                 }
 
@@ -311,7 +329,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "User roles updated successfully.",
-                    Data = newRoles
+                    Data = newRoles,
                 };
             }
             catch (Exception ex)
@@ -320,7 +338,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while updating roles.",
-                    Data = new List<string> { ex.Message }
+                    Data = new List<string> { ex.Message },
                 };
             }
         }
@@ -336,7 +354,7 @@ namespace Service
 
                 var roleStats = new Dictionary<string, int>();
                 var roles = await _roleManager.Roles.ToListAsync();
-                
+
                 foreach (var role in roles)
                 {
                     var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name);
@@ -348,14 +366,14 @@ namespace Service
                     TotalUsers = totalUsers,
                     ActiveUsers = activeUsers,
                     InactiveUsers = inactiveUsers,
-                    RoleDistribution = roleStats
+                    RoleDistribution = roleStats,
                 };
 
                 return new GeneralResponse<object>
                 {
                     Success = true,
                     Message = "User statistics retrieved successfully.",
-                    Data = statistics
+                    Data = statistics,
                 };
             }
             catch (Exception ex)
@@ -364,9 +382,9 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving user statistics.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
     }
-} 
+}

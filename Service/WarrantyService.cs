@@ -1,14 +1,9 @@
-using Core.DTOs.WarrantyDTOs;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
+using Core.DTOs.WarrantyDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -31,7 +26,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid warranty data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -42,7 +37,7 @@ namespace Service
                 Description = dto.Description,
                 ProductId = dto.ProductId,
                 StartDate = DateTime.Now,
-                EndDate = DateTime.Now.AddMonths(int.Parse(dto.Duration))
+                EndDate = DateTime.Now.AddMonths(int.Parse(dto.Duration)),
             };
 
             await _warrantyRepo.AddAsync(warranty);
@@ -52,20 +47,19 @@ namespace Service
             {
                 Success = true,
                 Message = "Warranty created successfully.",
-                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
+                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty),
             };
         }
 
         public async Task<GeneralResponse<WarrantyReadDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<WarrantyReadDTO>
                 {
                     Success = false,
                     Message = "Warranty ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -75,18 +69,20 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Warranty ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
                 // Comprehensive includes for detailed warranty view with product information
-                var warranty = await _warrantyRepo.GetByIdWithIncludesAsync(id, 
+                var warranty = await _warrantyRepo.GetByIdWithIncludesAsync(
+                    id,
                     w => w.Product,
                     w => w.Product.Category,
                     w => w.Product.SubCategory,
-                    w => w.Product.TechCompany);
+                    w => w.Product.TechCompany
+                );
 
                 if (warranty == null)
                 {
@@ -94,7 +90,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Warranty with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -102,7 +98,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Warranty retrieved successfully.",
-                    Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
+                    Data = WarrantyMapper.MapToWarrantyReadDTO(warranty),
                 };
             }
             catch (Exception ex)
@@ -111,7 +107,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the warranty.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -125,7 +121,8 @@ namespace Service
                     w => w.Product,
                     w => w.Product.Category,
                     w => w.Product.SubCategory,
-                    w => w.Product.TechCompany);
+                    w => w.Product.TechCompany
+                );
 
                 var warrantyDtos = warranties.Select(WarrantyMapper.MapToWarrantyReadDTO).ToList();
 
@@ -133,7 +130,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Warranties retrieved successfully.",
-                    Data = warrantyDtos
+                    Data = warrantyDtos,
                 };
             }
             catch (Exception ex)
@@ -142,12 +139,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving warranties.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<WarrantyReadDTO>> UpdateAsync(string id, WarrantyUpdateDTO dto)
+        public async Task<GeneralResponse<WarrantyReadDTO>> UpdateAsync(
+            string id,
+            WarrantyUpdateDTO dto
+        )
         {
             if (string.IsNullOrWhiteSpace(id) || dto == null)
             {
@@ -155,7 +155,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid input data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -166,7 +166,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Warranty not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -183,7 +183,7 @@ namespace Service
             {
                 Success = true,
                 Message = "Warranty updated successfully.",
-                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty)
+                Data = WarrantyMapper.MapToWarrantyReadDTO(warranty),
             };
         }
 
@@ -195,7 +195,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Warranty ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -206,7 +206,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Warranty not found.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -217,7 +217,7 @@ namespace Service
             {
                 Success = true,
                 Message = "Warranty deleted successfully.",
-                Data = true
+                Data = true,
             };
         }
     }

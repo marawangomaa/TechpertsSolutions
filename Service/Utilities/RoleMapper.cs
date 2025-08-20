@@ -1,13 +1,13 @@
 using Core.DTOs;
-using Microsoft.AspNetCore.Identity;
 using TechpertsSolutions.Core.Entities;
-using System.Collections.Generic;
 
 namespace Service.Utilities
 {
     public static class RoleMapper
     {
-        public static GeneralResponse<List<string>> MapToRoleListResponse(IEnumerable<AppRole> roles)
+        public static GeneralResponse<List<string>> MapToRoleListResponse(
+            IEnumerable<AppRole> roles
+        )
         {
             var roleNames = roles?.Select(r => r.Name).ToList() ?? new List<string>();
 
@@ -17,7 +17,7 @@ namespace Service.Utilities
                 {
                     Success = true,
                     Message = "Roles retrieved successfully.",
-                    Data = roleNames
+                    Data = roleNames,
                 };
             }
 
@@ -25,17 +25,21 @@ namespace Service.Utilities
             {
                 Success = false,
                 Message = "No roles found.",
-                Data = new List<string>()
+                Data = new List<string>(),
             };
         }
 
-        public static GeneralResponse<string> MapToRoleAssignmentResponse(bool success, string message, string data)
+        public static GeneralResponse<string> MapToRoleAssignmentResponse(
+            bool success,
+            string message,
+            string data
+        )
         {
             return new GeneralResponse<string>
             {
                 Success = success,
                 Message = message,
-                Data = data
+                Data = data,
             };
         }
 
@@ -45,8 +49,8 @@ namespace Service.Utilities
             {
                 Success = true,
                 Message = exists ? "Role exists." : "Role does not exist.",
-                Data = exists
+                Data = exists,
             };
         }
     }
-} 
+}

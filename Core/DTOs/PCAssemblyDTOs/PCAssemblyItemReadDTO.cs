@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.DTOs.PCAssemblyDTOs
 {
@@ -19,5 +20,19 @@ namespace Core.DTOs.PCAssemblyDTOs
         public decimal? Discount { get; set; }
         public int Quantity { get; set; }
         public decimal Total { get; set; }
+        //public PCAssemblyItemReadDTO(PCAssemblyItem pCAssemblyItem)
+        //{
+        //    //ItemId = pCAssemblyItem.ItemId;
+        //    ProductId = pCAssemblyItem.ProductId;
+        //    //ProductName = pCAssemblyItem.ProductName;
+        //    //ProductImageUrl = pCAssemblyItem.ProductImageUrl;
+        //    //SubCategoryName = pCAssemblyItem.SubCategoryName;
+        //    //Category = pCAssemblyItem.Category;
+        //    //Status = pCAssemblyItem.Status;
+        //    Price = pCAssemblyItem.Price;
+        //    //Discount = pCAssemblyItem.Discount;
+        //    Quantity = pCAssemblyItem.Quantity;
+        //    Total = pCAssemblyItem.Total;
+        //}
     }
 }

@@ -1,13 +1,8 @@
-using Core.DTOs.OrderDTOs;
 using Core.DTOs;
+using Core.DTOs.OrderDTOs;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -17,7 +12,10 @@ namespace Service
         private readonly IRepository<OrderHistory> _historyRepo;
         private readonly IRepository<Order> _orderRepo;
 
-        public OrderHistoryService(IRepository<OrderHistory> historyRepo, IRepository<Order> orderRepo)
+        public OrderHistoryService(
+            IRepository<OrderHistory> historyRepo,
+            IRepository<Order> orderRepo
+        )
         {
             _historyRepo = historyRepo;
             _orderRepo = orderRepo;
@@ -25,14 +23,13 @@ namespace Service
 
         public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<OrderHistoryReadDTO>
                 {
                     Success = false,
                     Message = "Order History ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -42,7 +39,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Order History ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -50,23 +47,24 @@ namespace Service
             {
                 var history = await _historyRepo.GetFirstOrDefaultAsync(
                     h => h.Id == id,
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
-                
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
+
                 if (history == null)
                 {
                     return new GeneralResponse<OrderHistoryReadDTO>
                     {
                         Success = false,
                         Message = $"Order History with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
-                
+
                 return new GeneralResponse<OrderHistoryReadDTO>
                 {
                     Success = true,
                     Message = "Order History retrieved successfully.",
-                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(history)
+                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(history),
                 };
             }
             catch (Exception ex)
@@ -75,21 +73,22 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the order history.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByCustomerIdAsync(string customerId)
+        public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByCustomerIdAsync(
+            string customerId
+        )
         {
-            
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return new GeneralResponse<OrderHistoryReadDTO>
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -99,7 +98,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -108,7 +107,8 @@ namespace Service
                 // Get all order histories that contain orders for this customer
                 var histories = await _historyRepo.FindWithStringIncludesAsync(
                     h => h.Orders.Any(o => o.CustomerId == customerId),
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
 
                 if (!histories.Any())
                 {
@@ -117,7 +117,7 @@ namespace Service
                     {
                         Success = true,
                         Message = $"No orders found for Customer ID '{customerId}'.",
-                        Data = OrderHistoryMapper.CreateEmptyOrderHistoryReadDTO()
+                        Data = OrderHistoryMapper.CreateEmptyOrderHistoryReadDTO(),
                     };
                 }
 
@@ -132,14 +132,15 @@ namespace Service
                 var virtualHistory = new OrderHistory
                 {
                     Id = $"customer-{customerId}",
-                    Orders = allOrders
+                    Orders = allOrders,
                 };
 
                 return new GeneralResponse<OrderHistoryReadDTO>
                 {
                     Success = true,
-                    Message = $"Order History retrieved successfully. Found {allOrders.Count} orders.",
-                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(virtualHistory)
+                    Message =
+                        $"Order History retrieved successfully. Found {allOrders.Count} orders.",
+                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(virtualHistory),
                 };
             }
             catch (Exception ex)
@@ -148,31 +149,34 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the order history.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderHistoryReadDTO>>> GetAllOrderHistoriesAsync()
+        public async Task<
+            GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
+        > GetAllOrderHistoriesAsync()
         {
             try
             {
                 // Get all order histories with proper includes in a single query
                 var histories = await _historyRepo.FindWithStringIncludesAsync(
                     h => true, // Get all histories
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
-                
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
+
                 var result = histories
                     .Where(h => h != null)
                     .Select(OrderHistoryMapper.MapToOrderHistoryReadDTO)
                     .Where(dto => dto != null)
                     .ToList();
-                
+
                 return new GeneralResponse<IEnumerable<OrderHistoryReadDTO>>
                 {
                     Success = true,
                     Message = "Order Histories retrieved successfully.",
-                    Data = result
+                    Data = result,
                 };
             }
             catch (Exception ex)
@@ -181,12 +185,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving order histories.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetCustomerOrdersAsync(string customerId)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetCustomerOrdersAsync(
+            string customerId
+        )
         {
             if (string.IsNullOrWhiteSpace(customerId))
             {
@@ -194,7 +200,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -204,7 +210,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -213,7 +219,8 @@ namespace Service
                 // Get all order histories that contain orders for this customer
                 var histories = await _historyRepo.FindWithStringIncludesAsync(
                     h => h.Orders.Any(o => o.CustomerId == customerId),
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
 
                 // Extract all orders for this customer from all histories
                 var customerOrders = histories
@@ -231,8 +238,9 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
-                    Message = $"Customer orders retrieved successfully. Found {orderDtos.Count} orders.",
-                    Data = orderDtos
+                    Message =
+                        $"Customer orders retrieved successfully. Found {orderDtos.Count} orders.",
+                    Data = orderDtos,
                 };
             }
             catch (Exception ex)
@@ -241,12 +249,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving customer orders.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByOrderIdAsync(string orderId)
+        public async Task<GeneralResponse<OrderHistoryReadDTO>> GetHistoryByOrderIdAsync(
+            string orderId
+        )
         {
             if (string.IsNullOrWhiteSpace(orderId))
             {
@@ -254,7 +264,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Order ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -264,7 +274,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Order ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -273,7 +283,8 @@ namespace Service
                 // Find the order history that contains this specific order
                 var history = await _historyRepo.GetFirstOrDefaultAsync(
                     h => h.Orders.Any(o => o.Id == orderId),
-                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User");
+                    includeProperties: "Orders,Orders.OrderItems,Orders.OrderItems.Product,Orders.Customer,Orders.Customer.User"
+                );
 
                 if (history == null)
                 {
@@ -281,7 +292,7 @@ namespace Service
                     {
                         Success = false,
                         Message = $"Order History for Order ID '{orderId}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -289,14 +300,15 @@ namespace Service
                 var filteredHistory = new OrderHistory
                 {
                     Id = history.Id,
-                    Orders = history.Orders?.Where(o => o.Id == orderId).ToList() ?? new List<Order>()
+                    Orders =
+                        history.Orders?.Where(o => o.Id == orderId).ToList() ?? new List<Order>(),
                 };
 
                 return new GeneralResponse<OrderHistoryReadDTO>
                 {
                     Success = true,
                     Message = "Order History retrieved successfully.",
-                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(filteredHistory)
+                    Data = OrderHistoryMapper.MapToOrderHistoryReadDTO(filteredHistory),
                 };
             }
             catch (Exception ex)
@@ -305,12 +317,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the order history.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetCustomerOrdersDirectAsync(string customerId)
+        public async Task<GeneralResponse<IEnumerable<OrderReadDTO>>> GetCustomerOrdersDirectAsync(
+            string customerId
+        )
         {
             if (string.IsNullOrWhiteSpace(customerId))
             {
@@ -318,7 +332,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -328,7 +342,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid Customer ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -337,7 +351,8 @@ namespace Service
                 // Get orders directly from the Order repository
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId,
-                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory");
+                    includeProperties: "OrderItems,OrderItems.Product,Customer,Customer.User,OrderHistory"
+                );
 
                 var orderDtos = orders
                     .Where(o => o != null)
@@ -349,8 +364,9 @@ namespace Service
                 return new GeneralResponse<IEnumerable<OrderReadDTO>>
                 {
                     Success = true,
-                    Message = $"Customer orders retrieved successfully. Found {orderDtos.Count} orders.",
-                    Data = orderDtos
+                    Message =
+                        $"Customer orders retrieved successfully. Found {orderDtos.Count} orders.",
+                    Data = orderDtos,
                 };
             }
             catch (Exception ex)
@@ -359,7 +375,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving customer orders.",
-                    Data = null
+                    Data = null,
                 };
             }
         }

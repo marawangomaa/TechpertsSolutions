@@ -7,7 +7,8 @@ namespace Service.Utilities
     {
         public static WarrantyReadDTO MapToWarrantyReadDTO(Warranty entity)
         {
-            if (entity == null) return null!;
+            if (entity == null)
+                return null!;
 
             return new WarrantyReadDTO
             {
@@ -17,13 +18,14 @@ namespace Service.Utilities
                 Description = entity.Description,
                 StartDate = entity.StartDate,
                 EndDate = entity.EndDate,
-                ProductId = entity.ProductId
+                ProductId = entity.ProductId,
             };
         }
 
         public static Warranty MapToEntity(WarrantyCreateDTO dto)
         {
-            if (dto == null) return null!;
+            if (dto == null)
+                return null!;
 
             return new Warranty
             {
@@ -33,13 +35,14 @@ namespace Service.Utilities
                 Description = dto.Description,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
-                ProductId = dto.ProductId
+                ProductId = dto.ProductId,
             };
         }
 
         public static void UpdateEntity(Warranty entity, WarrantyUpdateDTO dto)
         {
-            if (entity == null || dto == null) return;
+            if (entity == null || dto == null)
+                return;
 
             if (!string.IsNullOrWhiteSpace(dto.Type))
                 entity.Type = dto.Type;
@@ -60,4 +63,4 @@ namespace Service.Utilities
                 entity.ProductId = dto.ProductId;
         }
     }
-} 
+}

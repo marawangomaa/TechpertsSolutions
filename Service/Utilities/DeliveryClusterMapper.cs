@@ -1,119 +1,15 @@
 ﻿using Core.DTOs.DeliveryDTOs;
 using Core.Entities;
 using Core.Enums;
-using Core.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service.Utilities
 {
-    //public static class DeliveryClusterMapper
-    //{
-    //    public static DeliveryCluster ToEntity(DeliveryClusterCreateDTO dto)
-    //    {
-    //        if (dto == null) return null;
-
-    //        return new DeliveryCluster
-    //        {
-    //            DeliveryId = dto.DeliveryId,
-    //            TechCompanyId = dto.TechCompanyId,
-    //            TechCompanyName = dto.TechCompanyName,
-    //            DistanceKm = dto.DistanceKm,
-    //            Price = dto.Price,
-    //            DropoffLatitude = dto.DropoffLatitude,
-    //            DropoffLongitude = dto.DropoffLongitude,
-    //            SequenceOrder = dto.SequenceOrder,
-    //            Status = DeliveryClusterStatus.Pending,
-    //            EstimatedDistance = dto.DistanceKm,
-    //            EstimatedPrice = dto.Price
-    //        };
-    //    }
-
-    //    public static DeliveryClusterDTO ToDTO(DeliveryCluster entity)
-    //    {
-    //        if (entity == null) return null;
-
-    //        return new DeliveryClusterDTO
-    //        {
-    //            Id = entity.Id,
-    //            DeliveryId = entity.DeliveryId,
-    //            TechCompanyId = entity.TechCompanyId,
-    //            TechCompanyName = entity.TechCompanyName ?? entity.TechCompany?.User?.FullName,
-    //            DistanceKm = entity.DistanceKm,
-    //            Price = entity.Price,
-    //            Status = entity.Status,
-    //            AssignedDriverId = entity.AssignedDriverId,
-    //            AssignedDriverName = entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName,
-    //            AssignmentTime = entity.AssignmentTime,
-    //            DropoffLatitude = entity.DropoffLatitude,
-    //            DropoffLongitude = entity.DropoffLongitude,
-    //            SequenceOrder = entity.SequenceOrder,
-    //            DriverOfferCount = entity.DriverOffers?.Count ?? 0,
-    //            EstimatedDistance = entity.EstimatedDistance,
-    //            EstimatedPrice = entity.EstimatedPrice,
-
-    //            Tracking = entity.Tracking == null
-    //                ? null
-    //                : new DeliveryClusterTrackingDTO
-    //                {
-    //                    ClusterId = entity.Id,
-    //                    Location = entity.Tracking.Location,
-    //                    LastUpdated = entity.Tracking.LastUpdated,
-    //                    Status = entity.Tracking.Status,
-    //                    DriverName = entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName
-    //                }
-    //        };
-    //    }
-
-    //    public static void UpdateEntity(DeliveryCluster entity, DeliveryClusterDTO dto)
-    //    {
-    //        if (entity == null || dto == null) return;
-
-    //        entity.TechCompanyId = dto.TechCompanyId ?? entity.TechCompanyId;
-    //        entity.TechCompanyName = string.IsNullOrWhiteSpace(dto.TechCompanyName) ? entity.TechCompanyName : dto.TechCompanyName;
-
-    //        entity.DistanceKm = dto.DistanceKm != default ? dto.DistanceKm : entity.DistanceKm;
-    //        entity.Price = dto.Price != default ? dto.Price : entity.Price;
-
-    //        entity.Status = dto.Status;
-
-    //        entity.AssignedDriverId = dto.AssignedDriverId ?? entity.AssignedDriverId;
-    //        entity.AssignedDriverName = string.IsNullOrWhiteSpace(dto.AssignedDriverName) ? entity.AssignedDriverName : dto.AssignedDriverName;
-    //        entity.AssignmentTime = dto.AssignmentTime ?? entity.AssignmentTime;
-
-    //        entity.DropoffLatitude = dto.DropoffLatitude ?? entity.DropoffLatitude;
-    //        entity.DropoffLongitude = dto.DropoffLongitude ?? entity.DropoffLongitude;
-
-    //        if (dto.SequenceOrder != default)
-    //            entity.SequenceOrder = dto.SequenceOrder;
-
-    //        if (dto.EstimatedDistance.HasValue)
-    //            entity.EstimatedDistance = dto.EstimatedDistance.Value;
-
-    //        if (dto.EstimatedPrice.HasValue)
-    //            entity.EstimatedPrice = dto.EstimatedPrice.Value;
-
-    //        entity.UpdatedAt = DateTime.UtcNow;
-
-    //        if (dto.Tracking != null)
-    //        {
-    //            entity.Tracking ??= new DeliveryClusterTracking();
-    //            entity.Tracking.Location = dto.Tracking.Location;
-    //            entity.Tracking.LastUpdated = dto.Tracking.LastUpdated;
-    //            entity.Tracking.Status = dto.Tracking.Status;
-    //        }
-    //    }
-    //}
-
-
     public static class DeliveryClusterMapper
     {
         public static DeliveryCluster ToEntity(DeliveryClusterCreateDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new DeliveryCluster
             {
@@ -130,21 +26,28 @@ namespace Service.Utilities
                 Status = DeliveryClusterStatus.Pending,
                 EstimatedDistance = dto.DistanceKm,
                 EstimatedPrice = dto.Price,
-                Tracking = dto.Tracking == null ? null : new DeliveryClusterTracking
-                {
-                    Location = dto.Tracking.Location,
-                    LastUpdated = dto.Tracking.LastUpdated,
-                    Status = dto.Tracking.Status != null
-                                ? Enum.Parse<DeliveryClusterStatus>(dto.Tracking.Status.ToString())
-                                : DeliveryClusterStatus.Pending,
-                    Driver = dto.Tracking.Driver
-                }
+                Tracking =
+                    dto.Tracking == null
+                        ? null
+                        : new DeliveryClusterTracking
+                        {
+                            Location = dto.Tracking.Location,
+                            LastUpdated = dto.Tracking.LastUpdated,
+                            Status =
+                                dto.Tracking.Status != null
+                                    ? Enum.Parse<DeliveryClusterStatus>(
+                                        dto.Tracking.Status.ToString()
+                                    )
+                                    : DeliveryClusterStatus.Pending,
+                            Driver = dto.Tracking.Driver,
+                        },
             };
         }
 
         public static DeliveryClusterDTO ToDTO(DeliveryCluster entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             return new DeliveryClusterDTO
             {
@@ -156,7 +59,8 @@ namespace Service.Utilities
                 Price = entity.Price,
                 Status = entity.Status,
                 AssignedDriverId = entity.AssignedDriverId,
-                AssignedDriverName = entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName,
+                AssignedDriverName =
+                    entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName,
                 AssignmentTime = entity.AssignmentTime,
                 DropoffLatitude = entity.DropoffLatitude,
                 DropoffLongitude = entity.DropoffLongitude,
@@ -166,37 +70,45 @@ namespace Service.Utilities
                 DriverOfferCount = entity.DriverOffers?.Count ?? 0,
                 EstimatedDistance = entity.EstimatedDistance,
                 EstimatedPrice = entity.EstimatedPrice,
-                Tracking = entity.Tracking == null ? null : new DeliveryClusterTrackingDTO
-                {
-                    ClusterId = entity.Id,
-                    DeliveryId = entity.DeliveryId,
-                    TechCompanyId = entity.TechCompanyId,
-                    TechCompanyName = entity.TechCompanyName ?? entity.TechCompany?.User?.FullName,
-                    DistanceKm = entity.DistanceKm,
-                    Price = entity.Price,
-                    AssignedDriverId = entity.AssignedDriverId,
-                    DriverName = entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName,
-                    AssignmentTime = entity.AssignmentTime,
-                    DropoffLatitude = entity.DropoffLatitude,
-                    DropoffLongitude = entity.DropoffLongitude,
-                    SequenceOrder = entity.SequenceOrder,
-                    EstimatedDistance = entity.EstimatedDistance,
-                    EstimatedPrice = entity.EstimatedPrice,
-                    Status = entity.Tracking.Status,
-                    Location = entity.Tracking.Location,
-                    LastUpdated = entity.Tracking.LastUpdated,
-                    PickupConfirmed = entity.PickupConfirmed,
-                    PickupConfirmedAt = entity.PickupConfirmedAt
-                }
+                Tracking =
+                    entity.Tracking == null
+                        ? null
+                        : new DeliveryClusterTrackingDTO
+                        {
+                            ClusterId = entity.Id,
+                            DeliveryId = entity.DeliveryId,
+                            TechCompanyId = entity.TechCompanyId,
+                            TechCompanyName =
+                                entity.TechCompanyName ?? entity.TechCompany?.User?.FullName,
+                            DistanceKm = entity.DistanceKm,
+                            Price = entity.Price,
+                            AssignedDriverId = entity.AssignedDriverId,
+                            DriverName =
+                                entity.AssignedDriverName ?? entity.AssignedDriver?.User?.FullName,
+                            AssignmentTime = entity.AssignmentTime,
+                            DropoffLatitude = entity.DropoffLatitude,
+                            DropoffLongitude = entity.DropoffLongitude,
+                            SequenceOrder = entity.SequenceOrder,
+                            EstimatedDistance = entity.EstimatedDistance,
+                            EstimatedPrice = entity.EstimatedPrice,
+                            Status = entity.Tracking.Status,
+                            Location = entity.Tracking.Location,
+                            LastUpdated = entity.Tracking.LastUpdated,
+                            PickupConfirmed = entity.PickupConfirmed,
+                            PickupConfirmedAt = entity.PickupConfirmedAt,
+                        },
             };
         }
 
         public static void UpdateEntity(DeliveryCluster entity, DeliveryClusterDTO dto)
         {
-            if (entity == null || dto == null) return;
+            if (entity == null || dto == null)
+                return;
 
             entity.TechCompanyId = dto.TechCompanyId ?? entity.TechCompanyId;
-            entity.TechCompanyName = string.IsNullOrWhiteSpace(dto.TechCompanyName) ? entity.TechCompanyName : dto.TechCompanyName;
+            entity.TechCompanyName = string.IsNullOrWhiteSpace(dto.TechCompanyName)
+                ? entity.TechCompanyName
+                : dto.TechCompanyName;
 
             entity.DistanceKm = dto.DistanceKm != default ? dto.DistanceKm : entity.DistanceKm;
             entity.Price = dto.Price != default ? dto.Price : entity.Price;
@@ -204,18 +116,25 @@ namespace Service.Utilities
             entity.Status = dto.Status;
 
             entity.AssignedDriverId = dto.AssignedDriverId ?? entity.AssignedDriverId;
-            entity.AssignedDriverName = string.IsNullOrWhiteSpace(dto.AssignedDriverName) ? entity.AssignedDriverName : dto.AssignedDriverName;
+            entity.AssignedDriverName = string.IsNullOrWhiteSpace(dto.AssignedDriverName)
+                ? entity.AssignedDriverName
+                : dto.AssignedDriverName;
             entity.AssignmentTime = dto.AssignmentTime ?? entity.AssignmentTime;
 
             entity.DropoffLatitude = dto.DropoffLatitude ?? entity.DropoffLatitude;
             entity.DropoffLongitude = dto.DropoffLongitude ?? entity.DropoffLongitude;
 
-            if (dto.PickupLatitude.HasValue) entity.Delivery.PickupLatitude = dto.PickupLatitude;
-            if (dto.PickupLongitude.HasValue) entity.Delivery.PickupLongitude = dto.PickupLongitude;
+            if (dto.PickupLatitude.HasValue)
+                entity.Delivery.PickupLatitude = dto.PickupLatitude;
+            if (dto.PickupLongitude.HasValue)
+                entity.Delivery.PickupLongitude = dto.PickupLongitude;
 
-            if (dto.SequenceOrder != default) entity.SequenceOrder = dto.SequenceOrder;
-            if (dto.EstimatedDistance.HasValue) entity.EstimatedDistance = dto.EstimatedDistance.Value;
-            if (dto.EstimatedPrice.HasValue) entity.EstimatedPrice = dto.EstimatedPrice.Value;
+            if (dto.SequenceOrder != default)
+                entity.SequenceOrder = dto.SequenceOrder;
+            if (dto.EstimatedDistance.HasValue)
+                entity.EstimatedDistance = dto.EstimatedDistance.Value;
+            if (dto.EstimatedPrice.HasValue)
+                entity.EstimatedPrice = dto.EstimatedPrice.Value;
 
             entity.UpdatedAt = DateTime.Now;
 

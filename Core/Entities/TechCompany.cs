@@ -8,7 +8,7 @@ namespace TechpertsSolutions.Core.Entities
 {
     public class TechCompany : BaseEntity
     {
-        public string? Website { get; set; }
+        public decimal? Rating { get; set; }
         public string? Description { get; set; }
         public string UserId { get; set; }
         public AppUser? User { get; set; }

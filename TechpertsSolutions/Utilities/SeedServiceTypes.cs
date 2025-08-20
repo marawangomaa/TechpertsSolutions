@@ -15,15 +15,15 @@ namespace TechpertsSolutions.Utilities
 
             foreach (ServiceType serviceType in Enum.GetValues(typeof(ServiceType)))
             {
-                string name = serviceType.GetStringValue();
-
-                bool exists = await serviceUsageRepo.AnyAsync(su => su.ServiceType == name);
+                bool exists = await serviceUsageRepo.AnyAsync(
+                    su => su.ServiceType == ServiceType.Maintenance
+                );
                 if (!exists)
                 {
                     var serviceUsage = new ServiceUsage
                     {
                         Id = Guid.NewGuid().ToString(),
-                        ServiceType = name,
+                        ServiceType = serviceType,
                         CallCount = 0,
                         UsedOn = DateTime.Now,
                         MaintenanceId = null,

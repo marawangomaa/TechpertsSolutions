@@ -1,24 +1,15 @@
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using System.Text.Json.Serialization;
 using Core.Entities;
-using Core.Enums;
-using Core.Interfaces;
-using Core.Interfaces.Services;
-using Core.Utilities;
 using Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Repository;
-using Service;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Reflection;
-using System.Text;
-using System.Text.Json.Serialization;
 using TechpertsSolutions.Core.Entities;
 using TechpertsSolutions.Extensions;
 using TechpertsSolutions.Repository.Data;
@@ -32,64 +23,81 @@ namespace TechpertsSolutions
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddControllers()
-                .AddJsonOptions(opt => {
-                opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            });
+            builder
+                .Services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddSignalR().AddHubOptions<ChatHub>(options =>
-            {
-                options.EnableDetailedErrors = true;
-            });
+            builder
+                .Services.AddSignalR()
+                .AddHubOptions<ChatHub>(options =>
+                {
+                    options.EnableDetailedErrors = true;
+                });
 
             builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" });
-                c.CustomSchemaIds(type => type.FullName); 
-                c.SchemaFilter<EnumSchemaFilter>(); 
+                c.SwaggerDoc(
+                    "v1",
+                    new OpenApiInfo { Title = "TechpertsSolutions", Version = "v1" }
+                );
+                c.CustomSchemaIds(type => type.FullName);
+                c.SchemaFilter<EnumSchemaFilter>();
                 c.OperationFilter<FormDataOperationFilter>();
                 c.OperationFilter<EnumOperationFilter>();
-                
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer"
-                });
-                
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
+
+                c.AddSecurityDefinition(
+                    "Bearer",
+                    new OpenApiSecurityScheme
                     {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            }
-                        },
-                        Array.Empty<string>()
+                        Description =
+                            "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+                        Name = "Authorization",
+                        In = ParameterLocation.Header,
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "Bearer",
                     }
-                });
+                );
+
+                c.AddSecurityRequirement(
+                    new OpenApiSecurityRequirement
+                    {
+                        {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer",
+                                },
+                            },
+                            Array.Empty<string>()
+                        },
+                    }
+                );
             });
 
             //add scope for DI
             builder.Services.AddApplicationServices();
 
             builder.Services.AddDbContext<TechpertsContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b =>
-                b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    b => b.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+                )
+            );
 
-            builder.Services.AddIdentity<AppUser, AppRole>()
-                            .AddRoleManager<RoleManager<AppRole>>()
-                            .AddEntityFrameworkStores<TechpertsContext>()
-                            .AddDefaultTokenProviders();
+            builder
+                .Services.AddIdentity<AppUser, AppRole>()
+                .AddRoleManager<RoleManager<AppRole>>()
+                .AddEntityFrameworkStores<TechpertsContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.Configure<IdentityOptions>(options =>
             {
@@ -103,44 +111,53 @@ namespace TechpertsSolutions
                 options.User.RequireUniqueEmail = true;
             });
 
-            builder.Services.Configure<DeliveryAssignmentSettings>(builder.Configuration.GetSection("DeliveryAssignmentSettings"));
-            builder.Services.Configure<StripeSettings>(
-            builder.Configuration.GetSection("Stripe"));
-
+            builder.Services.Configure<DeliveryAssignmentSettings>(
+                builder.Configuration.GetSection("DeliveryAssignmentSettings")
+            );
+            builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
-                {
-                    policy.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader();
-                });
+                options.AddPolicy(
+                    "DefaultCorsPolicy",
+                    policy =>
+                    {
+                        policy
+                            .WithOrigins("http://localhost:4200")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    }
+                );
             });
 
-            
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
+            builder
+                .Services.AddAuthentication(options =>
                 {
-                    ClockSkew = TimeSpan.Zero,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-                };
-            });
-            
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ClockSkew = TimeSpan.Zero,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+                        ),
+                        NameClaimType = JwtRegisteredClaimNames.Sub, // so Context.UserIdentifier = user.Id
+                        RoleClaimType = "role"
+                    };
+                });
+
             var app = builder.Build();
-            
+
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -155,13 +172,13 @@ namespace TechpertsSolutions
             }
             if (app.Environment.IsDevelopment())
             {
-               app.UseSwagger();
-               app.UseSwaggerUI();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
             app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
-            app.UseCors("AllowAll");
+            app.UseCors("DefaultCorsPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -177,15 +194,17 @@ namespace TechpertsSolutions
                 foreach (var folder in subFolders)
                 {
                     var folderName = Path.GetFileName(folder);
-                    app.UseStaticFiles(new StaticFileOptions
-                    {
-                        FileProvider = new PhysicalFileProvider(folder),
-                        RequestPath = "/" + folderName
-                    });
+                    app.UseStaticFiles(
+                        new StaticFileOptions
+                        {
+                            FileProvider = new PhysicalFileProvider(folder),
+                            RequestPath = "/" + folderName,
+                        }
+                    );
                 }
             }
             app.MapHub<NotificationsHub>("/notifications");
-            app.MapHub<ChatHub>("/chat");
+            app.MapHub<ChatHub>("/chat").RequireCors("DefaultCorsPolicy");
 
             app.MapControllers();
 
@@ -193,4 +212,3 @@ namespace TechpertsSolutions
         }
     }
 }
-

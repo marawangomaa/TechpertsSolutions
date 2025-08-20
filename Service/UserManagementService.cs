@@ -1,14 +1,13 @@
-using Core.DTOs.ServiceUsageDTOs;
-using Core.Interfaces.Services;
-using Core.Interfaces;
-using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using Core.DTOs;
-using TechpertsSolutions.Core.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
 using Core.DTOs.CustomerDTOs;
 using Core.DTOs.ProfileDTOs;
-using System.Security.Claims;
+using Core.DTOs.ServiceUsageDTOs;
+using Core.Interfaces;
+using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using TechpertsSolutions.Core.Entities;
 
 namespace Service
 {
@@ -25,7 +24,8 @@ namespace Service
             IFileService fileService,
             IRepository<ServiceUsage> serviceUsageRepository,
             IRepository<PCAssembly> pcAssemblyRepository,
-            IRepository<Maintenance> maintenanceRepository)
+            IRepository<Maintenance> maintenanceRepository
+        )
         {
             _userManager = userManager;
             _fileService = fileService;
@@ -34,7 +34,10 @@ namespace Service
             _maintenanceRepository = maintenanceRepository;
         }
 
-        public async Task<GeneralResponse<string>> UpdateProfileAsync(string userId,UserProfileUpdateDTO dto)
+        public async Task<GeneralResponse<string>> UpdateProfileAsync(
+            string userId,
+            UserProfileUpdateDTO dto
+        )
         {
             try
             {
@@ -44,7 +47,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -66,7 +69,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to update profile.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -74,7 +77,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Profile updated successfully.",
-                    Data = userId
+                    Data = userId,
                 };
             }
             catch (Exception ex)
@@ -83,7 +86,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while updating profile.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
@@ -98,7 +101,7 @@ namespace Service
                     return new GeneralResponse<UserProfileDTO>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -120,14 +123,14 @@ namespace Service
                     Latitude = user.Latitude,
                     Longitude = user.Longitude,
                     CreatedAt = user.CreatedAt,
-                    UpdatedAt = user.UpdatedAt
+                    UpdatedAt = user.UpdatedAt,
                 };
 
                 return new GeneralResponse<UserProfileDTO>
                 {
                     Success = true,
                     Message = "User profile retrieved successfully.",
-                    Data = userProfile
+                    Data = userProfile,
                 };
             }
             catch (Exception ex)
@@ -136,12 +139,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving user profile.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<string>> UpdateUserProfileAsync(string userId, UserProfileUpdateDTO dto)
+        public async Task<GeneralResponse<string>> UpdateUserProfileAsync(
+            string userId,
+            UserProfileUpdateDTO dto
+        )
         {
             try
             {
@@ -151,7 +157,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -174,7 +180,10 @@ namespace Service
                 // Handle profile photo upload if provided
                 if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
                 {
-                    var photoUrl = await _fileService.UploadImageAsync(dto.ProfilePhoto, "profiles");
+                    var photoUrl = await _fileService.UploadImageAsync(
+                        dto.ProfilePhoto,
+                        "profiles"
+                    );
                     if (!string.IsNullOrEmpty(photoUrl))
                     {
                         user.ProfilePhotoUrl = photoUrl;
@@ -188,7 +197,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to update profile.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -196,7 +205,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Profile updated successfully.",
-                    Data = userId
+                    Data = userId,
                 };
             }
             catch (Exception ex)
@@ -205,12 +214,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while updating profile.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
 
-        public async Task<GeneralResponse<string>> UploadProfilePhotoAsync(string userId, IFormFile photoFile)
+        public async Task<GeneralResponse<string>> UploadProfilePhotoAsync(
+            string userId,
+            IFormFile photoFile
+        )
         {
             try
             {
@@ -220,7 +232,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -231,7 +243,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "Failed to upload photo."
+                        Message = "Failed to upload photo.",
                     };
                 }
 
@@ -245,7 +257,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to update profile photo.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -253,7 +265,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Profile photo uploaded successfully.",
-                    Data = photoUrl
+                    Data = photoUrl,
                 };
             }
             catch (Exception ex)
@@ -262,12 +274,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while uploading profile photo.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
 
-        public async Task<GeneralResponse<UserServiceUsageDTO>> GetUserServicesUsageAsync(string userId)
+        public async Task<GeneralResponse<UserServiceUsageDTO>> GetUserServicesUsageAsync(
+            string userId
+        )
         {
             try
             {
@@ -277,7 +291,7 @@ namespace Service
                     return new GeneralResponse<UserServiceUsageDTO>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -297,34 +311,34 @@ namespace Service
                     {
                         ServiceId = 1,
                         ServiceName = "Maintenance",
-                        UsageCount = maintenanceCount.Count()
+                        UsageCount = maintenanceCount.Count(),
                     },
                     new ServiceUsageSummaryDTO
                     {
                         ServiceId = 2,
                         ServiceName = "PC Build",
-                        UsageCount = pcAssemblyCount.Count()
+                        UsageCount = pcAssemblyCount.Count(),
                     },
                     new ServiceUsageSummaryDTO
                     {
                         ServiceId = 3,
                         ServiceName = "Delivery",
-                        UsageCount = 0 // This would need to be calculated based on delivery tracking
-                    }
+                        UsageCount = 0, // This would need to be calculated based on delivery tracking
+                    },
                 };
 
                 var result = new UserServiceUsageDTO
                 {
                     UserId = userId,
                     UserName = user.FullName,
-                    Services = services
+                    Services = services,
                 };
 
                 return new GeneralResponse<UserServiceUsageDTO>
                 {
                     Success = true,
                     Message = "Service usage retrieved successfully.",
-                    Data = result
+                    Data = result,
                 };
             }
             catch (Exception ex)
@@ -333,11 +347,15 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while retrieving service usage.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
-        public async Task<GeneralResponse<string>> ChangePasswordAsync(ClaimsPrincipal principal, ChangePasswordDTO dto) 
+
+        public async Task<GeneralResponse<string>> ChangePasswordAsync(
+            ClaimsPrincipal principal,
+            ChangePasswordDTO dto
+        )
         {
             var user = await _userManager.GetUserAsync(principal);
 
@@ -347,7 +365,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "User not found.",
-                    Data = null
+                    Data = null,
                 };
             }
             if (dto.NewPassword != dto.ConfirmNewPassword)
@@ -356,10 +374,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "New password and confirmation do not match.",
-                    Data = null
+                    Data = null,
                 };
             }
-            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(
+                user,
+                dto.CurrentPassword,
+                dto.NewPassword
+            );
 
             if (!result.Succeeded)
             {
@@ -367,7 +389,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Password change failed.",
-                    Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                 };
             }
 
@@ -375,10 +397,14 @@ namespace Service
             {
                 Success = true,
                 Message = "Password changed successfully.",
-                Data = user.Id
+                Data = user.Id,
             };
         }
-        public async Task<GeneralResponse<string>> UpdateUserLocationAsync(string userId, UserLocationUpdateDTO dto)
+
+        public async Task<GeneralResponse<string>> UpdateUserLocationAsync(
+            string userId,
+            UserLocationUpdateDTO dto
+        )
         {
             try
             {
@@ -388,7 +414,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "User not found."
+                        Message = "User not found.",
                     };
                 }
 
@@ -415,7 +441,7 @@ namespace Service
                     return new GeneralResponse<string>
                     {
                         Success = false,
-                        Message = "No location fields provided to update."
+                        Message = "No location fields provided to update.",
                     };
                 }
 
@@ -428,7 +454,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to update location.",
-                        Data = string.Join(", ", result.Errors.Select(e => e.Description))
+                        Data = string.Join(", ", result.Errors.Select(e => e.Description)),
                     };
                 }
 
@@ -436,7 +462,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "Location updated successfully.",
-                    Data = user.Id
+                    Data = user.Id,
                 };
             }
             catch (Exception ex)
@@ -445,9 +471,9 @@ namespace Service
                 {
                     Success = false,
                     Message = "An error occurred while updating location.",
-                    Data = ex.Message
+                    Data = ex.Message,
                 };
             }
         }
     }
-} 
+}

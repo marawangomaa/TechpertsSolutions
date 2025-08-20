@@ -12,7 +12,6 @@ namespace TechpertsSolutions.Core.Entities
         public string? Description { get; set; }
         public string? Image { get; set; }
         
-        // Many-to-many relationship through CategorySubCategory (for flexible assignments)
         public List<CategorySubCategory>? SubCategories { get; set; } = new();
         
         public List<Product>? Products { get; set; } = new List<Product>();

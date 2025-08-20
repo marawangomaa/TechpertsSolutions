@@ -40,6 +40,7 @@ namespace TechpertsSolutions.Extensions
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IPCAssemblyService, PCAssemblyService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IProfileService, ProfileService>();
 
             return services;
         }

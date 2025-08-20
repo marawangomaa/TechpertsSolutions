@@ -4,15 +4,8 @@ using Core.DTOs.PCAssemblyDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
-using Core.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Repository;
 using Service.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service
@@ -32,7 +25,8 @@ namespace Service
             IRepository<Product> productRepo,
             IRepository<Customer> customerRepo,
             IRepository<ServiceUsage> serviceUsageRepo,
-            INotificationService notificationService)
+            INotificationService notificationService
+        )
         {
             _pcAssemblyRepo = pcAssemblyRepo;
             _pcAssemblyItemRepo = pcAssemblyItemRepo;
@@ -50,7 +44,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid input data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -61,7 +55,7 @@ namespace Service
                 ServiceUsageId = dto.ServiceUsageId,
                 Description = dto.Description,
                 Budget = dto.Budget,
-                Status = PCAssemblyStatus.Requested
+                Status = PCAssemblyStatus.Requested,
             };
 
             await _pcAssemblyRepo.AddAsync(pcAssembly);
@@ -71,20 +65,19 @@ namespace Service
             {
                 Success = true,
                 Message = "PC Assembly created successfully.",
-                Data = PCAssemblyMapper.ToReadDTO(pcAssembly)
+                Data = PCAssemblyMapper.ToReadDTO(pcAssembly),
             };
         }
 
         public async Task<GeneralResponse<PCAssemblyReadDTO>> GetByIdAsync(string id)
         {
-            
             if (string.IsNullOrWhiteSpace(id))
             {
                 return new GeneralResponse<PCAssemblyReadDTO>
                 {
                     Success = false,
                     Message = "PC Assembly ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -94,7 +87,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid PC Assembly ID format. Expected GUID format.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -102,29 +95,31 @@ namespace Service
             {
                 // Comprehensive includes for detailed PC assembly view
                 var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
-                                                                a => a.Id == id,
-                                                                query => query
-                                                                .Include(a => a.Customer)
-                                                                .ThenInclude(c => c.User)
-                                                                .Include(a => a.TechCompany)
-                                                                .ThenInclude(tc => tc.User)
-                                                                .Include(a => a.ServiceUsage)
-                                                                .Include(a => a.PCAssemblyItems)
-                                                                .ThenInclude(item => item.Product)
-                                                                .ThenInclude(p => p.Category)
-                                                                .Include(a => a.PCAssemblyItems)
-                                                                .ThenInclude(item => item.Product)
-                                                                .ThenInclude(p => p.SubCategory)
-                                                                .Include(a => a.PCAssemblyItems)
-                                                                .ThenInclude(item => item.Product)
-                                                                 .ThenInclude(p => p.TechCompany));
+                    a => a.Id == id,
+                    query =>
+                        query
+                            .Include(a => a.Customer)
+                            .ThenInclude(c => c.User)
+                            .Include(a => a.TechCompany)
+                            .ThenInclude(tc => tc.User)
+                            .Include(a => a.ServiceUsage)
+                            .Include(a => a.PCAssemblyItems)
+                            .ThenInclude(item => item.Product)
+                            .ThenInclude(p => p.Category)
+                            .Include(a => a.PCAssemblyItems)
+                            .ThenInclude(item => item.Product)
+                            .ThenInclude(p => p.SubCategory)
+                            .Include(a => a.PCAssemblyItems)
+                            .ThenInclude(item => item.Product)
+                            .ThenInclude(p => p.TechCompany)
+                );
                 if (assembly == null)
                 {
                     return new GeneralResponse<PCAssemblyReadDTO>
                     {
                         Success = false,
                         Message = $"PC Assembly with ID '{id}' not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -132,7 +127,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "PC Assembly retrieved successfully.",
-                    Data = PCAssemblyMapper.ToReadDTO(assembly)
+                    Data = PCAssemblyMapper.ToReadDTO(assembly),
                 };
             }
             catch (Exception ex)
@@ -141,7 +136,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving the PC Assembly.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -152,21 +147,22 @@ namespace Service
             {
                 // Optimized includes for PC assembly listing with essential related data
                 var assemblies = await _pcAssemblyRepo.GetAllAsync(query =>
-                                              query.Include(a => a.Customer)
-                                              .ThenInclude(c => c.User)
-                                             .Include(a => a.TechCompany)
-                                             .ThenInclude(tc => tc.User)
-                                             .Include(a => a.ServiceUsage)
-                                             .Include(a => a.PCAssemblyItems)
-                                                 .ThenInclude(item => item.Product)
-                                                     .ThenInclude(p => p.Category)
-                                             .Include(a => a.PCAssemblyItems)
-                                                 .ThenInclude(item => item.Product)
-                                                     .ThenInclude(p => p.SubCategory)
-                                             .Include(a => a.PCAssemblyItems)
-                                                 .ThenInclude(item => item.Product)
-                                                     .ThenInclude(p => p.TechCompany)
-                                         );
+                    query
+                        .Include(a => a.Customer)
+                        .ThenInclude(c => c.User)
+                        .Include(a => a.TechCompany)
+                        .ThenInclude(tc => tc.User)
+                        .Include(a => a.ServiceUsage)
+                        .Include(a => a.PCAssemblyItems)
+                        .ThenInclude(item => item.Product)
+                        .ThenInclude(p => p.Category)
+                        .Include(a => a.PCAssemblyItems)
+                        .ThenInclude(item => item.Product)
+                        .ThenInclude(p => p.SubCategory)
+                        .Include(a => a.PCAssemblyItems)
+                        .ThenInclude(item => item.Product)
+                        .ThenInclude(p => p.TechCompany)
+                );
 
                 var assemblyDtos = assemblies.Select(PCAssemblyMapper.ToReadDTO).ToList();
 
@@ -174,7 +170,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "PC Assemblies retrieved successfully.",
-                    Data = assemblyDtos
+                    Data = assemblyDtos,
                 };
             }
             catch (Exception ex)
@@ -183,12 +179,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "An unexpected error occurred while retrieving PC Assemblies.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
 
-        public async Task<GeneralResponse<IEnumerable<PCAssemblyReadDTO>>> GetByCustomerIdAsync(string customerId)
+        public async Task<GeneralResponse<IEnumerable<PCAssemblyReadDTO>>> GetByCustomerIdAsync(
+            string customerId
+        )
         {
             if (string.IsNullOrWhiteSpace(customerId))
             {
@@ -196,21 +194,27 @@ namespace Service
                 {
                     Success = false,
                     Message = "Customer ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var assemblies = await _pcAssemblyRepo.FindWithStringIncludesAsync(a => a.CustomerId == customerId, includeProperties: "PCAssemblyItems,PCAssemblyItems.Product,Customer,ServiceUsage");
+            var assemblies = await _pcAssemblyRepo.FindWithStringIncludesAsync(
+                a => a.CustomerId == customerId,
+                includeProperties: "PCAssemblyItems,PCAssemblyItems.Product,Customer,ServiceUsage"
+            );
 
             return new GeneralResponse<IEnumerable<PCAssemblyReadDTO>>
             {
                 Success = true,
                 Message = "PC Assemblies for customer retrieved successfully.",
-                                    Data = assemblies.Select(PCAssemblyMapper.ToReadDTO)
+                Data = assemblies.Select(PCAssemblyMapper.ToReadDTO),
             };
         }
 
-        public async Task<GeneralResponse<PCAssemblyReadDTO>> UpdatePCAssemblyAsync(string id, PCAssemblyUpdateDTO dto)
+        public async Task<GeneralResponse<PCAssemblyReadDTO>> UpdatePCAssemblyAsync(
+            string id,
+            PCAssemblyUpdateDTO dto
+        )
         {
             if (string.IsNullOrWhiteSpace(id) || dto == null)
             {
@@ -218,7 +222,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid input data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -229,7 +233,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -242,15 +246,17 @@ namespace Service
             _pcAssemblyRepo.Update(assembly);
             await _pcAssemblyRepo.SaveChangesAsync();
 
-                            return new GeneralResponse<PCAssemblyReadDTO>
-                {
-                    Success = true,
-                    Message = "PC Assembly updated successfully.",
-                    Data = PCAssemblyMapper.ToReadDTO(assembly)
-                };
+            return new GeneralResponse<PCAssemblyReadDTO>
+            {
+                Success = true,
+                Message = "PC Assembly updated successfully.",
+                Data = PCAssemblyMapper.ToReadDTO(assembly),
+            };
         }
 
-        public async Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(string assemblyId)
+        public async Task<GeneralResponse<PCBuildStatusDTO>> GetPCBuildStatusAsync(
+            string assemblyId
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId))
             {
@@ -258,18 +264,21 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, "PCAssemblyItems");
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                "PCAssemblyItems"
+            );
             if (assembly == null)
             {
                 return new GeneralResponse<PCBuildStatusDTO>
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -279,18 +288,20 @@ namespace Service
                 Status = assembly.Status.ToString(),
                 ComponentCount = assembly.PCAssemblyItems?.Count ?? 0,
                 TotalCost = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0,
-                IsComplete = assembly.Status == PCAssemblyStatus.Completed
+                IsComplete = assembly.Status == PCAssemblyStatus.Completed,
             };
 
             return new GeneralResponse<PCBuildStatusDTO>
             {
                 Success = true,
                 Message = "PC Build status retrieved successfully.",
-                Data = status
+                Data = status,
             };
         }
 
-        public async Task<GeneralResponse<PCBuildTotalDTO>> CalculateBuildTotalAsync(string assemblyId)
+        public async Task<GeneralResponse<PCBuildTotalDTO>> CalculateBuildTotalAsync(
+            string assemblyId
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId))
             {
@@ -298,18 +309,21 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, "PCAssemblyItems");
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                "PCAssemblyItems"
+            );
             if (assembly == null)
             {
                 return new GeneralResponse<PCBuildTotalDTO>
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -318,28 +332,32 @@ namespace Service
                 AssemblyId = assembly.Id,
                 Subtotal = assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0,
                 AssemblyFee = assembly.AssemblyFee ?? 0,
-                TotalAmount = (assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0) + (assembly.AssemblyFee ?? 0)
+                TotalAmount =
+                    (assembly.PCAssemblyItems?.Sum(item => item.Total) ?? 0)
+                    + (assembly.AssemblyFee ?? 0),
             };
 
             return new GeneralResponse<PCBuildTotalDTO>
             {
                 Success = true,
                 Message = "PC Build total calculated successfully.",
-                Data = total
+                Data = total,
             };
         }
 
-        
-        public async Task<GeneralResponse<IEnumerable<CompatibleComponentDTO>>> GetFilteredCompatibleComponentsAsync(string assemblyId, string targetCategoryName)
+        public async Task<
+            GeneralResponse<IEnumerable<CompatibleComponentDTO>>
+        > GetFilteredCompatibleComponentsAsync(string assemblyId, string targetCategoryName)
         {
             var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
                 a => a.Id == assemblyId,
-                q => q.Include(a => a.PCAssemblyItems)
-                      .ThenInclude(i => i.Product)
-                          .ThenInclude(p => p.Specifications)
-                      .Include(a => a.PCAssemblyItems)
-                          .ThenInclude(i => i.Product)
-                              .ThenInclude(p => p.Category)
+                q =>
+                    q.Include(a => a.PCAssemblyItems)
+                        .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Specifications)
+                        .Include(a => a.PCAssemblyItems)
+                        .ThenInclude(i => i.Product)
+                        .ThenInclude(p => p.Category)
             );
 
             if (assembly == null)
@@ -348,12 +366,12 @@ namespace Service
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var selectedItems = assembly.PCAssemblyItems
-                .Where(i => i.Product != null)
+            var selectedItems = assembly
+                .PCAssemblyItems.Where(i => i.Product != null)
                 .Select(i => i.Product)
                 .ToList();
 
@@ -364,8 +382,7 @@ namespace Service
 
             var productsInTargetCategory = await _productRepo.FindAsync(
                 p => p.Category.Name == targetCategoryName,
-                q => q.Include(p => p.Specifications)
-                      .Include(p => p.Category)
+                q => q.Include(p => p.Specifications).Include(p => p.Category)
             );
 
             var compatibleProducts = productsInTargetCategory.Where(p =>
@@ -378,18 +395,21 @@ namespace Service
                 ProductName = p.Name,
                 Price = p.Price,
                 Category = p.Category?.Name ?? string.Empty,
-                CompatibilityScore = CalculateCompatibilityScore(selectedSpecs, p.Specifications)
+                CompatibilityScore = CalculateCompatibilityScore(selectedSpecs, p.Specifications),
             });
 
             return new GeneralResponse<IEnumerable<CompatibleComponentDTO>>
             {
                 Success = true,
                 Message = "Compatible components retrieved.",
-                Data = dtoList
+                Data = dtoList,
             };
         }
 
-        public async Task<GeneralResponse<PCAssemblyReadDTO>> AddComponentToAssemblyAsync(string assemblyId, PCAssemblyItemCreateDTO item)
+        public async Task<GeneralResponse<PCAssemblyReadDTO>> AddComponentToAssemblyAsync(
+            string assemblyId,
+            PCAssemblyItemCreateDTO item
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId) || item == null)
             {
@@ -397,7 +417,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid input data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -408,7 +428,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -419,7 +439,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Product not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -430,7 +450,7 @@ namespace Service
                 Quantity = item.Quantity,
                 Price = product.Price,
                 UnitPrice = product.Price,
-                Total = item.Quantity * product.Price
+                Total = item.Quantity * product.Price,
             };
 
             await _pcAssemblyItemRepo.AddAsync(assemblyItem);
@@ -440,11 +460,14 @@ namespace Service
             {
                 Success = true,
                 Message = "Component added to PC build successfully.",
-                Data = PCAssemblyMapper.ToReadDTO(assembly)
+                Data = PCAssemblyMapper.ToReadDTO(assembly),
             };
         }
 
-        public async Task<GeneralResponse<PCAssemblyReadDTO>> RemoveComponentFromAssemblyAsync(string assemblyId, string itemId)
+        public async Task<GeneralResponse<PCAssemblyReadDTO>> RemoveComponentFromAssemblyAsync(
+            string assemblyId,
+            string itemId
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId) || string.IsNullOrWhiteSpace(itemId))
             {
@@ -452,7 +475,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Invalid input data.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -463,7 +486,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -474,7 +497,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly item not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
@@ -485,10 +508,13 @@ namespace Service
             {
                 Success = true,
                 Message = "Component removed from PC build successfully.",
-                Data = PCAssemblyMapper.ToReadDTO(assembly)
+                Data = PCAssemblyMapper.ToReadDTO(assembly),
             };
         }
-        public async Task<GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>> GetAllComponentsAsync(string assemblyId)
+
+        public async Task<
+            GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>
+        > GetAllComponentsAsync(string assemblyId)
         {
             if (string.IsNullOrWhiteSpace(assemblyId))
             {
@@ -496,12 +522,14 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId, 
-                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory,PCAssemblyItems.Product.TechCompany");
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory,PCAssemblyItems.Product.TechCompany"
+            );
 
             if (assembly == null)
             {
@@ -509,45 +537,54 @@ namespace Service
                 {
                     Success = false,
                     Message = "PC Assembly not found.",
-                    Data = null
+                    Data = null,
                 };
             }
 
-            var components = assembly.PCAssemblyItems?.Select(item => new PCAssemblyItemReadDTO
-            {
-                ItemId = item.Id,
-                ProductId = item.ProductId,
-                ProductName = item.Product?.Name ?? string.Empty,
-                SubCategoryName = item.Product?.SubCategory?.Name,
-                Category = item.Product?.Category?.Name ?? string.Empty,
-                Status = item.Product?.status.ToString() ?? string.Empty,
-                Price = item.Price,
-                Discount = item.Product?.DiscountPrice,
-                Quantity = item.Quantity,
-                Total = item.Total
-            }) ?? new List<PCAssemblyItemReadDTO>();
+            var components =
+                assembly.PCAssemblyItems?.Select(item => new PCAssemblyItemReadDTO
+                {
+                    ItemId = item.Id,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product?.Name ?? string.Empty,
+                    SubCategoryName = item.Product?.SubCategory?.Name,
+                    Category = item.Product?.Category?.Name ?? string.Empty,
+                    Status = item.Product?.status.ToString() ?? string.Empty,
+                    Price = item.Price,
+                    Discount = item.Product?.DiscountPrice,
+                    Quantity = item.Quantity,
+                    Total = item.Total,
+                }) ?? new List<PCAssemblyItemReadDTO>();
 
             return new GeneralResponse<IEnumerable<PCAssemblyItemReadDTO>>
             {
                 Success = true,
                 Message = "Components retrieved successfully.",
-                Data = components
+                Data = components,
             };
         }
 
-        public async Task<PCAssemblyItemReadDTO?> GetComponentByCategoryAsync(string assemblyId, ProductCategory category)
+        public async Task<PCAssemblyItemReadDTO?> GetComponentByCategoryAsync(
+            string assemblyId,
+            ProductCategory category
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId))
                 return null;
 
-            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
-                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory");
+            var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                a => a.Id == assemblyId,
+                "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory"
+            );
 
             if (assembly?.PCAssemblyItems == null)
                 return null;
 
-            var item = assembly.PCAssemblyItems.FirstOrDefault(pi => pi.Product?.Category?.Name == category.ToString());
-            if (item == null) return null;
+            var item = assembly.PCAssemblyItems.FirstOrDefault(pi =>
+                pi.Product?.Category?.Name == category.ToString()
+            );
+            if (item == null)
+                return null;
 
             return new PCAssemblyItemReadDTO
             {
@@ -560,15 +597,16 @@ namespace Service
                 Price = item.Price,
                 Discount = item.Product?.DiscountPrice,
                 Quantity = item.Quantity,
-                Total = item.Total
+                Total = item.Total,
             };
         }
 
         public async Task<GeneralResponse<bool>> SaveBuildToCartAsync(
-     string assemblyId,
-     string customerId,
-     decimal assemblyFee,
-     ICartService cartService)
+            string assemblyId,
+            string customerId,
+            decimal assemblyFee,
+            ICartService cartService
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId) || string.IsNullOrWhiteSpace(customerId))
             {
@@ -576,7 +614,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly ID and Customer ID cannot be null or empty.",
-                    Data = false
+                    Data = false,
                 };
             }
 
@@ -584,7 +622,8 @@ namespace Service
             {
                 var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
                     a => a.Id == assemblyId,
-                    "PCAssemblyItems,PCAssemblyItems.Product");
+                    "PCAssemblyItems,PCAssemblyItems.Product"
+                );
 
                 if (assembly == null)
                 {
@@ -592,7 +631,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "PC Assembly not found.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -606,15 +645,18 @@ namespace Service
                 _pcAssemblyRepo.Update(assembly);
                 await _pcAssemblyRepo.SaveChangesAsync();
 
-                var addResult = await cartService.AddItemPcAssemblyAsync(customerId, new CartAssemblyItemDTO
-                {
-                    IsCustomBuild = true,
-                    PcAssemblyId = assembly.Id,
-                    Quantity = 1,
-                    UnitPrice = totalAmount,
-                    ProductTotal = componentsTotal,
-                    AssemblyFee = assemblyFee
-                });
+                var addResult = await cartService.AddItemPcAssemblyAsync(
+                    customerId,
+                    new CartAssemblyItemDTO
+                    {
+                        IsCustomBuild = true,
+                        PcAssemblyId = assembly.Id,
+                        Quantity = 1,
+                        UnitPrice = totalAmount,
+                        ProductTotal = componentsTotal,
+                        AssemblyFee = assemblyFee,
+                    }
+                );
 
                 if (string.IsNullOrWhiteSpace(addResult))
                 {
@@ -622,7 +664,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "Failed to add PC Build to cart.",
-                        Data = false
+                        Data = false,
                     };
                 }
 
@@ -630,7 +672,7 @@ namespace Service
                 {
                     Success = true,
                     Message = "PC Build saved to cart successfully.",
-                    Data = true
+                    Data = true,
                 };
             }
             catch (Exception ex)
@@ -639,7 +681,7 @@ namespace Service
                 {
                     Success = false,
                     Message = $"An error occurred while saving the PC build to cart. {ex}",
-                    Data = false
+                    Data = false,
                 };
             }
         }
@@ -652,14 +694,16 @@ namespace Service
                 {
                     Success = false,
                     Message = "Assembly ID cannot be null or empty.",
-                    Data = null
+                    Data = null,
                 };
             }
 
             try
             {
-                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(a => a.Id == assemblyId,
-                    "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory");
+                var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
+                    a => a.Id == assemblyId,
+                    "PCAssemblyItems,PCAssemblyItems.Product,PCAssemblyItems.Product.Category,PCAssemblyItems.Product.SubCategory"
+                );
 
                 if (assembly == null)
                 {
@@ -667,7 +711,7 @@ namespace Service
                     {
                         Success = false,
                         Message = "PC Assembly not found.",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -683,7 +727,7 @@ namespace Service
                     ProductCategory.CaseCooler,
                     ProductCategory.PowerSupply,
                     ProductCategory.Monitor,
-                    ProductCategory.Accessories
+                    ProductCategory.Accessories,
                 };
 
                 var components = new List<PCBuildTableItemDTO>();
@@ -691,14 +735,15 @@ namespace Service
 
                 foreach (var category in allCategories)
                 {
-                    var existingItem = assembly.PCAssemblyItems?.FirstOrDefault(pi => 
-                        pi.Product?.Category?.Name == category.ToString());
+                    var existingItem = assembly.PCAssemblyItems?.FirstOrDefault(pi =>
+                        pi.Product?.Category?.Name == category.ToString()
+                    );
 
                     var component = new PCBuildTableItemDTO
                     {
                         ComponentType = category,
                         ComponentDisplayName = GetComponentDisplayName(category),
-                        HasComponent = existingItem != null
+                        HasComponent = existingItem != null,
                     };
 
                     if (existingItem != null)
@@ -727,14 +772,14 @@ namespace Service
                     TotalCost = totalCost,
                     AssemblyFee = assembly.AssemblyFee ?? 0,
                     GrandTotal = totalCost + (assembly.AssemblyFee ?? 0),
-                    IsComplete = assembly.Status == PCAssemblyStatus.Completed
+                    IsComplete = assembly.Status == PCAssemblyStatus.Completed,
                 };
 
                 return new GeneralResponse<PCBuildTableDTO>
                 {
                     Success = true,
                     Message = "PC Build table retrieved successfully.",
-                    Data = buildTable
+                    Data = buildTable,
                 };
             }
             catch (Exception ex)
@@ -743,7 +788,7 @@ namespace Service
                 {
                     Success = false,
                     Message = "Failed to retrieve PC build table.",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -763,19 +808,27 @@ namespace Service
                 ProductCategory.PowerSupply => "Power Supply",
                 ProductCategory.Monitor => "Monitor",
                 ProductCategory.Accessories => "Accessories",
-                _ => category.ToString()
+                _ => category.ToString(),
             };
         }
-        private bool IsProductCompatible(Product candidate, List<Product> selectedItems, string targetCategory)
+
+        private bool IsProductCompatible(
+            Product candidate,
+            List<Product> selectedItems,
+            string targetCategory
+        )
         {
             var candidateSpecs = candidate.Specifications.ToDictionary(s => s.Key, s => s.Value);
 
-            string GetSpec(Product p, string key) => p.Specifications.FirstOrDefault(s => s.Key == key)?.Value;
+            string GetSpec(Product p, string key) =>
+                p.Specifications.FirstOrDefault(s => s.Key == key)?.Value;
 
             switch (targetCategory)
             {
                 case "Motherboard":
-                    var selectedCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
+                    var selectedCpu = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Processor"
+                    );
                     if (selectedCpu != null)
                     {
                         var cpuSocket = GetSpec(selectedCpu, "SocketType");
@@ -789,7 +842,11 @@ namespace Service
                     {
                         var ramType = GetSpec(selectedRam, "RAMType");
                         var mbSupportedRam = candidateSpecs.GetValueOrDefault("SupportedRAM");
-                        if (ramType == null || mbSupportedRam == null || !mbSupportedRam.Split(',').Contains(ramType))
+                        if (
+                            ramType == null
+                            || mbSupportedRam == null
+                            || !mbSupportedRam.Split(',').Contains(ramType)
+                        )
                             return false;
                     }
 
@@ -797,14 +854,23 @@ namespace Service
                     if (selectedCase != null)
                     {
                         var mbFormFactor = candidateSpecs.GetValueOrDefault("FormFactor");
-                        var caseSupportedFormFactors = GetSpec(selectedCase, "SupportedFormFactors");
-                        if (mbFormFactor == null || caseSupportedFormFactors == null || !caseSupportedFormFactors.Split(',').Contains(mbFormFactor))
+                        var caseSupportedFormFactors = GetSpec(
+                            selectedCase,
+                            "SupportedFormFactors"
+                        );
+                        if (
+                            mbFormFactor == null
+                            || caseSupportedFormFactors == null
+                            || !caseSupportedFormFactors.Split(',').Contains(mbFormFactor)
+                        )
                             return false;
                     }
                     break;
 
                 case "Processor":
-                    var mbForCpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    var mbForCpu = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Motherboard"
+                    );
                     if (mbForCpu != null)
                     {
                         var mbSocket = GetSpec(mbForCpu, "SocketType");
@@ -815,12 +881,18 @@ namespace Service
                     break;
 
                 case "RAM":
-                    var mbForRam = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    var mbForRam = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Motherboard"
+                    );
                     if (mbForRam != null)
                     {
                         var supportedRam = GetSpec(mbForRam, "SupportedRAM");
                         var ramType = candidateSpecs.GetValueOrDefault("RAMType");
-                        if (ramType == null || supportedRam == null || !supportedRam.Split(',').Contains(ramType))
+                        if (
+                            ramType == null
+                            || supportedRam == null
+                            || !supportedRam.Split(',').Contains(ramType)
+                        )
                             return false;
 
                         var ramSlots = int.Parse(GetSpec(mbForRam, "RAMSlots") ?? "0");
@@ -831,7 +903,9 @@ namespace Service
                     break;
 
                 case "GraphicsCard":
-                    var mbForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    var mbForGpu = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Motherboard"
+                    );
                     if (mbForGpu != null)
                     {
                         var mbPcieVersion = GetSpec(mbForGpu, "PCIeVersion");
@@ -843,19 +917,27 @@ namespace Service
                     if (caseForGpu != null)
                     {
                         var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
-                        var gpuLength = int.Parse(candidateSpecs.GetValueOrDefault("Length") ?? "0");
+                        var gpuLength = int.Parse(
+                            candidateSpecs.GetValueOrDefault("Length") ?? "0"
+                        );
                         if (gpuLength > caseGpuLength)
                             return false;
                     }
                     break;
 
                 case "Storage":
-                    var mbForStorage = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    var mbForStorage = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Motherboard"
+                    );
                     if (mbForStorage != null)
                     {
                         var mbStorageInterfaces = GetSpec(mbForStorage, "StorageInterfaces");
                         var storageInterface = candidateSpecs.GetValueOrDefault("Interface");
-                        if (storageInterface == null || mbStorageInterfaces == null || !mbStorageInterfaces.Split(',').Contains(storageInterface))
+                        if (
+                            storageInterface == null
+                            || mbStorageInterfaces == null
+                            || !mbStorageInterfaces.Split(',').Contains(storageInterface)
+                        )
                             return false;
                     }
                     break;
@@ -864,25 +946,42 @@ namespace Service
                     var totalPowerDraw = selectedItems.Sum(p =>
                         int.TryParse(GetSpec(p, "PowerDraw"), out var draw) ? draw : 0
                     );
-                    var psuWattage = int.TryParse(candidateSpecs.GetValueOrDefault("Wattage"), out var watt) ? watt : 0;
+                    var psuWattage = int.TryParse(
+                        candidateSpecs.GetValueOrDefault("Wattage"),
+                        out var watt
+                    )
+                        ? watt
+                        : 0;
                     if (psuWattage < totalPowerDraw * 1.2)
                         return false;
                     break;
 
                 case "Case":
-                    var mbInCase = selectedItems.FirstOrDefault(p => p.Category.Name == "Motherboard");
+                    var mbInCase = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Motherboard"
+                    );
                     if (mbInCase != null)
                     {
                         var mbForm = GetSpec(mbInCase, "FormFactor");
-                        var caseSupportedForms = candidateSpecs.GetValueOrDefault("SupportedFormFactors");
-                        if (mbForm == null || caseSupportedForms == null || !caseSupportedForms.Split(',').Contains(mbForm))
+                        var caseSupportedForms = candidateSpecs.GetValueOrDefault(
+                            "SupportedFormFactors"
+                        );
+                        if (
+                            mbForm == null
+                            || caseSupportedForms == null
+                            || !caseSupportedForms.Split(',').Contains(mbForm)
+                        )
                             return false;
                     }
 
-                    var gpuInCase = selectedItems.FirstOrDefault(p => p.Category.Name == "GraphicsCard");
+                    var gpuInCase = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "GraphicsCard"
+                    );
                     if (gpuInCase != null)
                     {
-                        var caseGpuLength = int.Parse(candidateSpecs.GetValueOrDefault("MaxGPULength") ?? "0");
+                        var caseGpuLength = int.Parse(
+                            candidateSpecs.GetValueOrDefault("MaxGPULength") ?? "0"
+                        );
                         var gpuLength = int.Parse(GetSpec(gpuInCase, "Length") ?? "0");
                         if (gpuLength > caseGpuLength)
                             return false;
@@ -890,20 +989,34 @@ namespace Service
                     break;
 
                 case "CPUCooler":
-                    var cpuForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Processor");
+                    var cpuForCooler = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Processor"
+                    );
                     if (cpuForCooler != null)
                     {
                         var cpuSocket = GetSpec(cpuForCooler, "SocketType");
-                        var coolerSupportedSockets = candidateSpecs.GetValueOrDefault("SupportedSockets");
-                        if (cpuSocket == null || coolerSupportedSockets == null || !coolerSupportedSockets.Split(',').Contains(cpuSocket))
+                        var coolerSupportedSockets = candidateSpecs.GetValueOrDefault(
+                            "SupportedSockets"
+                        );
+                        if (
+                            cpuSocket == null
+                            || coolerSupportedSockets == null
+                            || !coolerSupportedSockets.Split(',').Contains(cpuSocket)
+                        )
                             return false;
                     }
 
-                    var caseForCooler = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
+                    var caseForCooler = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "Case"
+                    );
                     if (caseForCooler != null)
                     {
-                        var maxCoolerHeight = int.Parse(GetSpec(caseForCooler, "MaxCoolerHeight") ?? "0");
-                        var coolerHeight = int.Parse(candidateSpecs.GetValueOrDefault("Height") ?? "0");
+                        var maxCoolerHeight = int.Parse(
+                            GetSpec(caseForCooler, "MaxCoolerHeight") ?? "0"
+                        );
+                        var coolerHeight = int.Parse(
+                            candidateSpecs.GetValueOrDefault("Height") ?? "0"
+                        );
                         if (coolerHeight > maxCoolerHeight)
                             return false;
                     }
@@ -915,18 +1028,28 @@ namespace Service
                     {
                         var supportedFanSizes = GetSpec(caseForFan, "SupportedFanSizes");
                         var fanSize = candidateSpecs.GetValueOrDefault("Size");
-                        if (fanSize == null || supportedFanSizes == null || !supportedFanSizes.Split(',').Contains(fanSize))
+                        if (
+                            fanSize == null
+                            || supportedFanSizes == null
+                            || !supportedFanSizes.Split(',').Contains(fanSize)
+                        )
                             return false;
                     }
                     break;
 
                 case "Monitor":
-                    var gpuForMonitor = selectedItems.FirstOrDefault(p => p.Category.Name == "GraphicsCard");
+                    var gpuForMonitor = selectedItems.FirstOrDefault(p =>
+                        p.Category.Name == "GraphicsCard"
+                    );
                     if (gpuForMonitor != null)
                     {
                         var gpuPorts = GetSpec(gpuForMonitor, "DisplayOutputs");
                         var monitorInput = candidateSpecs.GetValueOrDefault("InputType");
-                        if (gpuPorts == null || monitorInput == null || !gpuPorts.Split(',').Contains(monitorInput))
+                        if (
+                            gpuPorts == null
+                            || monitorInput == null
+                            || !gpuPorts.Split(',').Contains(monitorInput)
+                        )
                             return false;
                     }
                     break;
@@ -938,14 +1061,20 @@ namespace Service
             return true;
         }
 
-        private decimal CalculateCompatibilityScore(Dictionary<string, string> selectedSpecs, IEnumerable<Specification> candidateSpecs)
+        private decimal CalculateCompatibilityScore(
+            Dictionary<string, string> selectedSpecs,
+            IEnumerable<Specification> candidateSpecs
+        )
         {
             int matched = 0;
             int total = selectedSpecs.Count;
 
             foreach (var spec in candidateSpecs)
             {
-                if (selectedSpecs.TryGetValue(spec.Key, out var selectedValue) && selectedValue == spec.Value)
+                if (
+                    selectedSpecs.TryGetValue(spec.Key, out var selectedValue)
+                    && selectedValue == spec.Value
+                )
                 {
                     matched++;
                 }
@@ -954,12 +1083,19 @@ namespace Service
             return total == 0 ? 0 : (decimal)matched / total;
         }
 
-
-        public async Task<GeneralResponse<bool>> MoveAssemblyToCartAsync(string assemblyId, ICartService cartService)
+        public async Task<GeneralResponse<bool>> MoveAssemblyToCartAsync(
+            string assemblyId,
+            ICartService cartService
+        )
         {
             if (string.IsNullOrWhiteSpace(assemblyId))
             {
-                return new GeneralResponse<bool> { Success = false, Message = "Assembly ID cannot be null or empty.", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Assembly ID cannot be null or empty.",
+                    Data = false,
+                };
             }
 
             var assembly = await _pcAssemblyRepo.GetFirstOrDefaultAsync(
@@ -969,12 +1105,22 @@ namespace Service
 
             if (assembly == null)
             {
-                return new GeneralResponse<bool> { Success = false, Message = "PC Assembly not found.", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "PC Assembly not found.",
+                    Data = false,
+                };
             }
 
             if (string.IsNullOrWhiteSpace(assembly.CustomerId))
             {
-                return new GeneralResponse<bool> { Success = false, Message = "Customer ID is not associated with this PC Assembly.", Data = false };
+                return new GeneralResponse<bool>
+                {
+                    Success = false,
+                    Message = "Customer ID is not associated with this PC Assembly.",
+                    Data = false,
+                };
             }
 
             var customerId = assembly.CustomerId;
@@ -989,7 +1135,7 @@ namespace Service
                     UnitPrice = assemblyItem.UnitPrice * 1.1m,
                     ProductTotal = assemblyItem.Total,
                     IsCustomBuild = true,
-                    AssemblyFee = assembly.AssemblyFee ?? 0
+                    AssemblyFee = assembly.AssemblyFee ?? 0,
                 };
 
                 await cartService.AddItemPcAssemblyAsync(customerId, cartItemDto);
@@ -1024,7 +1170,7 @@ namespace Service
             {
                 Success = true,
                 Message = "PC Assembly and its fee have been moved to the cart.",
-                Data = true
+                Data = true,
             };
         }
     }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.DTOs.ProductDTOs
 {
@@ -28,5 +29,14 @@ namespace Core.DTOs.ProductDTOs
         
         [Required]
         public DateTime EndDate { get; set; }
+        //public WarrantyDTO(Warranty warranty)
+        //{
+        //    Id = warranty.Id;
+        //    Type = warranty.Type;
+        //    Duration = warranty.Duration;
+        //    Description = warranty.Description;
+        //    StartDate = warranty.StartDate;
+        //    EndDate = warranty.EndDate;
+        //}
     }
 }

@@ -20,5 +20,18 @@ namespace Core.DTOs.CartDTOs
         public bool IsCustomBuild { get; set; }
         public decimal? AssemblyFee { get; set; }
         public decimal? ProductTotal { get; set; }
+        //public CartItemReadDTO(CartItem cartItem)
+        //{
+        //    Id = cartItem.Id;
+        //    ProductId = cartItem.ProductId;
+        //    //ProductName = cartItem.ProductName;
+        //    //Price = cartItem.Price;
+        //    Quantity = cartItem.Quantity;
+        //    //ImageUrl = cartItem.ImageUrl;
+        //    //Stock = cartItem.Stock;
+        //    IsCustomBuild = cartItem.IsCustomBuild;
+        //    AssemblyFee = cartItem.AssemblyFee;
+        //    ProductTotal = cartItem.ProductTotal;
+        //}
     }
 }

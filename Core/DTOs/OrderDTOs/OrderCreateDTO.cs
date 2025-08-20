@@ -14,6 +14,7 @@ namespace Core.DTOs.OrderDTOs
         public double? DeliveryLongitude { get; set; }
 
         public string ServiceUsageId { get; set; }
+        public string? PaymentIntentId { get; set; }
         public List<OrderItemCreateDTO> OrderItems { get; set; }
     }
 }

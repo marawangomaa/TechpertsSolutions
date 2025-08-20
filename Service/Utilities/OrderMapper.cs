@@ -1,10 +1,5 @@
 using Core.DTOs.OrderDTOs;
 using Core.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -27,9 +22,10 @@ namespace Service.Utilities
                 Status = order.Status,
                 TotalAmount = order.TotalAmount,
                 //DeliveryName = order.Delivery?.DeliveryPerson?.User?.FullName?? "UnKnown Delivery",
-                OrderItems = order.OrderItems != null 
-                    ? order.OrderItems.Select(ToItemReadDTO).ToList() 
-                    : new List<OrderItemReadDTO>()
+                OrderItems =
+                    order.OrderItems != null
+                        ? order.OrderItems.Select(ToItemReadDTO).ToList()
+                        : new List<OrderItemReadDTO>(),
             };
         }
 
@@ -48,7 +44,7 @@ namespace Service.Utilities
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
                 ImageUrl = item.Product?.ImageUrl ?? "assets/products/default-product.png",
-                ItemTotal = item.ItemTotal
+                ItemTotal = item.ItemTotal,
             };
         }
 
@@ -62,14 +58,16 @@ namespace Service.Utilities
                 Status = OrderStatus.Ordered,
                 ServiceUsageId = dto.ServiceUsageId,
                 OrderHistoryId = null,
-                OrderItems = dto.OrderItems?.Select(item => new OrderItem
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    UnitPrice = item.UnitPrice,
-                    ItemTotal = (int)(item.Quantity * item.UnitPrice)
-                }).ToList() ?? new List<OrderItem>()
+                OrderItems =
+                    dto.OrderItems?.Select(item => new OrderItem
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                            UnitPrice = item.UnitPrice,
+                            ItemTotal = (int)(item.Quantity * item.UnitPrice),
+                        })
+                        .ToList() ?? new List<OrderItem>(),
             };
         }
     }

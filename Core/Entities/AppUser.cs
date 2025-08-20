@@ -21,6 +21,7 @@ namespace TechpertsSolutions.Core.Entities
         public string? ProfilePhotoUrl { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime? LastLoginDate { get; set; }
         public DateTime? UpdatedAt { get; set; }
         
         // Navigation properties for role-specific entities

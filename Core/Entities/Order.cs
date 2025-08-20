@@ -19,6 +19,7 @@ namespace TechpertsSolutions.Core.Entities
         public string? OrderHistoryId { get; set; }
         public OrderHistory? OrderHistory { get; set; }
         public ServiceUsage? ServiceUsage { get; set; }
+        public string? PaymentIntentId { get; set; }
         public List<OrderItem>? OrderItems { get; set; } = new List<OrderItem>();
         public List<Delivery>? Deliveries { get; set; } = new List<Delivery>();
     }

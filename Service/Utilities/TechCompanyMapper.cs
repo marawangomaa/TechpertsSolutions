@@ -7,12 +7,13 @@ namespace Service.Utilities
     {
         public static TechCompanyReadDTO ToReadDTO(TechCompany entity)
         {
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             return new TechCompanyReadDTO
             {
                 Id = entity.Id,
-                Website = entity.Website,
+                Rating = entity.Rating,
                 Description = entity.Description,
                 Longitude = entity.User?.Longitude,
                 Latitude = entity.User?.Latitude,
@@ -22,7 +23,7 @@ namespace Service.Utilities
                 UserId = entity.UserId,
                 RoleId = entity.RoleId,
                 UserName = entity.User?.UserName ?? "Unknown",
-                RoleName = entity.Role?.Name ?? "Unknown"
+                RoleName = entity.Role?.Name ?? "Unknown",
             };
         }
 
@@ -34,22 +35,21 @@ namespace Service.Utilities
 
         public static TechCompany ToEntity(TechCompanyCreateDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
             return new TechCompany
             {
                 Id = Guid.NewGuid().ToString(),
                 UserId = dto.UserId,
-                RoleId = dto.RoleId
+                RoleId = dto.RoleId,
             };
         }
 
         public static void UpdateEntity(TechCompany entity, TechCompanyUpdateDTO dto)
         {
-            if (entity == null || dto == null) return;
-
-            if (!string.IsNullOrWhiteSpace(dto.Website))
-                entity.Website = dto.Website;
+            if (entity == null || dto == null)
+                return;
             if (!string.IsNullOrWhiteSpace(dto.Description))
                 entity.Description = dto.Description;
         }

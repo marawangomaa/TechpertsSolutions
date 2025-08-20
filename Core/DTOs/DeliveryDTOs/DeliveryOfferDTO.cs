@@ -1,9 +1,11 @@
-﻿using Core.Enums;
+﻿using Core.Entities;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TechpertsSolutions.Core.Entities;
 
 namespace Core.DTOs.DeliveryDTOs
 {
@@ -17,6 +19,7 @@ namespace Core.DTOs.DeliveryDTOs
         public DateTime? CreatedAt { get; set; }
         public DateTime? ExpiryTime { get; set; }
         public bool IsActive { get; set; }
+        public List<TechCompany> TechCompanies { get; set; } = new List<TechCompany>();
 
         // Optional related info
         public string DeliveryTrackingNumber { get; set; }

@@ -55,7 +55,25 @@ namespace TechpertsSolutions.Controllers
             var result = await _service.UpdateAsync(id, dto);
             return result.Success ? Ok(result) : NotFound(result);
         }
+        [HttpPatch("{id}/rating")]
+        public async Task<IActionResult> UpdateRating(string id, [FromBody] decimal rating)
+        {
+            if (IsInvalidGuid(id, out var errorResponse))
+                return BadRequest(errorResponse);
 
+            if (rating < 0 || rating > 5) // optional validation (e.g., 1–5 stars)
+            {
+                return BadRequest(new GeneralResponse<string>
+                {
+                    Success = false,
+                    Message = "Rating must be between 0 and 5.",
+                    Data = rating.ToString()
+                });
+            }
+
+            var result = await _service.UpdateRatingAsync(id, rating);
+            return result.Success ? Ok(result) : NotFound(result);
+        }
         // Helper to validate GUID
         private bool IsInvalidGuid(string id, out GeneralResponse<string> errorResponse)
         {

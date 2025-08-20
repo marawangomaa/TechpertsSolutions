@@ -18,5 +18,12 @@ namespace Core.DTOs.DeliveryDTOs
         public DeliveryStatus Status { get; set; }
         public decimal DeliveryFee { get; set; }
         public List<DeliveryClusterDTO> Clusters { get; set; }
+        //public DeliveryDTO(Delivery delivery)
+        //{
+        //    Id = delivery.Id;
+        //    Status = delivery.Status;
+        //    DeliveryFee = delivery.DeliveryFee;
+        //    Clusters = delivery.Clusters?.Select(cluster => new DeliveryClusterDTO(cluster)).ToList();
+        //}
     }
 }

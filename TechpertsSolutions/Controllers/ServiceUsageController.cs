@@ -15,12 +15,12 @@ namespace TechpertsSolutions.Controllers
         public ServiceUsageController(IServiceUsageService service) => _service = service;
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ServiceUsageCreateDTO dto, [FromQuery] ServiceType serviceType)
+        public async Task<IActionResult> Create([FromBody] ServiceUsageCreateDTO dto, [FromForm] ServiceType serviceType)
         {
             // Create a new DTO with the serviceType from query parameter
             var dtoWithServiceType = new ServiceUsageCreateDTO
             {
-                ServiceType = serviceType.ToString(),
+                ServiceType = serviceType,
                 UsedOn = dto.UsedOn,
                 CallCount = dto.CallCount
             };
@@ -44,12 +44,12 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTO dto, [FromQuery] ServiceType? serviceType = null)
+        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTO dto, [FromForm] ServiceType? serviceType = null)
         {
             // Create a new DTO with the serviceType from query parameter if provided
             var dtoWithServiceType = new ServiceUsageUpdateDTO
             {
-                ServiceType = serviceType?.ToString() ?? dto.ServiceType,
+                ServiceType = serviceType ?? dto.ServiceType,
                 UsedOn = dto.UsedOn,
                 CallCount = dto.CallCount
             };

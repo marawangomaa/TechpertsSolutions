@@ -1,5 +1,5 @@
-using Core.DTOs.SubCategoryDTOs;
 using Core.DTOs.ProductDTOs;
+using Core.DTOs.SubCategoryDTOs;
 using TechpertsSolutions.Core.Entities;
 
 namespace Service.Utilities
@@ -8,7 +8,8 @@ namespace Service.Utilities
     {
         public static SubCategoryDTO MapToSubCategoryDTO(SubCategory subCategory)
         {
-            if (subCategory == null) return null;
+            if (subCategory == null)
+                return null;
 
             // Get category information from the many-to-many relationship
             var categoryInfo = subCategory.CategorySubCategories?.FirstOrDefault()?.Category;
@@ -27,34 +28,42 @@ namespace Service.Utilities
                 Image = finalImage,
                 CategoryId = categoryId,
                 CategoryName = categoryName,
-                Products = subCategory.Products?.Select(p => ProductMapper.MapToProductCard(p)).Where(p => p != null).ToList() ?? new List<ProductCardDTO>()
+                Products =
+                    subCategory
+                        .Products?.Select(p => ProductMapper.MapToProductCard(p))
+                        .Where(p => p != null)
+                        .ToList() ?? new List<ProductCardDTO>(),
             };
         }
 
         public static SubCategory MapToSubCategory(CreateSubCategoryDTO dto)
         {
-            if (dto == null) return null;
+            if (dto == null)
+                return null;
 
-            return new SubCategory
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = dto.Name
-            };
+            return new SubCategory { Id = Guid.NewGuid().ToString(), Name = dto.Name };
         }
 
-        public static SubCategory MapToSubCategory(UpdateSubCategoryDTO dto, SubCategory existingSubCategory)
+        public static SubCategory MapToSubCategory(
+            UpdateSubCategoryDTO dto,
+            SubCategory existingSubCategory
+        )
         {
-            if (dto == null || existingSubCategory == null) return null;
+            if (dto == null || existingSubCategory == null)
+                return null;
 
             existingSubCategory.Name = dto.Name;
             return existingSubCategory;
         }
 
-        public static IEnumerable<SubCategoryDTO> MapToSubCategoryDTOList(IEnumerable<SubCategory> subCategories)
+        public static IEnumerable<SubCategoryDTO> MapToSubCategoryDTOList(
+            IEnumerable<SubCategory> subCategories
+        )
         {
-            if (subCategories == null) return Enumerable.Empty<SubCategoryDTO>();
+            if (subCategories == null)
+                return Enumerable.Empty<SubCategoryDTO>();
 
             return subCategories.Select(MapToSubCategoryDTO).Where(dto => dto != null);
         }
     }
-} 
+}
