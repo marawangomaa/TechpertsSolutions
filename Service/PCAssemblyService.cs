@@ -910,20 +910,32 @@ namespace Service
                     {
                         var mbPcieVersion = GetSpec(mbForGpu, "PCIeVersion");
                         var gpuPcieVersion = candidateSpecs.GetValueOrDefault("PCIeVersion");
-                        if (gpuPcieVersion == null || mbPcieVersion == null)
-                            return false;
+
+                        // Instead of returning false immediately when null,
+                        // just allow it (assume backward compatibility unless explicitly incompatible)
+                        if (!string.IsNullOrEmpty(mbPcieVersion) && !string.IsNullOrEmpty(gpuPcieVersion))
+                        {
+                            // You can also add version comparison logic here if needed
+                            if (mbPcieVersion != gpuPcieVersion)
+                                return false;
+                        }
                     }
+
                     var caseForGpu = selectedItems.FirstOrDefault(p => p.Category.Name == "Case");
                     if (caseForGpu != null)
                     {
-                        var caseGpuLength = int.Parse(GetSpec(caseForGpu, "MaxGPULength") ?? "0");
-                        var gpuLength = int.Parse(
-                            candidateSpecs.GetValueOrDefault("Length") ?? "0"
-                        );
-                        if (gpuLength > caseGpuLength)
+                        // Use int.TryParse instead of int.Parse to prevent exceptions
+                        int caseGpuLength = 0;
+                        int gpuLength = 0;
+
+                        int.TryParse(GetSpec(caseForGpu, "MaxGPULength"), out caseGpuLength);
+                        int.TryParse(candidateSpecs.GetValueOrDefault("Length"), out gpuLength);
+
+                        if (caseGpuLength > 0 && gpuLength > 0 && gpuLength > caseGpuLength)
                             return false;
                     }
                     break;
+
 
                 case "Storage":
                     var mbForStorage = selectedItems.FirstOrDefault(p =>
