@@ -7,6 +7,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
 using Core.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -22,13 +23,15 @@ namespace Service
         private readonly IRepository<Delivery> _deliveryRepo;
         private readonly IServiceProvider _serviceProvider;
         private readonly INotificationService _notificationService;
+        private readonly IFileService _fileService;
 
         public DeliveryPersonService(
             IRepository<DeliveryPerson> deliveryPersonRepo,
             IRepository<DeliveryOffer> deliveryOfferRepo,
             IRepository<Delivery> deliveryRepo,
             IServiceProvider serviceProvider,
-            INotificationService notificationService
+            INotificationService notificationService,
+            IFileService fileService
         )
         {
             _deliveryPersonRepo = deliveryPersonRepo;
@@ -36,6 +39,7 @@ namespace Service
             _deliveryRepo = deliveryRepo;
             _serviceProvider = serviceProvider;
             _notificationService = notificationService;
+            _fileService = fileService;
         }
 
         private IDeliveryClusterService _clusterService =>
@@ -131,49 +135,62 @@ namespace Service
             }
         }
 
-        public async Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(
+        public async Task<DeliveryPersonReadDTO?> UpdateAsync(
             string id,
-            DeliveryPersonStatus AccountStatus,
-            DeliveryPersonUpdateDTO dto
+            DeliveryPersonUpdateDTO dto,
+            IFormFile? vehicleImage
         )
         {
-            if (string.IsNullOrWhiteSpace(id) || dto == null)
+            var entity = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, dp => dp.User);
+            if (entity == null)
+                return null;
+
+            // Map basic fields from DTO
+            DeliveryPersonMapper.UpdateEntity(entity, dto);
+
+            // Handle vehicle image (from DTO or from parameter)
+            var imageToUse = vehicleImage ?? vehicleImage;
+
+            if (imageToUse != null)
             {
-                return new GeneralResponse<DeliveryPersonReadDTO>
-                {
-                    Success = false,
-                    Message = "Invalid input.",
-                    Data = null,
-                };
+                if (!string.IsNullOrEmpty(entity.VehicleImage))
+                    await _fileService.DeleteImageAsync(entity.VehicleImage);
+
+                entity.VehicleImage = await _fileService.UploadImageAsync(
+                    imageToUse,
+                    "vehicle-images"
+                );
             }
 
-            var deliveryPerson = await _deliveryPersonRepo.GetByIdWithIncludesAsync(
-                id,
-                dp => dp.User,
-                dp => dp.Role
+            _deliveryPersonRepo.Update(entity);
+            return DeliveryPersonMapper.ToReadDTO(entity);
+        }
+
+        public async Task<DeliveryPersonReadDTO?> UpdateAdminAsync(
+            string id,
+            DeliveryPersonAdminUpdateDTO dto
+        )
+        {
+            var entity = await _deliveryPersonRepo.GetByIdWithIncludesAsync(id, dp => dp.User);
+            if (entity == null)
+                return null;
+
+            DeliveryPersonMapper.UpdateAdminEntity(
+                entity,
+                dto.AccountStatus,
+                new DeliveryPersonUpdateDTO
+                {
+                    VehicleNumber = dto.VehicleNumber,
+                    VehicleType = dto.VehicleType,
+                    PhoneNumber = dto.PhoneNumber,
+                    City = dto.City,
+                    Country = dto.Country,
+                    IsAvailable = dto.IsAvailable,
+                }
             );
 
-            if (deliveryPerson == null)
-            {
-                return new GeneralResponse<DeliveryPersonReadDTO>
-                {
-                    Success = false,
-                    Message = $"Delivery person with ID '{id}' not found.",
-                    Data = null,
-                };
-            }
-
-            DeliveryPersonMapper.UpdateEntity(deliveryPerson, AccountStatus, dto);
-
-            _deliveryPersonRepo.Update(deliveryPerson);
-            await _deliveryPersonRepo.SaveChangesAsync();
-
-            return new GeneralResponse<DeliveryPersonReadDTO>
-            {
-                Success = true,
-                Message = "Delivery person updated successfully.",
-                Data = DeliveryPersonMapper.ToReadDTO(deliveryPerson),
-            };
+            _deliveryPersonRepo.Update(entity);
+            return DeliveryPersonMapper.ToReadDTO(entity);
         }
 
         public async Task<
@@ -183,10 +200,11 @@ namespace Service
             try
             {
                 var availableDeliveryPersons = await _deliveryPersonRepo.FindWithIncludesAsync(
-                    dp => dp.AccountStatus == DeliveryPersonStatus.Accepted
-                       && dp.IsAvailable == true
-                       && dp.User.Latitude != null
-                       && dp.User.Longitude != null,
+                    dp =>
+                        dp.AccountStatus == DeliveryPersonStatus.Accepted
+                        && dp.IsAvailable == true
+                        && dp.User.Latitude != null
+                        && dp.User.Longitude != null,
                     dp => dp.User,
                     dp => dp.Role
                 );
@@ -226,11 +244,10 @@ namespace Service
                 };
 
             var offers = await _deliveryOfferRepo.FindWithIncludesAsync(
-               o => o.DeliveryPersonId == driverId,
-               o => o.Delivery,
-               o => o.Delivery.TechCompanies
-           );
-
+                o => o.DeliveryPersonId == driverId,
+                o => o.Delivery,
+                o => o.Delivery.TechCompanies
+            );
 
             var dtoList = offers.Select(DeliveryPersonMapper.ToDTO).ToList();
             return new GeneralResponse<IEnumerable<DeliveryOfferDTO>>
@@ -259,7 +276,7 @@ namespace Service
                     && o.IsActive,
                 o => o.Delivery,
                 o => o.DeliveryPerson.User,
-                o => o.Delivery.TechCompanies 
+                o => o.Delivery.TechCompanies
             );
 
             var dtoList = offers.Select(DeliveryPersonMapper.ToOfferDTO).ToList();
@@ -301,8 +318,12 @@ namespace Service
                 _deliveryOfferRepo.Update(offer);
 
                 var otherOffers = await _deliveryOfferRepo.FindWithIncludesAsync(
-                    o => o.ClusterId == offer.ClusterId && o.Id != offer.Id && o.Status == DeliveryOfferStatus.Pending,
-                    o => o.DeliveryPerson, o => o.Delivery.TechCompanies
+                    o =>
+                        o.ClusterId == offer.ClusterId
+                        && o.Id != offer.Id
+                        && o.Status == DeliveryOfferStatus.Pending,
+                    o => o.DeliveryPerson,
+                    o => o.Delivery.TechCompanies
                 );
 
                 foreach (var o in otherOffers)
@@ -323,7 +344,6 @@ namespace Service
                     }
                 }
 
-
                 var assignResult = await _clusterService.AssignDriverAsync(
                     offer.ClusterId,
                     driverId
@@ -335,10 +355,12 @@ namespace Service
                         Message = assignResult.Message,
                     };
 
-                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(
-                    offer.DeliveryId);
+                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(offer.DeliveryId);
 
-                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(driverId, d => d.User);
+                var driver = await _deliveryPersonRepo.GetByIdWithIncludesAsync(
+                    driverId,
+                    d => d.User
+                );
 
                 delivery.DeliveryPerson = driver;
                 delivery.DeliveryPersonId = driver.Id;
@@ -390,7 +412,11 @@ namespace Service
 
             try
             {
-                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(offerId, o => o.DeliveryPerson, o => o.Delivery.TechCompanies);
+                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(
+                    offerId,
+                    o => o.DeliveryPerson,
+                    o => o.Delivery.TechCompanies
+                );
                 if (
                     offer == null
                     || offer.DeliveryPersonId != driverId
@@ -444,7 +470,11 @@ namespace Service
 
             try
             {
-                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(offerId, o => o.DeliveryPerson, o => o.Delivery.TechCompanies);
+                var offer = await _deliveryOfferRepo.GetByIdWithIncludesAsync(
+                    offerId,
+                    o => o.DeliveryPerson,
+                    o => o.Delivery.TechCompanies
+                );
                 if (
                     offer == null
                     || offer.DeliveryPersonId != driverId
@@ -460,7 +490,10 @@ namespace Service
                 offer.IsActive = false;
                 _deliveryOfferRepo.Update(offer);
 
-                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(offer.DeliveryId, o => o.DeliveryPerson);
+                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(
+                    offer.DeliveryId,
+                    o => o.DeliveryPerson
+                );
                 delivery.Status = DeliveryStatus.Pending;
                 delivery.DeliveryPersonId = null;
                 _deliveryRepo.Update(delivery);

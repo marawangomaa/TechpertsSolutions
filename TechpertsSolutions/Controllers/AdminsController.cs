@@ -162,10 +162,10 @@ namespace TechpertsSolutions.Controllers
         [HttpPut("deliveryPerson/{id}")]
         public async Task<IActionResult> UpdateDeliveryPerson(
         string id,
-        [FromBody] DeliveryPersonUpdateDTO dto
+        [FromBody] DeliveryPersonAdminUpdateDTO dto
 )
         {
-            var response = await _deliveryPersonService.UpdateAsync(id, dto.AccountStatus, dto);
+            var response = await _deliveryPersonService.UpdateAdminAsync(id, dto);
             return Ok(response);
         }
 

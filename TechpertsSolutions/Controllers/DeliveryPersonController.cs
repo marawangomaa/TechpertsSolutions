@@ -44,7 +44,7 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, DeliveryPersonStatus AccountStatus, [FromBody] DeliveryPersonUpdateDTO dto)
+        public async Task<IActionResult> Update(string id, IFormFile? VehicleImage, [FromForm] DeliveryPersonUpdateDTO dto)
         {
             if (IsInvalidGuid(id, out var errorResponse))
                 return BadRequest(errorResponse);
@@ -59,8 +59,8 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            var result = await _deliveryPersonService.UpdateAsync(id, AccountStatus, dto);
-            return result.Success ? Ok(result) : NotFound(result);
+            var result = await _deliveryPersonService.UpdateAsync(id,dto , VehicleImage);
+            return result.IsAvailable ? Ok(result) : NotFound(result);
         }
 
         [HttpGet("{driverId}/offers/all")]

@@ -48,7 +48,8 @@ namespace Service.Utilities
 
         public static DeliveryOfferDTO ToOfferDTO(DeliveryOffer offer)
         {
-            if (offer == null) return null;
+            if (offer == null)
+                return null;
 
             return new DeliveryOfferDTO
             {
@@ -66,7 +67,7 @@ namespace Service.Utilities
                 DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
                 CustomerName = offer.Delivery?.CustomerName,
                 DeliveryLatitude = offer.Delivery?.DropoffLatitude,
-                DeliveryLongitude = offer.Delivery?.DropoffLongitude
+                DeliveryLongitude = offer.Delivery?.DropoffLongitude,
             };
         }
 
@@ -86,7 +87,10 @@ namespace Service.Utilities
             };
         }
 
-        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonStatus AccountStatus, DeliveryPersonUpdateDTO dto)
+        /// <summary>
+        /// Updates entity fields from DTO (file/image logic handled in Service layer)
+        /// </summary>
+        public static void UpdateEntity(DeliveryPerson entity, DeliveryPersonUpdateDTO dto)
         {
             if (entity == null || dto == null)
                 return;
@@ -97,8 +101,33 @@ namespace Service.Utilities
             if (!string.IsNullOrWhiteSpace(dto.VehicleType))
                 entity.VehicleType = dto.VehicleType;
 
-            if (!string.IsNullOrWhiteSpace(dto.VehicleImage))
-                entity.VehicleImage = dto.VehicleImage;
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+                entity.User.PhoneNumber = dto.PhoneNumber;
+
+            if (!string.IsNullOrWhiteSpace(dto.City))
+                entity.User.City = dto.City;
+
+            if (!string.IsNullOrWhiteSpace(dto.Country))
+                entity.User.Country = dto.Country;
+
+            if (dto.IsAvailable.HasValue)
+                entity.IsAvailable = dto.IsAvailable.Value;
+        }
+
+        public static void UpdateAdminEntity(
+            DeliveryPerson entity,
+            DeliveryPersonStatus accountStatus,
+            DeliveryPersonUpdateDTO dto
+        )
+        {
+            if (entity == null || dto == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(dto.VehicleNumber))
+                entity.VehicleNumber = dto.VehicleNumber;
+
+            if (!string.IsNullOrWhiteSpace(dto.VehicleType))
+                entity.VehicleType = dto.VehicleType;
 
             if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
                 entity.User.PhoneNumber = dto.PhoneNumber;
@@ -112,7 +141,7 @@ namespace Service.Utilities
             if (dto.IsAvailable.HasValue)
                 entity.IsAvailable = dto.IsAvailable.Value;
 
-            entity.AccountStatus = AccountStatus;
+            entity.AccountStatus = accountStatus;
         }
 
         public static DeliveryOfferDTO ToDTO(DeliveryOffer offer)
@@ -133,7 +162,7 @@ namespace Service.Utilities
                 DeliveryTrackingNumber = offer.Delivery?.TrackingNumber,
                 DeliveryLatitude = offer.Delivery?.DropoffLatitude,
                 DeliveryLongitude = offer.Delivery?.DropoffLongitude,
-                CustomerName = offer.Delivery?.CustomerName
+                CustomerName = offer.Delivery?.CustomerName,
             };
         }
 

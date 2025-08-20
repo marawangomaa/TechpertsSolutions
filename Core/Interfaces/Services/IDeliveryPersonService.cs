@@ -2,6 +2,7 @@ using Core.DTOs;
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
 using Core.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace Core.Interfaces.Services
 {
@@ -9,11 +10,8 @@ namespace Core.Interfaces.Services
     {
         Task<GeneralResponse<DeliveryPersonReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>> GetAllAsync();
-        Task<GeneralResponse<DeliveryPersonReadDTO>> UpdateAsync(
-            string id,
-            DeliveryPersonStatus AccountStatus,
-            DeliveryPersonUpdateDTO dto
-        );
+        Task<DeliveryPersonReadDTO?> UpdateAsync(string id, DeliveryPersonUpdateDTO dto, IFormFile? vehicleImage);
+        Task<DeliveryPersonReadDTO?> UpdateAdminAsync(string id, DeliveryPersonAdminUpdateDTO dto);
         Task<
             GeneralResponse<IEnumerable<DeliveryPersonReadDTO>>
         > GetAvailableDeliveryPersonsAsync();
