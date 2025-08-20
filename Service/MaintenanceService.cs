@@ -181,16 +181,6 @@ namespace Service
                 };
             }
 
-            if (!Guid.TryParse(dto.TechCompanyId, out _))
-            {
-                return new GeneralResponse<MaintenanceDTO>
-                {
-                    Success = false,
-                    Message = "Invalid Tech Company ID format. Expected GUID format.",
-                    Data = null,
-                };
-            }
-
             try
             {
                 var entity = await MaintenanceMapper.MapToMaintenance(dto, _techCompanyService);

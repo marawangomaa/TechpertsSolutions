@@ -54,6 +54,9 @@ namespace Service.Utilities
 
             var techCompany = await techCompanyService.GetByUserId(dto.TechCompanyId);
 
+            if (techCompany == null || techCompany.Data == null)
+                throw new Exception($"Tech company not found for user ID: {dto.TechCompanyId}");
+
             return new Maintenance
             {
                 CustomerId = dto.CustomerId,
