@@ -5,7 +5,7 @@ using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Service.Utilities;
-//using Stripe;
+using Core.Enums;
 using TechpertsSolutions.Repository.Data;
 using AppEntities = TechpertsSolutions.Core.Entities;
 
@@ -223,6 +223,15 @@ namespace Service
                 };
                 await cartRepo.AddAsync(cart);
                 await cartRepo.SaveChangesAsync();
+
+                var serviceUsage = new AppEntities.ServiceUsage
+                {
+                    ServiceType = ServiceType.PCAssembly,
+                    CallCount = 1,
+                    ServiceFees = 10,
+                    UsedOn = DateTime.Now,
+                };
+                await dbContext.ServiceUsages.AddAsync(serviceUsage);
             }
 
             var existingItem = cart.CartItems?.FirstOrDefault(i =>

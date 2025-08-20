@@ -3,6 +3,7 @@ using Core.DTOs.MaintenanceDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Identity;
 using Service.Utilities;
 using TechpertsSolutions.Core.Entities;
 
@@ -18,6 +19,7 @@ namespace Service
         private readonly INotificationService _notificationService;
         private readonly ITechCompanyService _techCompanyService;
         private readonly ILocationService _LocationService;
+        private readonly UserManager<AppUser> _userManager;
 
         public MaintenanceService(
             IRepository<Maintenance> maintenanceRepo,
@@ -27,7 +29,8 @@ namespace Service
             IRepository<ServiceUsage> serviceUsageRepo,
             INotificationService notificationService,
             ITechCompanyService techCompanyService,
-            ILocationService locationService
+            ILocationService locationService,
+            UserManager<AppUser> userManager
         )
         {
             _maintenanceRepo = maintenanceRepo;
@@ -38,6 +41,7 @@ namespace Service
             _techCompanyService = techCompanyService;
             _LocationService = locationService;
             _notificationService = notificationService;
+            _userManager = userManager;
         }
 
         public async Task<GeneralResponse<IEnumerable<MaintenanceDTO>>> GetAllAsync()
@@ -183,7 +187,7 @@ namespace Service
 
             try
             {
-                var entity = await MaintenanceMapper.MapToMaintenance(dto, _techCompanyService);
+                var entity = await MaintenanceMapper.MapToMaintenance(dto, _techCompanyService, _userManager);
 
                 if (entity == null)
                 {
@@ -201,6 +205,7 @@ namespace Service
                     UsedOn = DateTime.Now,
                     CallCount = 1,
                     MaintenanceId = entity.Id,
+                    ServiceFees = 10
                 };
 
                 entity.ServiceUsages = new List<ServiceUsage> { serviceUsage };
@@ -253,7 +258,6 @@ namespace Service
                 };
             }
         }
-
         public async Task<GeneralResponse<bool>> UpdateAsync(string id, MaintenanceUpdateDTO dto)
         {
             if (string.IsNullOrWhiteSpace(id))

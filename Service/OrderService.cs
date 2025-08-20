@@ -23,6 +23,7 @@ namespace Service
         private readonly IRepository<DeliveryPerson> _deliveryPersonRepo;
         private readonly IRepository<DeliveryOffer> _deliveryOfferRepo;
         private readonly IRepository<OrderHistory> _orderHistoryRepo;
+        private readonly IRepository<ServiceUsage> _serviceUsage;
         private readonly TechpertsContext _dbContext;
         private readonly ICustomerService _customerService;
         private readonly IDeliveryService _deliveryService;
@@ -37,6 +38,7 @@ namespace Service
             IRepository<DeliveryOffer> deliveryOfferRepo,
             INotificationService notificationService,
             IDeliveryService deliveryService,
+            IRepository<ServiceUsage> serviceUsage,
             ICustomerService customerService,
             ILogger<OrderService> logger,
             TechpertsContext dbContext
@@ -49,6 +51,7 @@ namespace Service
             _deliveryPersonRepo = deliveryPersonRepo;
             _deliveryOfferRepo = deliveryOfferRepo;
             _deliveryService = deliveryService;
+            _serviceUsage = serviceUsage;
             _notificationService = notificationService;
             _dbContext = dbContext;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -144,6 +147,15 @@ namespace Service
                                     .ThenInclude(d => d.DeliveryPerson)
                                         .ThenInclude(dp => dp.User)
                     );
+
+                await _serviceUsage.AddAsync(new ServiceUsage
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ServiceType = ServiceType.ProductSale,
+                        UsedOn = DateTime.UtcNow,
+                        ServiceFees = 10,
+                        CallCount = 1,
+                    });
 
                 await _notificationService.SendNotificationToRoleAsync(
                     "Admin",

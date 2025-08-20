@@ -1,6 +1,7 @@
 using Core.DTOs.MaintenanceDTOs;
 using Core.DTOs.MaintenanceDTOss;
 using Core.Enums;
+using Core.Interfaces;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
@@ -47,15 +48,20 @@ namespace Service.Utilities
             };
         }
 
-        public static async Task<Maintenance> MapToMaintenance(MaintenanceCreateDTO dto, ITechCompanyService techCompanyService)
+        public static async Task<Maintenance> MapToMaintenance(MaintenanceCreateDTO dto, ITechCompanyService techCompanyService, UserManager<AppUser> _userService)
         {
             if (dto == null)
                 return null;
 
-            var techCompany = await techCompanyService.GetByUserId(dto.TechCompanyId);
+            // Step 1: Get the user by the RoleId (or whatever identifier you currently have)
+            var user = await _userService.FindByIdAsync(dto.TechCompanyId); // or appropriate method
+            if (user == null)
+                throw new Exception($"User not found for RoleId: {dto.TechCompanyId}");
 
+            // Step 2: Get the tech company from the user
+            var techCompany = await techCompanyService.GetByUserId(user.Id);
             if (techCompany == null || techCompany.Data == null)
-                throw new Exception($"Tech company not found for user ID: {dto.TechCompanyId}");
+                throw new Exception($"Tech company not found for User ID: {user.Id}");
 
             return new Maintenance
             {
@@ -69,6 +75,7 @@ namespace Service.Utilities
                 Issue = dto.Issue
             };
         }
+
 
         public static Maintenance MapToMaintenance(
             MaintenanceUpdateDTO dto,

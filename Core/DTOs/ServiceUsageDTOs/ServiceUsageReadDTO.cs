@@ -11,6 +11,7 @@ namespace Core.DTOs.ServiceUsageDTOs
     {
         public string Id { get; set; }
         public ServiceType ServiceType { get; set; }
+        public decimal ServiceFees { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
     }

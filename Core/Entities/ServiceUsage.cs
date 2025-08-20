@@ -11,6 +11,7 @@ namespace TechpertsSolutions.Core.Entities
     public class ServiceUsage : BaseEntity
     {
         public ServiceType ServiceType { get; set; }
+        public decimal ServiceFees { get; set; }
         public DateTime UsedOn { get; set; }
         public int CallCount { get; set; }
         public string? MaintenanceId { get; set; }

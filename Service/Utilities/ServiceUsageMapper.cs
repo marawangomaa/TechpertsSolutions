@@ -12,6 +12,7 @@ namespace Service.Utilities
                 Id = entity.Id,
                 ServiceType = entity.ServiceType,
                 UsedOn = entity.UsedOn,
+                ServiceFees = entity.ServiceFees,
                 CallCount = entity.CallCount,
             };
 
@@ -21,6 +22,7 @@ namespace Service.Utilities
                 Id = Guid.NewGuid().ToString(),
                 ServiceType = dto.ServiceType,
                 UsedOn = dto.UsedOn,
+                ServiceFees = dto.ServiceFees,
                 CallCount = dto.CallCount,
             };
 
@@ -32,6 +34,7 @@ namespace Service.Utilities
                 entity.UsedOn = dto.UsedOn.Value;
             if (dto.CallCount.HasValue)
                 entity.CallCount = dto.CallCount.Value;
+            entity.ServiceFees = dto.ServiceFees;
         }
     }
 }
