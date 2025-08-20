@@ -474,6 +474,16 @@ namespace Service
             return await CheckoutCartAsync(customerId, null, serviceUsageId);
         }
 
+        public async Task<GeneralResponse<OrderReadDTO>> PlaceOrderWithPaymentAsync(
+            string customerId,
+            string paymentIntentId,
+            string? deliveryId = null,
+            string? serviceUsageId = null
+        )
+        {
+            return await CheckoutCartAsync(customerId, null, serviceUsageId, null, paymentIntentId);
+        }
+
         public async Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(
             string customerId,
             List<string> productIds,
@@ -565,13 +575,21 @@ namespace Service
                     Data = null,
                 };
 
-            if (string.IsNullOrWhiteSpace(paymentIntentId))
-                return new GeneralResponse<OrderReadDTO>
+            // Only require payment intent ID if this is a payment checkout
+            if (!string.IsNullOrWhiteSpace(paymentIntentId))
+            {
+                // Verify payment before proceeding with order placement
+                var paymentVerified = await paymentService.VerifyPaymentAsync(paymentIntentId);
+                if (!paymentVerified)
                 {
-                    Success = false,
-                    Message = "? Payment Intent ID is required before placing order.",
-                    Data = null,
-                };
+                    return new GeneralResponse<OrderReadDTO>
+                    {
+                        Success = false,
+                        Message = "❌ Payment not completed or failed. Cannot place order.",
+                        Data = null,
+                    };
+                }
+            }
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync();
             try
@@ -626,16 +644,7 @@ namespace Service
                         Message = $"? Stock validation failed:\n{string.Join("\n", stockErrors)}",
                         Data = null,
                     };
-                var paymentVerified = await paymentService.VerifyPaymentAsync(paymentIntentId);
-                if (!paymentVerified)
-                {
-                    return new GeneralResponse<OrderReadDTO>
-                    {
-                        Success = false,
-                        Message = "❌ Payment not completed or failed. Cannot place order.",
-                        Data = null,
-                    };
-                }
+
                 var orderDto = new OrderCreateDTO
                 {
                     CustomerId = customerId,
@@ -649,7 +658,7 @@ namespace Service
                         })
                         .ToList(),
 
-                    // ✅ New: keep track of payment intent
+                    // Only set payment intent ID if provided (payment checkout)
                     PaymentIntentId = paymentIntentId,
                 };
 

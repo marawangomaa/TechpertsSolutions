@@ -22,6 +22,12 @@ namespace Core.Interfaces.Services
             string? deliveryId = null,
             string? serviceUsageId = null
         );
+        Task<GeneralResponse<OrderReadDTO>> PlaceOrderWithPaymentAsync(
+            string customerId,
+            string paymentIntentId,
+            string? deliveryId = null,
+            string? serviceUsageId = null
+        );
         Task<GeneralResponse<OrderReadDTO>> PartialCheckoutAsync(
             string customerId,
             List<string> productIds,

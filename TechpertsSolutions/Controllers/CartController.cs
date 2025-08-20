@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace TechpertsSolutions.Controllers 
+namespace TechpertsSolutions.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -26,7 +26,7 @@ namespace TechpertsSolutions.Controllers
         [HttpGet("{customerId}")]
         public async Task<IActionResult> GetCart(string customerId)
         {
-            
+
             if (string.IsNullOrWhiteSpace(customerId))
             {
                 return BadRequest(new GeneralResponse<string>
@@ -77,7 +77,7 @@ namespace TechpertsSolutions.Controllers
                 });
             }
         }
-        
+
         [HttpPost("{customerId}/items")]
         public async Task<IActionResult> AddItem(string customerId, [FromBody] CartItemDTO itemDto)
         {
@@ -368,9 +368,9 @@ namespace TechpertsSolutions.Controllers
             }
         }
 
-        
-        
-        
+
+
+
         [HttpPost("{customerId}/checkout")]
         public async Task<IActionResult> Checkout(string customerId)
         {
@@ -431,20 +431,8 @@ namespace TechpertsSolutions.Controllers
                 });
             }
 
-            // ✅ Step 1: Verify payment with Stripe
-            var paymentSucceeded = await _paymentService.VerifyPaymentAsync(request.PaymentIntentId);
-            if (!paymentSucceeded)
-            {
-                return BadRequest(new GeneralResponse<string>
-                {
-                    Success = false,
-                    Message = "Payment verification failed. Order not placed.",
-                    Data = null
-                });
-            }
-
-            // ✅ Step 2: Place the order if payment succeeded
-            var result = await cartService.PlaceOrderAsync(customerId);
+            // Place the order with payment intent ID - payment verification will be handled in the service layer
+            var result = await cartService.PlaceOrderWithPaymentAsync(customerId, request.PaymentIntentId);
 
             return result.Success ? Ok(result) : GetErrorResponse(result);
         }
