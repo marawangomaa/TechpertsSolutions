@@ -26,7 +26,7 @@ namespace Service.Utilities
                 CallCount = dto.CallCount,
             };
 
-        public static void UpdateEntity(ServiceUsage entity, ServiceUsageUpdateDTO dto)
+        public static void UpdateEntity(ServiceUsage entity, ServiceUsageUpdateDTOs dto)
         {
             if (!string.IsNullOrWhiteSpace(dto.ServiceType.ToString()))
                 entity.ServiceType = (ServiceType)dto.ServiceType;

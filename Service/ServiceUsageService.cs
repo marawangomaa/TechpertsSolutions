@@ -62,7 +62,7 @@ namespace Service
 
         public async Task<GeneralResponse<ServiceUsageReadDTO>> UpdateAsync(
             string id,
-            ServiceUsageUpdateDTO dto
+            ServiceUsageUpdateDTOs dto
         )
         {
             var entity = await _ServiceRepo.GetByIdAsync(id);

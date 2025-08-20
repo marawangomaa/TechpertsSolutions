@@ -44,10 +44,10 @@ namespace TechpertsSolutions.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTO dto, [FromForm] ServiceType? serviceType = null)
+        public async Task<IActionResult> Update(string id, [FromBody] ServiceUsageUpdateDTOs dto, [FromForm] ServiceType? serviceType = null)
         {
             // Create a new DTO with the serviceType from query parameter if provided
-            var dtoWithServiceType = new ServiceUsageUpdateDTO
+            var dtoWithServiceType = new ServiceUsageUpdateDTOs
             {
                 ServiceType = serviceType ?? dto.ServiceType,
                 UsedOn = dto.UsedOn,
