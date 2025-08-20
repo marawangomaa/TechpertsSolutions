@@ -1,6 +1,7 @@
 using Core.DTOs;
 using Core.DTOs.DeliveryDTOs;
 using Core.DTOs.DeliveryPersonDTOs;
+using Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace Core.Interfaces.Services
         Task<GeneralResponse<bool>> DeclineDeliveryAsync(string clusterId, string driverId);
         Task<GeneralResponse<bool>> CancelDeliveryAsync(string deliveryId);
         Task<GeneralResponse<bool>> CompleteDeliveryAsync(string deliveryId, string driverId);
+        Task<GeneralResponse<DeliveryClusterDTO>> UpdateClusterStatusAsync(string clusterId, DeliveryClusterStatus status, string? assignedDriverId);
         Task<GeneralResponse<DeliveryReadDTO>> GetByIdAsync(string id);
         Task<GeneralResponse<IEnumerable<DeliveryReadDTO>>> GetAllAsync();
         Task<GeneralResponse<bool>> DeleteAsync(string id);

@@ -44,22 +44,20 @@ namespace Service.Utilities
             };
         }
 
-        public static DeliveryDTO ToDTO(
-            Delivery entity,
-            IEnumerable<DeliveryClusterDTO>? clusters = null
-        )
+        public static OrderStatus ToOrderStatus(DeliveryStatus deliveryStatus)
         {
-            if (entity == null)
-                return null;
-
-            return new DeliveryDTO
+            return deliveryStatus switch
             {
-                Id = entity.Id,
-                Status = entity.Status,
-                DeliveryFee = entity.DeliveryFee,
-                Clusters = clusters?.ToList() ?? new List<DeliveryClusterDTO>(),
+                DeliveryStatus.Pending => OrderStatus.Pending,
+                DeliveryStatus.Assigned => OrderStatus.Dispatched,
+                DeliveryStatus.PickedUp => OrderStatus.InProgress,
+                DeliveryStatus.Delivered => OrderStatus.Delivered,
+                DeliveryStatus.Cancelled => OrderStatus.Cancelled,
+                DeliveryStatus.Failed => OrderStatus.Rejected,
+                _ => OrderStatus.Pending
             };
         }
+
 
         public static DeliveryDetailsDTO ToDetailsDTO(
             Delivery entity,

@@ -240,7 +240,7 @@ namespace Service
 
                 var orderWithItems = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.Id == id,
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Deliveries,ServiceUsage"
                 );
 
                 var orderEntity = orderWithItems.FirstOrDefault();
@@ -332,7 +332,7 @@ namespace Service
             {
                 var orders = await _orderRepo.FindWithStringIncludesAsync(
                     o => o.CustomerId == customerId,
-                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Delivery,ServiceUsage"
+                    includeProperties: "OrderItems,OrderItems.Product,OrderItems.Product.Category,OrderItems.Product.SubCategory,OrderItems.Product.TechCompany,Customer,Customer.User,OrderHistory,Deliveries,ServiceUsage"
                 );
 
                 var orderDtos = orders

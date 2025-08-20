@@ -135,7 +135,7 @@ namespace Service
                         DropoffLongitude = dto.CustomerLongitude,
                     };
 
-                    var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id ,clusterDto);
+                    var clusterResult = await _clusterService.CreateClusterAsync(delivery.Id, clusterDto);
                     if (!clusterResult.Success || clusterResult.Data == null)
                         throw new InvalidOperationException($"Cluster creation failed: {clusterResult.Message}");
 
@@ -552,9 +552,9 @@ namespace Service
         }
 
         public async Task<GeneralResponse<DeliveryClusterDTO>> UpdateClusterStatusAsync(
-            string clusterId,
-            DeliveryClusterStatus status,
-            string? assignedDriverId = null
+        string clusterId,
+        DeliveryClusterStatus status,
+        string? assignedDriverId = null
         )
         {
             var clusterResult = await _clusterService.GetByIdAsync(clusterId);
@@ -566,6 +566,7 @@ namespace Service
                 };
 
             var cluster = clusterResult.Data;
+
             var clusterDto = new DeliveryClusterDTO
             {
                 Id = cluster.Id,
@@ -590,7 +591,26 @@ namespace Service
                 PickupLongitude = cluster.PickupLongitude,
             };
 
-            return await _clusterService.UpdateClusterAsync(clusterId, clusterDto);
+            var updateResult = await _clusterService.UpdateClusterAsync(clusterId, clusterDto);
+
+            if (updateResult.Success && cluster.DeliveryId != null)
+            {
+                var delivery = await _deliveryRepo.GetByIdAsync(cluster.DeliveryId);
+                if (delivery != null)
+                {
+                    var newOrderStatus = DeliveryMapper.ToOrderStatus(delivery.Status);
+                    var order = await _orderRepo.GetByIdAsync(delivery.OrderId);
+                    if (order != null)
+                    {
+                        order.Status = newOrderStatus;
+                        order.UpdatedAt = DateTime.Now;
+                        _orderRepo.Update(order);
+                        await _orderRepo.SaveChangesAsync();
+                    }
+                }
+            }
+
+            return updateResult;
         }
 
         public async Task<GeneralResponse<bool>> DeclineDeliveryAsync(
@@ -810,7 +830,7 @@ namespace Service
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(deliveryId, d=>d.Customer.UserId, d => d.DeliveryPerson);
+                var delivery = await _deliveryRepo.GetByIdWithIncludesAsync(deliveryId, d => d.Customer.UserId, d => d.DeliveryPerson);
                 if (delivery == null)
                     return new GeneralResponse<bool>
                     {
@@ -859,6 +879,15 @@ namespace Service
 
                 await _deliveryOfferRepo.SaveChangesAsync();
                 await _deliveryRepo.SaveChangesAsync();
+
+
+
+                var order = await _orderRepo.GetByIdAsync(delivery.OrderId);
+                if (order != null)
+                {
+                    order.Status = OrderStatus.Delivered;
+                    _orderRepo.Update(order);
+                }
 
                 await _notificationService.SendNotificationAsync(
                     delivery.Customer.UserId,

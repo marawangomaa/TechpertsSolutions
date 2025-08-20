@@ -1,10 +1,14 @@
-using Core.DTOs.DeliveryDTOs;
-using Core.Interfaces.Services;
-using Microsoft.AspNetCore.Mvc;
-using TechpertsSolutions.Core.DTOs;
-using Microsoft.AspNetCore.Authorization;
+using Azure;
 using Core.DTOs;
+using Core.DTOs.DeliveryDTOs;
 using Core.Enums;
+using Core.Interfaces.Services;
+using Core.Utilities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Service;
+using System.Text.Json.Serialization;
+using TechpertsSolutions.Core.DTOs;
 
 namespace TechpertsSolutions.Controllers
 {
@@ -78,6 +82,25 @@ namespace TechpertsSolutions.Controllers
             return response.Success ? Ok(response) : BadRequest(response);
         }
 
+        [HttpPut("{clusterId}/status")]
+        public async Task<IActionResult> UpdateClusterStatus(
+            string clusterId,
+            [FromBody] UpdateClusterStatusRequest request
+        )
+        {
+            if (request == null)
+                return BadRequest("Request body cannot be null.");
+
+            var response = await _service.UpdateClusterStatusAsync(
+                clusterId,
+                request.Status,
+                request.AssignedDriverId
+            );
+
+            return response.Success ? Ok(response) : BadRequest(response);
+        }
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -112,5 +135,12 @@ namespace TechpertsSolutions.Controllers
                 Message = "Invalid or missing ID",
                 Data = id
             };
+
+
+        public class UpdateClusterStatusRequest
+        {
+            public DeliveryClusterStatus Status { get; set; }
+            public string? AssignedDriverId { get; set; }
+        }
     }
 }

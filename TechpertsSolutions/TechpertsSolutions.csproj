@@ -15,9 +15,6 @@
     <None Remove="Model\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Core\Enums\DeliveryClusterStatus.cs" Link="DeliveryClusterStatus.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
